@@ -11,5 +11,5 @@ ln -s /home/${USER}/cosmo/dotfiles/.tmux.conf /home/${USER}/.tmux.conf
 # install prelude for emacs
 curl -L http://git.io/epre | sh
 rm -rf /home/${USER}/.emacs.d/personal
-ln -s /home/${USER}/cosmo/prelude /home/${USER}/emacs.d/personal
+ln -s /home/${USER}/cosmo/prelude /home/${USER}/.emacs.d/personal
 

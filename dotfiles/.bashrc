@@ -12,5 +12,3 @@ fi
 
 alias e='emacsclient -t'
 alias ec='emacsclient -c'
-
-emacs --daemon

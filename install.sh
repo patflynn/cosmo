@@ -4,6 +4,11 @@ sudo apt-get install -y git
 sudo apt-get install -y emacs24
 sudo apt-get install -y tmux
 
+# configure git
+git config --global user.name "Patrick Flynn"
+git config --global credential.helper cache
+git config --global credential.helper "cache --timeout=31540000000"
+
 cd ~
 git clone https://github.com/patflynn/cosmo.git
 echo ". ~/cosmo/dotfiles/.bashrc" >> ~/.bashrc

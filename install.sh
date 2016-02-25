@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo apt-get update && sudo apt-get upgrade -y
+
 sudo apt-get install -y git
 sudo apt-get install -y emacs24
 sudo apt-get install -y tmux

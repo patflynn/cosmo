@@ -8,6 +8,7 @@ cd ~
 git clone https://github.com/patflynn/cosmo.git
 echo ". ~/cosmo/dotfiles/.bashrc" >> ~/.bashrc
 ln -s /home/${USER}/cosmo/dotfiles/.tmux.conf /home/${USER}/.tmux.conf
+ln -s /home/${USER}/cosmo/.local/share/applications/emacsclient.desktop /home/${USER}/.local/share/applications/emacsclient.desktop
 # install prelude for emacs
 curl -L http://git.io/epre | sh
 rm -rf /home/${USER}/.emacs.d/personal

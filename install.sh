@@ -31,6 +31,9 @@ curl -L http://git.io/epre | sh
 rm -rf /home/${USER}/.emacs.d/personal
 ln -s /home/${USER}/cosmo/prelude /home/${USER}/.emacs.d/personal
 
+# install bins
+ln -s /home/${USER}/cosmo/bin/gitcb /home/${USER}/bin/gitcb
+
 # install Golang
 
 mkdir ~/tmp

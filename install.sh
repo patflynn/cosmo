@@ -6,6 +6,7 @@ sudo apt-get install -y git
 sudo apt-get install -y emacs
 sudo apt-get install -y tmux
 sudo apt-get install -y i3
+sudo apt-get install -y rofi
 
 # configure git
 git config --global user.name "Patrick Flynn"
@@ -40,6 +41,7 @@ ln -s ${HOME}/cosmo/prelude ${HOME}/.emacs.d/personal
 
 # install bins
 ln -s ${HOME}/cosmo/bin/gitcb ${HOME}/bin/gitcb
+ln -s ${HOME}/cosmo/bin/ssha ${HOME}/bin/ssha
 
 # install git aware prompt
 mkdir ~/.bash

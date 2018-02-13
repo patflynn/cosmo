@@ -1,0 +1,9 @@
+export DESKTOP_SESSION=cinnamon
+
+xset -b
+
+xsetroot -solid "#333333"
+
+urxvt -q -f -o
+
+exec i3

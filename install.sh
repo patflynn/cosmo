@@ -5,6 +5,7 @@ sudo apt-get update && sudo apt-get upgrade -y
 sudo apt-get install -y git
 sudo apt-get install -y emacs
 sudo apt-get install -y tmux
+sudo apt-get install -y i3
 
 # configure git
 git config --global user.name "Patrick Flynn"
@@ -26,6 +27,12 @@ echo ". ~/cosmo/dotfiles/.bashrc" >> ~/.bashrc
 echo ". ~/cosmo/dotfiles/.profile" >> ~/.profile
 ln -s ${HOME}/cosmo/dotfiles/.tmux.conf ${HOME}/.tmux.conf
 ln -s ${HOME}/cosmo/.local/share/applications/emacsclient.desktop ${HOME}/.local/share/applications/emacsclient.desktop
+ln -s ${HOME}/cosmo/dotfiles/.Xresources ${HOME}/.Xresources
+# rodete: ln -s ${HOME}/cosmo/dotfiles/.xsessionrc ${HOME}/.xsessionrc
+ln -s ${HOME}/cosmo/dotfiles/.xinitrc ${HOME}/.xinitrc
+mkdir -p ${HOME}/.config/i3/
+ln -s ${HOME}/cosmo/i3config ${HOME}/.config/i3/config
+
 # install prelude for emacs
 curl -L http://git.io/epre | sh
 rm -rf ${HOME}/.emacs.d/personal

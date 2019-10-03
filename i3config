@@ -27,7 +27,7 @@ font pango:monospace 8
 # font, it doesn’t scale on retina/hidpi displays.
 
 # Use Mouse+$mod to drag floating windows to their wanted position
-floating_modifier $mod
+floating_modifier Mod4+Shift
 
 # start a terminal
 bindsym $mod+Shift+Return exec i3-sensible-terminal
@@ -40,7 +40,7 @@ bindsym $mod+Shift+q kill
 # There also is the (new) i3-dmenu-desktop which only displays applications
 # shipping a .desktop file. It is a wrapper around dmenu, so you need that
 # installed.
-# bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
+# bindsym Mod4+d exec --no-startup-id i3-dmenu-desktop
 
 # change focus
 bindsym $mod+j focus left
@@ -156,7 +156,7 @@ bindsym $mod+r mode "resize"
 focus_follows_mouse no
 
 bindsym $mod+g exec "rofi -show window"
-bindsym $mod+d exec "rofi -show run"
+bindsym Mod4+d exec "rofi -show run"
 # bindsym $mod+b exec "rofi -show Workspace"
 
 # Start i3bar to display a workspace bar (plus the system information i3status

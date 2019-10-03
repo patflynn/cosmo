@@ -1,5 +1,8 @@
 export DESKTOP_SESSION=cinnamon
 
+pkill ssh-agent
+eval $(ssh-agent -s)
+
 xset -b
 
 xsetroot -solid "#333333"

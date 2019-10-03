@@ -22,9 +22,9 @@ fi
 #PS1="\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] \[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\]\$ "
 PS1="\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\[\033[00m\]\[\033[01;34m\]\w\[\033[00m\] \[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\]\$ "
 
-if command -v tmux>/dev/null; then
-    [[ ! $TERM =~ screen ]] && [ -z $TMUX ] && exec tmux
-fi
+#if command -v tmx2>/dev/null; then
+#    [[ ! $TERM =~ screen ]] && [ -z $TMUX ] && exec tmx2
+#fi
 
 alias e='emacsclient -t'
 alias ec='emacsclient -c'

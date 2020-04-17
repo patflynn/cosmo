@@ -7,6 +7,7 @@ sudo apt-get install -y emacs
 sudo apt-get install -y tmux
 sudo apt-get install -y i3
 sudo apt-get install -y rofi
+sudo apt-get install -y zsh curl git
 
 # configure git
 git config --global user.name "Patrick Flynn"
@@ -24,26 +25,30 @@ git config --global alias.last 'log -1 HEAD'
 
 cd ~
 git clone https://github.com/patflynn/cosmo.git
-echo ". ~/cosmo/dotfiles/.bashrc" >> ~/.bashrc
-echo ". ~/cosmo/dotfiles/.profile" >> ~/.profile
+
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
 ln -s ${HOME}/cosmo/dotfiles/.tmux.conf ${HOME}/.tmux.conf
 ln -s ${HOME}/cosmo/.local/share/applications/emacsclient.desktop ${HOME}/.local/share/applications/emacsclient.desktop
-ln -s ${HOME}/cosmo/dotfiles/.Xresources ${HOME}/.Xresources
+
+# configure DPI
+# ln -s ${HOME}/cosmo/dotfiles/.Xresources ${HOME}/.Xresources
 # rodete: ln -s ${HOME}/cosmo/dotfiles/.xsessionrc ${HOME}/.xsessionrc
-ln -s ${HOME}/cosmo/dotfiles/.xinitrc ${HOME}/.xinitrc
+# i3 startup
+# ln -s ${HOME}/cosmo/dotfiles/.xinitrc ${HOME}/.xinitrc
 mkdir -p ${HOME}/.config/i3/
 ln -s ${HOME}/cosmo/i3config ${HOME}/.config/i3/config
+ln -s ${HOME}/cosmo/dotfiles/.zshrc ${HOME}/.zshrc
+ln -s ${HOME}/cosmo/.oh-my-zsh ${HOME}/.oh-my-zsh
 
-# install prelude for emacs
-curl -L http://git.io/epre | sh
-rm -rf ${HOME}/.emacs.d/personal
-ln -s ${HOME}/cosmo/prelude ${HOME}/.emacs.d/personal
+rm -rf .emacs.d
+mkdir .emacs.d
+ln -s ${HOME}/cosmo/init.el ~/.emacs.d/init.el
 
-# install bins
-ln -s ${HOME}/cosmo/bin/gitcb ${HOME}/bin/gitcb
-ln -s ${HOME}/cosmo/bin/ssha ${HOME}/bin/ssha
 
-# install git aware prompt
-mkdir ~/.bash
-cd ~/.bash
-git clone git://github.com/jimeh/git-aware-prompt.git
+
+
+
+
+
+

@@ -44,4 +44,4 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  )
 
-(load-theme 'ujelly)
+;; (load-theme 'ujelly)

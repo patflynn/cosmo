@@ -27,6 +27,13 @@ cd cosmo
 stow X
 
 # configure the always stuff
+
+
+mv ~/.emacs.d ~/tmp/.
+mv ~/.config/i3 ~/tmp/.
+mv ~/.tmux.conf ~/tmp/.
+mv ~/.zshrc ~/tmp/.
+
 stow i3 emacs tmux zsh
 
 

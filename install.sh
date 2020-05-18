@@ -2,12 +2,8 @@
 
 sudo apt-get update && sudo apt-get upgrade -y
 
-sudo apt-get install -y git
-sudo apt-get install -y emacs
-sudo apt-get install -y tmux
-sudo apt-get install -y i3
-sudo apt-get install -y rofi
-sudo apt-get install -y zsh curl git
+sudo apt-get install -y git emacs tmux i3 rofi curl zsh stow
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # configure git
 git config --global user.name "Patrick Flynn"
@@ -25,25 +21,13 @@ git config --global alias.last 'log -1 HEAD'
 
 cd ~
 git clone https://github.com/patflynn/cosmo.git
+cd cosmo
 
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+# configure for chromoting with X34 and i3
+stow X
 
-ln -s ${HOME}/cosmo/dotfiles/.tmux.conf ${HOME}/.tmux.conf
-ln -s ${HOME}/cosmo/.local/share/applications/emacsclient.desktop ${HOME}/.local/share/applications/emacsclient.desktop
-
-# configure DPI
-# ln -s ${HOME}/cosmo/dotfiles/.Xresources ${HOME}/.Xresources
-# rodete: ln -s ${HOME}/cosmo/dotfiles/.xsessionrc ${HOME}/.xsessionrc
-# i3 startup
-# ln -s ${HOME}/cosmo/dotfiles/.xinitrc ${HOME}/.xinitrc
-mkdir -p ${HOME}/.config/i3/
-ln -s ${HOME}/cosmo/i3config ${HOME}/.config/i3/config
-ln -s ${HOME}/cosmo/dotfiles/.zshrc ${HOME}/.zshrc
-ln -s ${HOME}/cosmo/.oh-my-zsh ${HOME}/.oh-my-zsh
-
-rm -rf .emacs.d
-mkdir .emacs.d
-ln -s ${HOME}/cosmo/init.el ~/.emacs.d/init.el
+# configure the always stuff
+stow i3 emacs tmux zsh
 
 
 

@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, doom-emacs,  ... }:
 
 {
   imports =
@@ -73,20 +73,32 @@
   system.autoUpgrade.allowReboot  = true;
   nix.settings.extra-experimental-features = ["nix-command" "flakes"];
 
-  
+  users.extraGroups.vboxusers.members = [ "patrick" ];
 # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.patrick = {
     isNormalUser = true;
     description = "Patrick Flynn";
-    extraGroups = [ "networkmanager" "wheel" ];
+    createHome = true;
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "audio"
+      "video"
+      "lp"
+      "docker"
+      "libvirtd"
+    ];      
     packages = with pkgs; [
     #  thunderbird
     ];
   };
 
+  home-manager.users.patrick.imports = [ ../home.nix doom-emacs.hmModule ];
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-
+  virtualisation.docker.enable = true;
+  
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.opengl.enable = true;
   programs.sway.enable = true;
@@ -98,6 +110,7 @@
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
+    git vim wget curl
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

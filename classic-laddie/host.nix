@@ -71,6 +71,9 @@ virtualisation.docker.enable = true;
   xdg.portal.wlr.enable = true;
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
+  programs.zsh.enable = true;
+  users.defaultUserShell = pkgs.zsh;
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   # Bootloader.
@@ -79,7 +79,7 @@ virtualisation.docker.enable = true;
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
-    git vim wget curl
+    git vim wget curl patchelf
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -109,6 +109,13 @@ virtualisation.docker.enable = true;
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "22.05"; # Did you read the comment?
 
+
+  # Fix gradle protoc issue https://github.com/google/protobuf-gradle-plugin/issues/426
+  system.activationScripts.ldso = lib.stringAfter [ "usrbinenv" ] ''
+    mkdir -m 0755 -p /lib64
+    ln -sfn ${pkgs.glibc.out}/lib64/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2.tmp
+    mv -f /lib64/ld-linux-x86-64.so.2.tmp /lib64/ld-linux-x86-64.so.2 # atomically replace
+  '';
   users.extraGroups.vboxusers.members = [ "patrick" ];
 # Define a user account. Don't forget to set a password with ‘passwd’.
 

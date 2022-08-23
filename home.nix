@@ -12,6 +12,7 @@
     pkgs.jetbrains.idea-ultimate
     pkgs.google-chrome
     pkgs.slack
+    (pkgs.callPackage ./gitsign.nix {})
   ];
   programs.zsh = {
     enable = true;
@@ -29,6 +30,7 @@
       theme = "robbyrussell";
     };
   };
+  programs.go.enable = true;
   home.stateVersion = "21.11";
   xdg.configFile."mimeapps.list".force = true;
 }

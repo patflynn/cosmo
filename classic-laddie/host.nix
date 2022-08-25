@@ -26,14 +26,37 @@
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  #services.xserver.displayManager.gdm.enable = true;
+  #services.xserver.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver = {
     layout = "us";
     xkbVariant = "";
+    desktopManager = {
+      xterm.enable = false;
+    };
+    displayManager = {
+      defaultSession = "none+i3";
+      lightdm.enable = true;
+    };
+    windowManager.i3 = {
+      enable = true;
+      configFile = "/etc/i3.conf";
+      package = pkgs.i3-gaps;
+      extraPackages = with pkgs; [
+        i3status
+        i3lock-fancy
+        i3blocks
+        polybar
+        xorg.xbacklight
+      ];
+    };
   };
+
+  environment.variables.TERM = "xterm-256color";
+  environment.variables.EDITOR = "emacs";
+  environment.etc."i3.conf".text = pkgs.callPackage ./i3-config.nix {};
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -63,13 +86,13 @@
   system.autoUpgrade.enable  = true;
   system.autoUpgrade.allowReboot  = true;
   nix.settings.extra-experimental-features = ["nix-command" "flakes"];
-virtualisation.docker.enable = true;
+  virtualisation.docker.enable = true;
 
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.opengl.enable = true;
-  programs.sway.enable = true;
-  xdg.portal.wlr.enable = true;
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+  #programs.sway.enable = true;
+  #xdg.portal.wlr.enable = true;
+  #environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;

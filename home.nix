@@ -5,14 +5,17 @@
      ./emacs/nixos.nix
      ./code.nix
      ./git.nix
+     ./alacritty.nix
    ];
   nixpkgs.config.allowUnfree = true;
-  home.packages = [
-    pkgs.adoptopenjdk-hotspot-bin-16
-    pkgs.jetbrains.idea-ultimate
-    pkgs.google-chrome
-    pkgs.slack
-    (pkgs.callPackage ./gitsign.nix {})
+  home.packages = with pkgs; [
+    adoptopenjdk-hotspot-bin-16
+    jetbrains.idea-ultimate
+    google-chrome
+    slack
+    pavucontrol
+    alacritty
+    (callPackage ./gitsign.nix {})
   ];
   programs.zsh = {
     enable = true;

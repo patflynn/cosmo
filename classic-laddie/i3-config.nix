@@ -12,8 +12,6 @@
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
 
-for_window [class=".*"] border pixel 0
-
 set $mod Mod1
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -56,12 +54,13 @@ bindsym $mod+Shift+Return exec alacritty
 bindsym $mod+Shift+q kill
 
 # start dmenu (a program launcher)
-bindsym $mod+d exec --no-startup-id dmenu_run
+# bindsym $mod+d exec --no-startup-id dmenu_run
 # A more modern dmenu replacement is rofi:
 # bindcode $mod+40 exec "rofi -modi drun,run -show drun"
 # There also is i3-dmenu-desktop which only displays applications shipping a
 # .desktop file. It is a wrapper around dmenu, so you need that installed.
 # bindcode $mod+40 exec --no-startup-id i3-dmenu-desktop
+bindsym $mod+d exec "rofi -combi-modi window,drun,ssh -show combi"
 
 # change focus
 bindsym $mod+j focus left
@@ -190,5 +189,8 @@ bar {
         status_command i3status
 }
 
-gaps inner all set 20
+for_window [class=".*"] border pixel 0
+gaps inner 15
+gaps outer 15
+
 ''

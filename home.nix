@@ -6,17 +6,19 @@
      ./code.nix
      ./git.nix
      ./alacritty.nix
+     ./rofi.nix
    ];
   nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
     adoptopenjdk-hotspot-bin-16
-    jetbrains.idea-ultimate
+    # jetbrains.idea-ultimate
     google-chrome
     slack
     pavucontrol
     alacritty
     (callPackage ./gitsign.nix {})
   ];
+
   programs.zsh = {
     enable = true;
     shellAliases = {

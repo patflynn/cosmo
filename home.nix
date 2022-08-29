@@ -16,6 +16,7 @@
     slack
     pavucontrol
     alacritty
+    step-cli
     (callPackage ./gitsign.nix {})
   ];
 

@@ -83,8 +83,8 @@
 
 
 
-  system.autoUpgrade.enable  = true;
-  system.autoUpgrade.allowReboot  = true;
+  #system.autoUpgrade.enable  = true;
+  #system.autoUpgrade.allowReboot  = true;
   nix.settings.extra-experimental-features = ["nix-command" "flakes"];
   virtualisation.docker.enable = true;
 

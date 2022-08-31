@@ -82,7 +82,8 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
-
+  # Enable Gnome key-ring which I hope works with i3 and lightdm.
+  services.gnome.gnome-keyring.enable = true;
 
 
   #system.autoUpgrade.enable  = true;

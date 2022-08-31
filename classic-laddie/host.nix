@@ -45,6 +45,8 @@
       configFile = "/etc/i3.conf";
       package = pkgs.i3-gaps;
       extraPackages = with pkgs; [
+        xss-lock
+        i3lock
         i3status
         i3lock-fancy
         i3blocks

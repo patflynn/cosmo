@@ -17,6 +17,12 @@
     pavucontrol
     alacritty
     step-cli
+    maim
+    xclip
+    i3lock-color
+    pmutils
+    openssl
+    killall
     (callPackage ./gitsign.nix {})
   ];
 

@@ -23,7 +23,15 @@
     pmutils
     openssl
     killall
+    gcc
+    gnumake
+    tmux
+    #python310
+    #python310Packages.pip
+    #python310Packages.pip-tools
     (callPackage ./gitsign.nix {})
+    #(callPackage ./cosign.nix {})
+    cosign
   ];
 
   programs.zsh = {

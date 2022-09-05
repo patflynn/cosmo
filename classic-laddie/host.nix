@@ -165,4 +165,8 @@
     #  thunderbird
     ];
   };
+
+  programs.bash.shellAliases = {
+    renix = "sudo nixos-rebuild switch --flake ~/git/cosmo --upgrade";
+  };
 }

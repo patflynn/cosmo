@@ -7,9 +7,11 @@
 {
   imports =
     [ # Include the results of the hardware scan.
+
       ./hardware-configuration.nix
       ./host.nix
       ./../packages.nix
+      ./../idea.nix
     ];
 
   home-manager.users.patrick.imports = [ ../home.nix doom-emacs.hmModule ];

@@ -202,6 +202,10 @@ bar {
         status_command i3status
 }
 
+for_window [class="jetbrains-idea" title="win0"] floating enable;
+for_window [class="^com-intellij-updater-Runner$" title="^Update$"] floating enable
+for_window [instance="^sun-awt-X11-XDialogPeer$" title="^Complete Installation$"] floating enable
+
 for_window [class=".*"] border pixel 0
 gaps inner 15
 gaps outer 15

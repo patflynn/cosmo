@@ -13,6 +13,7 @@
     adoptopenjdk-hotspot-bin-16
     # jetbrains.idea-ultimate
     google-chrome
+    google-cloud-sdk
     slack
     pavucontrol
     alacritty
@@ -32,6 +33,8 @@
     (callPackage ./gitsign.nix {})
     #(callPackage ./cosign.nix {})
     cosign
+    crane
+    nodePackages.snyk
   ];
 
   programs.zsh = {

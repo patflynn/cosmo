@@ -10,10 +10,13 @@
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    #go-tuf.url = "github.com:znewman01/go-tuf/nix";
+
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       flake = false;
     };
+
     doom-emacs = {
       url = "github:nix-community/nix-doom-emacs";
       inputs.nixpkgs.follows = "nixpkgs";

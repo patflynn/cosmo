@@ -31,6 +31,8 @@
     gcc
     gnumake
     tmux
+    dive
+    trivy
     pkg-config
     jq
     python3
@@ -38,6 +40,7 @@
     (callPackage ./gitsign.nix {})
     cosign
     crane
+    buildpack
     nodePackages.snyk
   ];
 
@@ -62,7 +65,7 @@
     enable = true;
     prefix = "C-q";
     extraConfig = ''
-      set-option -g status-style fg=white,bg=colour233
+      set-option -g status-style fg=white,bg=colour23
       setw -g mouse on
       set -g base-index 1
       set -g history-limit 100000

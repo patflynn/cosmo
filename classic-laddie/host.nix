@@ -2,9 +2,13 @@
 
 {
   # Bootloader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/nvme0n1";
-  boot.loader.grub.useOSProber = true;
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  services.zfs.autoSnapshot.enable = true;
+  services.zfs.autoScrub.enable = true;
+  # services.zfs.enableuUnstable = true;
+  users.extraGroups.zfs.members = [ "patrick" ];
 
   networking.hostName = "classic-laddie"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.

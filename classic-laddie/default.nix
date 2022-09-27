@@ -12,6 +12,7 @@
       ./host.nix
       ./../packages.nix
       ./../idea.nix
+      ./../work.nix
     ];
 
   home-manager.users.patrick.imports = [ ../home.nix doom-emacs.hmModule ];

@@ -16,6 +16,7 @@
     google-chrome
     #firefox
     google-cloud-sdk
+    gitAndTools.gh
     slack
     qemu
     tree
@@ -44,11 +45,18 @@
     nodePackages.snyk
   ];
 
+  programs.bash = {
+    enable = true;
+    sessionVariables = { PATH = "$HOME/bin:$PATH"; };
+  };
+
   programs.zsh = {
     enable = true;
     shellAliases = {
       ll = "ls -l";
-      update = "sudo nixos-rebuild switch";
+      update = "sudo nixos-rebuild switch --flake ~/hack/cosmo --upgrade --impure";
+      ec = "emacsclient -t ";
+      idea = "idea-ultimate";
     };
     history = {
       size = 10000;

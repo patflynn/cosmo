@@ -19,10 +19,10 @@
     };
   };
 
-  home.file."bin/em" = {
+  home.file."bin/ec" = {
     text = ''
       #!/bin/sh
-      emacsclient -nc $@
+      emacsclient -t $@
     '';
     executable = true;
   };

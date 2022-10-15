@@ -1,5 +1,8 @@
 { config, pkgs, doom-emacs, ... }:
 
+let
+  unstable = import <nixos-unstable> { config.allowUnfree = true; };
+in
 {
   imports = [
      ./emacs/nixos.nix
@@ -13,9 +16,9 @@
     adoptopenjdk-hotspot-bin-16
     # jetbrains.idea-ultimate
     # go-tuf
-    google-chrome
+    unstable.google-chrome
     #firefox
-    google-cloud-sdk
+    unstable.google-cloud-sdk
     gitAndTools.gh
     slack
     qemu
@@ -24,6 +27,7 @@
     alacritty
     step-cli
     maim
+    skopeo
     xclip
     i3lock-color
     pmutils

@@ -5,6 +5,7 @@
     enable = true;
 
     settings = {
+#      font.size = 22;
       window = {
         title = "Terminal";
 

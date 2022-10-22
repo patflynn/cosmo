@@ -24,6 +24,7 @@ in
     qemu
     tree
     pavucontrol
+    unstable.kind
     alacritty
     step-cli
     maim

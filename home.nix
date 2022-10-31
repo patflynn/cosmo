@@ -60,8 +60,8 @@ in
     shellAliases = {
       ll = "ls -l";
       update = "sudo nixos-rebuild switch --flake ~/hack/cosmo --upgrade --impure";
-      ec = "emacsclient -t ";
-      idea = "idea-ultimate";
+      ed = "emacsclient -t $1";
+      idea = "idea-ultimate $1";
     };
     history = {
       size = 10000;

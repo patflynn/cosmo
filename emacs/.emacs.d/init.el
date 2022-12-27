@@ -3,7 +3,6 @@
 ;; installed packages.  Don't delete this line.  If you don't want it,
 ;; just comment it out by adding a semicolon to the start of the line.
 ;; You may delete these explanatory comments.
-(package-initialize)
 
 (toggle-scroll-bar -1)
 (tool-bar-mode -1)
@@ -34,9 +33,8 @@ There are two things you can do about this warning:
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   (quote
-    ("4138944fbed88c047c9973f68908b36b4153646a045648a22083bd622d1e636d" default)))
- '(package-selected-packages (quote (ujelly-theme))))
+   '("3a9f65e0004068ecf4cf31f4e68ba49af56993c20258f3a49e06638c825fbfb6" "4138944fbed88c047c9973f68908b36b4153646a045648a22083bd622d1e636d" default))
+ '(package-selected-packages '(ujelly-theme)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -44,4 +42,4 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  )
 
-;; (load-theme 'ujelly)
+(load-theme 'ujelly)

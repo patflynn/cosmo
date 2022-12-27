@@ -34,7 +34,7 @@ mv ~/.config/i3 ~/tmp/.
 mv ~/.tmux.conf ~/tmp/.
 mv ~/.zshrc ~/tmp/.
 
-stow i3 emacs tmux zsh
+stow --target =/home/${USER} X emacs tmux zsh i3
 
 
 

@@ -109,7 +109,8 @@ alias sagi='sudo apt-get install'
 alias hack='cd ~/hack'
 alias emacs="emacsclient -t --alternate-editor=''"
 alias ghf="gh repo fork --clone=true --remote=true"
-alias ghb='gh repo clone"
+alias ghb="gh repo clone"
+alias cdp='cd $(git rev-parse --show-toplevel)'
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/home/patrick/google-cloud-sdk/path.zsh.inc' ]; then . '/home/patrick/google-cloud-sdk/path.zsh.inc'; fi

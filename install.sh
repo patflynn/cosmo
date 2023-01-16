@@ -12,7 +12,7 @@ git config --global credential.helper "cache --timeout=31540000000"
 git config --global alias.lg "log --color --graph --pretty=format:'%C(auto)%h -%d %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
 git config --global alias.st 'status'
 git config --global alias.br 'branch --all'
-git config --global alias.cm 'checkout master'
+git config --global alias.cm 'checkout main'
 git config --global alias.co 'checkout'
 git config --global alias.rbm 'rebase master'
 git config --global alias.recommit 'commit -a --reuse-message=HEAD@{1}'

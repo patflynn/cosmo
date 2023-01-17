@@ -14,10 +14,14 @@ git config --global alias.st 'status'
 git config --global alias.br 'branch --all'
 git config --global alias.cm 'checkout main'
 git config --global alias.co 'checkout'
-git config --global alias.rbm 'rebase master'
+git config --global alias.rbm 'rebase main'
 git config --global alias.recommit 'commit -a --reuse-message=HEAD@{1}'
 git config --global alias.uncommit 'reset --soft HEAD^'
 git config --global alias.last 'log -1 HEAD'
+git config --global commit.gpgsign true  # Sign all commits
+git config --global tag.gpgsign true  # Sign all tags
+git config --global gpg.x509.program gitsign  # Use gitsign for signing
+git config --global gpg.format x509  # gitsign expects x509 args
 git config --global commit.gpgsign true  # Sign all commits
 git config --global tag.gpgsign true  # Sign all tags
 git config --global gpg.x509.program gitsign  # Use gitsign for signing

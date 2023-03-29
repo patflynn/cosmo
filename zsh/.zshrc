@@ -111,6 +111,16 @@ alias emacs="emacsclient -t --alternate-editor=''"
 alias ghf="gh repo fork --clone=true --remote=true"
 alias ghb="gh repo clone"
 alias cdp='cd $(git rev-parse --show-toplevel)'
+alias k='kubectl'
+
+# project nav
+alias hack='cd ~/hack'
+alias sigjava='cd ~/hack/sigstore/java/sigstore-java'
+alias images='cd ~/hack/images'
+alias public='cd ~/hack/images/public'
+alias private='cd ~/hack/images/private'
+alias wiki='cd ~/hack/cg/wiki'
+alias wolfi='cd ~/hack/wolfi/os'
 
 # The next line updates PATH for the Google Cloud SDK.
 if [ -f '/home/patrick/google-cloud-sdk/path.zsh.inc' ]; then . '/home/patrick/google-cloud-sdk/path.zsh.inc'; fi
@@ -127,3 +137,8 @@ fi
 if [ -d "$HOME/go/bin" ] ; then
     PATH="$HOME/go/bin:$PATH"
 fi
+
+PATH="$HOME/tools/apache-maven-3.8.7/bin:$PATH"
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"

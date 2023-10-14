@@ -19,7 +19,6 @@
   networking.hostName = "classic-laddie"; # Define your hostname.
   networking.networkmanager.enable = true;
 
-  networking.useDHCP = lib.mkDefault true;
   # Set your time zone.
   time.timeZone = "America/New_York";
 
@@ -78,7 +77,8 @@
   users.users.patrick = {
     isNormalUser = true;
     description = "Patrick Flynn";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJSFK7Jz+TNyvN2UVVOouZDLHWC++ZhFsYae3JR2Wu6D" ];
     packages = with pkgs; [
       firefox
     #  thunderbird
@@ -114,7 +114,8 @@
   hardware.opengl.enable = true;
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
+  services.openssh.permitRootLogin = "no";
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

@@ -15,10 +15,7 @@
 
     #go-tuf.url = "github.com:znewman01/go-tuf/nix";
 
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      flake = false;
-    };
+    emacs-overlay = { url = "github:nix-community/emacs-overlay"; };
 
     doom-emacs = {
       url = "github:nix-community/nix-doom-emacs";
@@ -27,7 +24,7 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, flake-utils, home-manager, doom-emacs, kolide-launcher, ... }: {
+  outputs = inputs@{ nixpkgs, flake-utils, home-manager, doom-emacs, emacs-overlay, kolide-launcher, ... }: {
 
     nixosConfigurations.classic-laddie = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";

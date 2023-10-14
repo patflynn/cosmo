@@ -7,25 +7,40 @@
   imports =
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
+  
+  networking.hostId = "93ce0154";
 
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/0e522e40-0da0-4c88-b1ee-46072b963684";
-      fsType = "ext4";
+    { device = "tank/encrypt/local/root";
+      fsType = "zfs";
+    };
+
+  fileSystems."/nix" =
+    { device = "tank/encrypt/local/nix";
+      fsType = "zfs";
+    };
+
+  fileSystems."/cache" =
+    { device = "tank/encrypt/local/cache";
+      fsType = "zfs";
+    };
+
+  fileSystems."/persist" =
+    { device = "tank/encrypt/safe/persist";
+      fsType = "zfs";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/A18D-41E6";
+    { device = "/dev/disk/by-uuid/BE84-EC4A";
       fsType = "vfat";
     };
 
-  swapDevices =
-    [ { device = "/dev/disk/by-uuid/9ea584ee-d806-4fae-9e9a-8067faa188b4"; }
-    ];
+  swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
@@ -33,8 +48,8 @@
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
   # networking.interfaces.enp4s0.useDHCP = lib.mkDefault true;
-  # networking.interfaces.wlp5s0.useDHCP = lib.mkDefault true;
 
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  # high-resolution display
+  hardware.video.hidpi.enable = lib.mkDefault true;
 }

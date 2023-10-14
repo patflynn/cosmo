@@ -108,6 +108,10 @@
   # };
 
   # List services that you want to enable:
+  virtualisation.docker.enable = true;
+
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.opengl.enable = true;
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;

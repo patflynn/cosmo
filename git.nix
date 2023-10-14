@@ -6,7 +6,7 @@
   programs.git = {
     enable = true;
     ignores = [ "*~" "*.swp" ];
-    userEmail = "patrick@chainguard.dev";
+    userEmail = "big.pat@gmail.com";
     userName = "Patrick Flynn";
     extraConfig.commit.gpgsign = "true";
     extraConfig.tag.gpgsign = "true";

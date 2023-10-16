@@ -54,6 +54,7 @@
     layout = "us";
     xkbVariant = "";
     displayManager.gdm.enable = true;
+    displayManager.gdm.autoSuspend = false;
     desktopManager.gnome.enable = true;
     # disable monitor after 10 mins
     displayManager.sessionCommands = ''

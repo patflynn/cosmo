@@ -36,19 +36,27 @@
     LC_TELEPHONE = "en_US.UTF-8";
     LC_TIME = "en_US.UTF-8";
   };
-
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-
+  
+  hardware.opengl.enable = true;
   # Configure keymap in X11
   services.xserver = {
+    enable = true;
+    videoDrivers = [ "nvidia" ];
     layout = "us";
     xkbVariant = "";
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
+    # disable monitor after 10 mins
+    displayManager.sessionCommands = ''
+      ${pkgs.xorg.xset}/bin/xset dpms 600 600 600
+    '';
   };
+
+  # Don't put the machine to sleep as it's running services
+  services.logind.extraConfig = ''
+    IdleAction=ignore
+    IdleActionSec=0min
+  '';
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -72,6 +80,21 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
+  # List services that you want to enable:
+  virtualisation.docker.enable = true;
+
+
+
+  # Enable the OpenSSH daemon.
+  services.openssh.enable = true;
+  services.openssh.permitRootLogin = "no";
+
+  # Open ports in the firewall.
+  # networking.firewall.allowedTCPPorts = [ ... ];
+  # networking.firewall.allowedUDPPorts = [ ... ];
+  # Or disable the firewall altogether.
+  # networking.firewall.enable = false;
+
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.patrick = {
@@ -106,22 +129,6 @@
   #   enable = true;
   #   enableSSHSupport = true;
   # };
-
-  # List services that you want to enable:
-  virtualisation.docker.enable = true;
-
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.opengl.enable = true;
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-  services.openssh.settings.PermitRootLogin = "no";
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

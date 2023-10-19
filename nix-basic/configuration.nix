@@ -28,6 +28,9 @@
   networking.hostName = "classic-laddie"; # Define your hostname.
   networking.networkmanager.enable = true;
 
+  services.tailscale.enable = true;
+  services.tailscale.useRoutingFeatures = "both";
+
   # Set your time zone.
   time.timeZone = "America/New_York";
 
@@ -56,10 +59,6 @@
     displayManager.gdm.enable = true;
     displayManager.gdm.autoSuspend = false;
     desktopManager.gnome.enable = true;
-    # disable monitor after 10 mins
-    displayManager.sessionCommands = ''
-      ${pkgs.xorg.xset}/bin/xset dpms 600 600 600
-    '';
   };
 
   # Don't put the machine to sleep as it's running services

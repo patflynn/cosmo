@@ -68,6 +68,18 @@
     IdleActionSec=0min
   '';
 
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+        if (action.id == "org.freedesktop.login1.suspend" ||
+            action.id == "org.freedesktop.login1.suspend-multiple-sessions" ||
+            action.id == "org.freedesktop.login1.hibernate" ||
+            action.id == "org.freedesktop.login1.hibernate-multiple-sessions")
+        {
+            return polkit.Result.NO;
+        }
+    });
+  '';
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
 

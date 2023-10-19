@@ -24,7 +24,16 @@
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
-  
+
+  system.autoUpgrade = {
+    enable = true;
+    dates = "04:00";
+    flake = "${config.users.users.patrick.home}/src/cosmo/nix-basic";
+    flags = [
+        "--update-input" "nixpkgs"
+    ];
+    allowReboot = true;
+  };
   networking.hostName = "classic-laddie"; # Define your hostname.
   networking.networkmanager.enable = true;
 
@@ -108,7 +117,7 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-  services.openssh.permitRootLogin = "no";
+  services.openssh.settings.permitRootLogin = "no";
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

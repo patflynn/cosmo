@@ -24,6 +24,15 @@
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
+  # Enable Wake-On-LAN
+  systemd.services.wolService = {
+    description = "Enable Wake-on-LAN";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.ethtool}/bin/ethtool -s enp4s0 wol g";
+      Type = "oneshot";
+    };
+  };
 
   system.autoUpgrade = {
     enable = true;
@@ -36,7 +45,7 @@
   };
   networking.hostName = "classic-laddie"; # Define your hostname.
   networking.networkmanager.enable = true;
-
+  systemd.services.NetworkManager-wait-online.enable = false;
   services.tailscale.enable = true;
   services.tailscale.useRoutingFeatures = "both";
 
@@ -150,6 +159,7 @@
      emacs
      wget
      curl
+     ethtool
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

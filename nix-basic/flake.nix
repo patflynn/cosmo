@@ -16,6 +16,14 @@
     # home-manager, used for managing user configuration
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    emacs-overlay = { url = "github:nix-community/emacs-overlay"; };
+
+    doom-emacs = {
+      url = "github:nix-community/nix-doom-emacs";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.emacs-overlay.follows = "emacs-overlay";
+    };
   };
 
   # `outputs` are all the build result of the flake.
@@ -28,7 +36,7 @@
   # 
   # The `@` syntax here is used to alias the attribute set of the
   # inputs's parameter, making it convenient to use inside the function.
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, emacs-overlay, doom-emacs, ... }@inputs: {
     nixosConfigurations = {
       classic-laddie = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -43,7 +51,7 @@
 
             home-manager.users.patrick = import ./home.nix;
 
-            # Optionally, use home-manager.extraSpecialArgs to pass arguments to home.nix
+            home-manager.extraSpecialArgs = inputs;
           }
         ];
       };

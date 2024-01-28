@@ -1,6 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, doom-emacs, ... }:
 
 {
+
+  imports = [doom-emacs.hmModule];
+  
   # TODO please change the username & home direcotry to your own
   home.username = "patrick";
   home.homeDirectory = "/home/patrick";
@@ -156,4 +159,6 @@
 
   # Let home Manager install and manage itself.
   programs.home-manager.enable = true;
+
+
 }

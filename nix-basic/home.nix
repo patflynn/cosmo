@@ -52,7 +52,8 @@
     jq # A lightweight and flexible command-line JSON processor
     yq-go # yaml processer https://github.com/mikefarah/yq
     fzf # A command-line fuzzy finder
-
+    htop
+    
     # networking tools
     mtr # A network diagnostic tool
     iperf3

@@ -31,6 +31,7 @@
   systemd.targets.suspend.enable = false;
   systemd.targets.hibernate.enable = false;
   systemd.targets.hybrid-sleep.enable = false;
+
   # Enable Wake-On-LAN
   systemd.services.wolService = {
     description = "Enable Wake-on-LAN";
@@ -79,8 +80,8 @@
   services.xserver = {
     enable = true;
     videoDrivers = [ "nvidia" ];
-    layout = "us";
-    xkbVariant = "";
+    xkb.layout = "us";
+    xkb.variant = "";
     displayManager.gdm.enable = true;
     displayManager.gdm.autoSuspend = false;
     desktopManager.gnome.enable = true;
@@ -134,6 +135,7 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.settings.PermitRootLogin = "no";
+  services.openssh.settings.PasswordAuthentication = false;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

@@ -2,7 +2,7 @@ name: Claude Issue Responder
 
 on:
   issues:
-    types: [opened, edited]
+    types: [labeled]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -33,9 +33,9 @@ jobs:
           echo "ISSUE_NUMBER=${{ github.event.issue.number || github.event.inputs.issue_number }}" >> $GITHUB_ENV
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
           
-      - name: Install Claude CLI
+      - name: Install Claude Code
         run: |
-          npm install -g @anthropic-ai/claude-cli
+          npm install -g @anthropic-ai/claude-code
 
       - name: Get issue details
         id: issue
@@ -53,11 +53,18 @@ jobs:
             const body = issue.data.body;
             const labels = issue.data.labels.map(l => l.name);
             
+            // Only proceed if the issue has the claude-autofix label
+            const hasClaudeAutofixLabel = labels.includes('claude-autofix');
+            
+            if (!hasClaudeAutofixLabel) {
+              console.log('Issue does not have the claude-autofix label, skipping');
+            }
+            
             return {
               title,
               body,
               labels,
-              should_process: labels.includes('claude-autofix')
+              should_process: hasClaudeAutofixLabel
             };
       
       - name: Create branch for fix
@@ -276,19 +283,6 @@ jobs:
             echo "No changes were made"
             echo "CHANGES_MADE=false" >> $GITHUB_ENV
           fi
-
-      - name: Comment if API key is missing
-        if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY == ''
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: process.env.ISSUE_NUMBER,
-              body: `Unable to process this issue automatically: ANTHROPIC_API_KEY is not configured in repository secrets.`
-            });
 
       - name: Create Pull Request
         if: env.CHANGES_MADE == 'true' && fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''

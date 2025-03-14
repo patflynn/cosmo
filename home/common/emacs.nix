@@ -1,5 +1,5 @@
 # Doom Emacs configuration
-{ config, lib, pkgs, inputs, doom-emacs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   # Use nix-doom-emacs

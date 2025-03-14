@@ -10,10 +10,10 @@ jobs:
   nix-flake-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Install Nix
-        uses: cachix/install-nix-action@v20
+        uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -26,10 +26,10 @@ jobs:
   nixos-desktop-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Install Nix
-        uses: cachix/install-nix-action@v20
+        uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -44,10 +44,10 @@ jobs:
   nixos-server-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Install Nix
-        uses: cachix/install-nix-action@v20
+        uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-unstable
           extra_nix_config: |
@@ -63,10 +63,10 @@ jobs:
   # darwin-dry-run:
   #   runs-on: macos-latest
   #   steps:
-  #     - uses: actions/checkout@v3
+  #     - uses: actions/checkout@v4
   #     
   #     - name: Install Nix
-  #       uses: cachix/install-nix-action@v20
+  #       uses: cachix/install-nix-action@v31
   #       with:
   #         nix_path: nixpkgs=channel:nixos-unstable
   #         extra_nix_config: |

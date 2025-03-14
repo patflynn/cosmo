@@ -70,6 +70,41 @@ jobs:
           git checkout -b $BRANCH_NAME
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
+      - name: Gather Repository Context
+        if: fromJSON(steps.issue.outputs.result).should_process
+        id: repo_context
+        run: |
+          # Get repository structure
+          echo "Getting repository structure..."
+          find . -type f -not -path '*/\.git/*' -not -path '*/node_modules/*' | sort > repo_structure.txt
+          
+          # Get recent commits
+          echo "Getting recent commit history..."
+          git log --max-count=10 --oneline > recent_commits.txt
+          
+          # Look for relevant config files
+          echo "Gathering configuration files..."
+          find . -name "*.nix" -not -path '*/\.git/*' | head -n 20 > nix_files.txt
+          
+          # Read important files for context
+          mkdir -p context_files
+          echo "Reading key configuration files..."
+          
+          # Read README
+          if [ -f "README.md" ]; then
+            cat README.md > context_files/README.md
+          fi
+          
+          # Read flake.nix
+          if [ -f "flake.nix" ]; then
+            cat flake.nix > context_files/flake.nix
+          fi
+          
+          # Read CLAUDE.md if exists (contains codebase conventions)
+          if [ -f "CLAUDE.md" ]; then
+            cat CLAUDE.md > context_files/CLAUDE.md
+          fi
+          
       - name: Process issue with Claude
         if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''
         id: claude_response
@@ -77,42 +112,88 @@ jobs:
           ISSUE_TITLE="${{ fromJSON(steps.issue.outputs.result).title }}"
           ISSUE_BODY="${{ fromJSON(steps.issue.outputs.result).body }}"
           
-          # Create prompt for Claude
+          # Create comprehensive prompt for Claude that simulates Claude Code capabilities
           cat > prompt.txt << EOL
-          You are an AI assistant helping with a NixOS configuration repository.
+          You are Claude, an advanced AI assistant from Anthropic, emulating the capabilities of Claude Code.
           
-          Your task is to analyze this GitHub issue and generate code to fix it:
+          # Repository Context
+          You're working in a NixOS configuration repository with these characteristics:
+          - The repository contains NixOS configuration files for multiple platforms
+          - It uses the Nix language and follows NixOS conventions
+          - It's organized with modular configurations for different hosts and use cases
           
-          Issue Title: $ISSUE_TITLE
+          # Repository Structure
+          $(head -n 50 repo_structure.txt)
+          ...(truncated for brevity)
           
-          Issue Description:
+          # Recent Commits
+          $(cat recent_commits.txt)
+          
+          # Relevant Configuration Files
+          $(cat nix_files.txt)
+          
+          # Key File Contents
+          
+          $(if [ -f "context_files/README.md" ]; then
+            echo "## README.md"
+            echo '```markdown'
+            cat context_files/README.md
+            echo '```'
+          fi)
+          
+          $(if [ -f "context_files/flake.nix" ]; then
+            echo "## flake.nix"
+            echo '```nix'
+            cat context_files/flake.nix
+            echo '```'
+          fi)
+          
+          $(if [ -f "context_files/CLAUDE.md" ]; then
+            echo "## CLAUDE.md (Code style and conventions)"
+            echo '```markdown'
+            cat context_files/CLAUDE.md
+            echo '```'
+          fi)
+          
+          # Current Issue to Solve
+          ## Issue Title: $ISSUE_TITLE
+          
+          ## Issue Description:
           $ISSUE_BODY
           
-          Please:
+          # Your Task
+          You need to:
           1. Analyze the issue and determine what files need to be modified
-          2. Make the necessary changes to fix the issue
-          3. Create a summary of changes you've made
+          2. Think step by step about what code changes would fix the issue
+          3. Propose specific, well-formatted code changes
+          4. Write a clear summary of your changes
           
-          Format your response as:
+          # Response Format
+          Structure your response in these sections:
           
           <analysis>
-          Your analysis of the issue here...
+          Your detailed analysis of the issue, including:
+          - What is the root problem?
+          - Which files need to be modified?
+          - What approach will you take to fix it?
+          - Any potential edge cases or concerns?
           </analysis>
           
           <changes>
           File: path/to/file1
-          ```nix
-          modified content of file1
-          ```
+          \`\`\`nix
+          // Complete file content with your changes
+          \`\`\`
           
           File: path/to/file2
-          ```nix
-          modified content of file2
-          ```
+          \`\`\`nix
+          // Complete file content with your changes
+          \`\`\`
           </changes>
           
           <summary>
-          Brief summary of changes for commit message and PR description
+          A concise summary of the changes you've made, suitable for a commit message and PR description.
+          Include the purpose and impact of your changes.
           </summary>
           EOL
           
@@ -120,11 +201,23 @@ jobs:
           CLAUDE_RESPONSE=$(claude -p prompt.txt)
           
           # Extract and apply changes
+          echo "Extracting proposed code changes..."
           CHANGES=$(echo "$CLAUDE_RESPONSE" | sed -n '/<changes>/,/<\/changes>/p' | sed '1d;$d')
+          if [[ -z "$CHANGES" ]]; then
+            echo "Error: Could not extract changes from Claude's response"
+            echo "Full response:"
+            cat full_response.txt
+            exit 1
+          fi
           echo "$CHANGES" > changes.txt
           
           # Extract summary
+          echo "Extracting summary of changes..."
           SUMMARY=$(echo "$CLAUDE_RESPONSE" | sed -n '/<summary>/,/<\/summary>/p' | sed '1d;$d')
+          if [[ -z "$SUMMARY" ]]; then
+            echo "Error: Could not extract summary from Claude's response"
+            exit 1
+          fi
           echo "$SUMMARY" > summary.txt
           
           echo "summary<<EOF" >> $GITHUB_OUTPUT
@@ -172,7 +265,7 @@ jobs:
             git add .
             git commit -m "Fix issue #${{ env.ISSUE_NUMBER }}: $(cat summary.txt | head -n 1)
             
-            🤖 Generated with Claude
+            🤖 Generated by Claude AI with repository context analysis
             
             Co-Authored-By: Claude <noreply@anthropic.com>"
             git push origin ${{ env.BRANCH_NAME }}
@@ -212,12 +305,13 @@ jobs:
 
             ${summary}
             
-            This PR was automatically generated by Claude to address the issue.
+            This PR was automatically generated by Claude in response to the claude-autofix label.
+            Claude analyzed the repository context and issue description to propose this solution.
             Please review the changes carefully before merging.
             
             Fixes #${{ env.ISSUE_NUMBER }}
             
-            🤖 Generated with Claude`,
+            🤖 Generated with Claude AI using repository context simulation`,
               head: '${{ env.BRANCH_NAME }}',
               base: 'main'
             });

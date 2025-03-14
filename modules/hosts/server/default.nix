@@ -24,12 +24,9 @@
   systemd.targets.hybrid-sleep.enable = false;
 
   # Media drives
-  fileSystems."/media" = {
-    device = "/dev/disk/by-label/media";
-    fsType = "ext4";
-    options = [ "defaults" "nofail" ];
-  };
-
+  # Configuration is moved to hardware-configuration.nix for CI
+  # This will be removed after migration is complete
+  
   # Auto-update system
   system.autoUpgrade = {
     enable = true;

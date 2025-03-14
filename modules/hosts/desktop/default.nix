@@ -19,15 +19,21 @@
     enable = true;
     displayManager.lightdm.enable = true;
     windowManager.i3.enable = true;
-    videoDrivers = [ "nvidia" ];
+    videoDrivers = [ "nouveau" ]; # Using nouveau for CI compatibility, replace with nvidia for real systems
   };
 
-  # Enable sound
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  # Audio configuration
+  # Disable PipeWire to avoid conflicts
+  services.pipewire.enable = false;
+  
+  # Use PulseAudio for sound
+  services.pulseaudio = {
+    enable = true;
+    # Don't specify package to use default
+  };
 
   # Enable touchpad support
-  services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
 
   # Enable Bluetooth
   hardware.bluetooth.enable = true;
@@ -42,4 +48,7 @@
     maim
     xclip
   ];
+  
+  # For CI testing only
+  nixpkgs.config.allowUnfree = true;
 }

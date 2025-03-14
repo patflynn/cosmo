@@ -7,3 +7,35 @@
 /dataSources/
 /dataSources.local.xml
 /.idea/
+
+# Nix build results
+result/
+result
+.direnv/
+
+# macOS specific
+.DS_Store
+
+# Legacy directories - preserved locally but ignored from git
+bin/
+classic-laddie/
+X/
+alacritty.nix
+code.nix
+cosign.nix
+emacs/
+emacs-doom/
+git.nix
+gitsign.nix
+go-tuf.nix
+home.nix
+i3/
+idea.nix
+install.sh
+nix-basic/
+packages.nix
+rofi.nix
+shells/
+tmux/
+work.nix
+zsh/

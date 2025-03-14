@@ -80,6 +80,21 @@
         ];
         specialArgs = inputs;
       };
+      
+      # WSL2 configuration
+      wsl2 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/hosts/wsl2
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.patrick = import ./home/linux;
+          }
+        ];
+        specialArgs = inputs;
+      };
     };
     
     # Darwin configurations for macOS

@@ -33,10 +33,10 @@ jobs:
           echo "ISSUE_NUMBER=${{ github.event.issue.number || github.event.inputs.issue_number }}" >> $GITHUB_ENV
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
           
-      - name: Install Claude CLI
+      - name: Install Python dependencies
         run: |
           pip install anthropic
-          pip install anthropic-claude-cli
+          pip install requests
 
       - name: Get issue details
         id: issue
@@ -117,8 +117,32 @@ jobs:
           </summary>
           EOL
           
-          # Run claude with the prompt
-          CLAUDE_RESPONSE=$(claude prompt.txt)
+          # Create Python script to call Anthropic API
+          cat > call_claude.py << EOL
+import anthropic
+import os
+import sys
+
+client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+with open(sys.argv[1], 'r') as f:
+    prompt_content = f.read()
+
+message = client.messages.create(
+    model="claude-3-opus-20240229",
+    max_tokens=4000,
+    temperature=0.2,
+    system="You are an AI assistant specialized in software development. You analyze GitHub issues and provide code changes to fix them.",
+    messages=[
+        {"role": "user", "content": prompt_content}
+    ]
+)
+
+print(message.content[0].text)
+EOL
+
+          # Run the Python script to get Claude's response
+          CLAUDE_RESPONSE=$(python3 call_claude.py prompt.txt)
           
           # Extract and apply changes
           CHANGES=$(echo "$CLAUDE_RESPONSE" | sed -n '/<changes>/,/<\/changes>/p' | sed '1d;$d')

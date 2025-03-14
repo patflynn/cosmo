@@ -2,78 +2,54 @@ name: NixOS Configuration Test
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   nix-flake-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v22
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-      
-      - name: Validate flake
-        run: nix flake show
-  
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Nix flake
+        run: |
+          nix flake check --impure
+
+  home-manager-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check home-manager configuration
+        run: |
+          nix build .#homeConfigurations.chromeos.activationPackage --impure
+
   nixos-desktop-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v22
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-      
-      - name: Build desktop configuration (dry-run)
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dry-run NixOS desktop build
         run: |
-          # This is a dry-run build that doesn't require root privileges
-          nix build .#nixosConfigurations.desktop.config.system.build.toplevel --dry-run --allow-import-from-derivation
-  
-  nixos-server-dry-run:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-      
-      - name: Build server configuration (dry-run)
-        run: |
-          # This is a dry-run build that doesn't require root privileges
-          nix build .#nixosConfigurations.server.config.system.build.toplevel --dry-run --allow-import-from-derivation
-          
-  # Temporarily disable Darwin test until we have a full macOS config
-  # darwin-dry-run:
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     
-  #     - name: Install Nix
-  #       uses: cachix/install-nix-action@v31
-  #       with:
-  #         nix_path: nixpkgs=channel:nixos-unstable
-  #         extra_nix_config: |
-  #           experimental-features = nix-command flakes
-  #           accept-flake-config = true
-  #     
-  #     - name: Build macOS configuration (dry-run)
-  #       run: |
-  #         # This is a dry-run build for macOS configuration
-  #         nix build .#darwinConfigurations.macbook.system --dry-run
+          nix build .#nixosConfigurations.desktop.config.system.build.toplevel --impure

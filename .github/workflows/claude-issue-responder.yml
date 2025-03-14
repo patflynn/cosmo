@@ -112,10 +112,8 @@ jobs:
           ISSUE_TITLE="${{ fromJSON(steps.issue.outputs.result).title }}"
           ISSUE_BODY="${{ fromJSON(steps.issue.outputs.result).body }}"
           
-          # Create comprehensive prompt for Claude that simulates Claude Code capabilities
+          # Create comprehensive prompt for Claude Code
           cat > prompt.txt << EOL
-          You are Claude, an advanced AI assistant from Anthropic, emulating the capabilities of Claude Code.
-          
           # Repository Context
           You're working in a NixOS configuration repository with these characteristics:
           - The repository contains NixOS configuration files for multiple platforms
@@ -165,7 +163,7 @@ jobs:
           You need to:
           1. Analyze the issue and determine what files need to be modified
           2. Think step by step about what code changes would fix the issue
-          3. Propose specific, well-formatted code changes
+          3. Propose specific, well-formatted code changes that match the NixOS style
           4. Write a clear summary of your changes
           
           # Response Format
@@ -197,8 +195,12 @@ jobs:
           </summary>
           EOL
           
-          # Run claude with the prompt
-          CLAUDE_RESPONSE=$(claude -p prompt.txt)
+          # Run Claude Code with the prompt
+          # Use --allowedTools to restrict what Claude can do for security
+          CLAUDE_RESPONSE=$(claude -p prompt.txt --allowedTools "View,GlobTool,GrepTool,LS")
+          
+          # Save full response for debugging
+          echo "$CLAUDE_RESPONSE" > full_response.txt
           
           # Extract and apply changes
           echo "Extracting proposed code changes..."
@@ -225,7 +227,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Apply changes
-        if: fromJSON(steps.issue.outputs.result).should_process
+        if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''
         run: |
           # Parse changes file and apply modifications
           FILE_PATTERN="File: "
@@ -289,7 +291,7 @@ jobs:
             });
 
       - name: Create Pull Request
-        if: env.CHANGES_MADE == 'true' && fromJSON(steps.issue.outputs.result).should_process
+        if: env.CHANGES_MADE == 'true' && fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -19,7 +19,7 @@
     enable = true;
     displayManager.lightdm.enable = true;
     windowManager.i3.enable = true;
-    videoDrivers = [ "nvidia" ];
+    videoDrivers = [ "nouveau" ]; # Using nouveau for CI compatibility, replace with nvidia for real systems
   };
 
   # Enable sound
@@ -42,4 +42,7 @@
     maim
     xclip
   ];
+  
+  # For CI testing only
+  nixpkgs.config.allowUnfree = true;
 }

@@ -9,6 +9,7 @@ The repository is structured to support multiple platforms:
 1. **NixOS Linux** - Full system configuration for desktop and server
 2. **macOS** - Using nix-darwin for system configuration
 3. **ChromeOS** - Using standalone home-manager
+4. **WSL2** - NixOS running under Windows Subsystem for Linux
 
 ## Directory Structure
 
@@ -19,7 +20,8 @@ cosmo/
 │   ├── common/         # Shared NixOS configuration
 │   └── hosts/          # Host-specific configurations
 │       ├── desktop/    # Desktop configuration
-│       └── server/     # Server configuration
+│       ├── server/     # Server configuration
+│       └── wsl2/       # WSL2 configuration
 ├── home/               # Home-manager configurations
 │   ├── common/         # Shared home-manager config
 │   ├── linux/          # Linux-specific home config
@@ -33,6 +35,7 @@ cosmo/
 
 - **desktop**: Full NixOS configuration for desktop usage
 - **server**: Minimal NixOS configuration for server usage
+- **wsl2**: Optimized NixOS configuration for WSL2
 
 ### Home-Manager Configurations
 
@@ -51,6 +54,12 @@ sudo nixos-rebuild switch --flake github:patflynn/cosmo#desktop
 
 ```bash
 sudo nixos-rebuild switch --flake github:patflynn/cosmo#server
+```
+
+### WSL2
+
+```bash
+sudo nixos-rebuild switch --flake github:patflynn/cosmo#wsl2
 ```
 
 ### macOS

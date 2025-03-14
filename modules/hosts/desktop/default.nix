@@ -23,10 +23,12 @@
   };
 
   # Audio configuration
-  # sound.enable deprecated in newer NixOS versions
+  # Disable PipeWire to avoid conflicts
+  services.pipewire.enable = false;
+  
+  # Use PulseAudio for sound
   hardware.pulseaudio = {
     enable = true;
-    # Make sure pipewire is disabled to avoid conflict
     package = pkgs.pulseaudioLight;
   };
 

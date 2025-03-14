@@ -12,6 +12,7 @@ This repository contains unified configurations for multiple systems:
 
 - **NixOS Desktop/Laptop**: Full system configuration for Linux desktops
 - **NixOS Server**: Minimal configuration for home servers
+- **WSL2**: NixOS configuration for Windows Subsystem for Linux
 - **macOS**: Using nix-darwin for system configuration
 - **ChromeOS**: Using standalone home-manager
 
@@ -25,7 +26,8 @@ cosmo/
 │   └── hosts/          # Host-specific configurations
 │       ├── desktop/    # Desktop configuration
 │       ├── desktop-zfs/# ZFS-based desktop configuration
-│       └── server/     # Server configuration
+│       ├── server/     # Server configuration
+│       └── wsl2/       # WSL2 configuration
 ├── home/               # Home-manager configurations
 │   ├── common/         # Shared home-manager config
 │   ├── linux/          # Linux-specific home config
@@ -92,6 +94,47 @@ cosmo/
 3. **Configure System**:
    If using an Intel Mac, edit `flake.nix` to change `aarch64-darwin` to `x86_64-darwin` in the macbook configuration.
 
+### WSL2-Specific Setup
+
+1. **Install WSL2**:
+   ```powershell
+   # Open PowerShell as Administrator and run:
+   wsl --install
+   ```
+
+2. **Install NixOS on WSL2**:
+   - Download the latest NixOS-WSL tarball from [NixOS-WSL releases](https://github.com/nix-community/NixOS-WSL/releases)
+   - Create a directory for NixOS: `mkdir C:\NixOS`
+   - Import the tarball: `wsl --import NixOS C:\NixOS path\to\nixos-wsl.tar.gz --version 2`
+   - Start NixOS: `wsl -d NixOS`
+
+3. **Set Up User Account**:
+   ```bash
+   # Create a new user (as root)
+   useradd -m -G wheel -s /bin/sh username
+   passwd username
+   
+   # Edit sudoers to allow wheel group
+   visudo  # Uncomment: %wheel ALL=(ALL) ALL
+   ```
+
+4. **Clone and Apply Configuration**:
+   ```bash
+   # Switch to your user
+   su - username
+   
+   # Clone repository and apply configuration
+   mkdir -p ~/hack
+   cd ~/hack
+   git clone https://github.com/patflynn/cosmo.git
+   cd cosmo
+   
+   # Apply configuration
+   sudo nixos-rebuild switch --flake .#wsl2
+   ```
+
+For detailed WSL2 setup instructions, see [docs/wsl2-setup.md](docs/wsl2-setup.md).
+
 ### ChromeOS-Specific Setup
 
 1. **Enable Linux (Crostini)**:
@@ -130,6 +173,16 @@ sudo nixos-rebuild test --flake .#server
 
 # Apply changes
 sudo nixos-rebuild switch --flake .#server
+```
+
+### WSL2
+
+```bash
+# Test without making changes
+sudo nixos-rebuild test --flake .#wsl2
+
+# Apply changes
+sudo nixos-rebuild switch --flake .#wsl2
 ```
 
 ### macOS

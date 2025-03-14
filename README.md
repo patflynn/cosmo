@@ -1,7 +1,7 @@
 # Cosmo: Cross-Platform NixOS Configuration
 
 > ## ⚠️ WARNING: EXPERIMENTAL CONFIGURATIONS ⚠️
-> **Most configurations in this repository have not been thoroughly tested and should NOT be used in production environments.** 
+> **Most configurations in this repository have not been thoroughly tested (OR AT ALL!) and should NOT be used in any environments!** 
 > 
 > **These are primarily reference configurations for learning purposes. Use at your own risk.**
 

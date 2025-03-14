@@ -27,13 +27,13 @@
   services.pipewire.enable = false;
   
   # Use PulseAudio for sound
-  hardware.pulseaudio = {
+  services.pulseaudio = {
     enable = true;
-    package = pkgs.pulseaudioLight;
+    # Don't specify package to use default
   };
 
   # Enable touchpad support
-  services.xserver.libinput.enable = true;
+  services.libinput.enable = true;
 
   # Enable Bluetooth
   hardware.bluetooth.enable = true;

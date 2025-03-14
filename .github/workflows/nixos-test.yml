@@ -1,0 +1,43 @@
+name: NixOS Configuration Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  nix-flake-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      
+      - name: Flake check
+        run: nix flake check
+      
+      - name: Validate flake
+        run: nix flake show
+  
+  nixos-rebuild-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      
+      - name: Build NixOS configuration (dry-run)
+        run: |
+          # This is a dry-run build that doesn't require root privileges
+          nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --dry-run

@@ -22,9 +22,13 @@
     videoDrivers = [ "nouveau" ]; # Using nouveau for CI compatibility, replace with nvidia for real systems
   };
 
-  # Enable sound
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  # Audio configuration
+  # sound.enable deprecated in newer NixOS versions
+  hardware.pulseaudio = {
+    enable = true;
+    # Make sure pipewire is disabled to avoid conflict
+    package = pkgs.pulseaudioLight;
+  };
 
   # Enable touchpad support
   services.xserver.libinput.enable = true;

@@ -25,7 +25,7 @@ jobs:
       - name: Validate flake
         run: nix flake show
   
-  nixos-rebuild-dry-run:
+  nixos-desktop-dry-run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +37,41 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       
-      - name: Build NixOS configuration (dry-run)
+      - name: Build desktop configuration (dry-run)
         run: |
           # This is a dry-run build that doesn't require root privileges
-          nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --dry-run
+          nix build .#nixosConfigurations.desktop.config.system.build.toplevel --dry-run
+  
+  nixos-server-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      
+      - name: Build server configuration (dry-run)
+        run: |
+          # This is a dry-run build that doesn't require root privileges
+          nix build .#nixosConfigurations.server.config.system.build.toplevel --dry-run
+          
+  darwin-dry-run:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      
+      - name: Build macOS configuration (dry-run)
+        run: |
+          # This is a dry-run build for macOS configuration
+          nix build .#darwinConfigurations.macbook.system --dry-run

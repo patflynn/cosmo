@@ -35,8 +35,7 @@ jobs:
           
       - name: Install Claude CLI
         run: |
-          pip install anthropic
-          pip install anthropic-claude-cli
+          npm install -g @anthropic-ai/claude-cli
 
       - name: Get issue details
         id: issue
@@ -72,7 +71,7 @@ jobs:
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Process issue with Claude
-        if: fromJSON(steps.issue.outputs.result).should_process
+        if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''
         id: claude_response
         run: |
           ISSUE_TITLE="${{ fromJSON(steps.issue.outputs.result).title }}"
@@ -118,7 +117,7 @@ jobs:
           EOL
           
           # Run claude with the prompt
-          CLAUDE_RESPONSE=$(claude prompt.txt)
+          CLAUDE_RESPONSE=$(claude -p prompt.txt)
           
           # Extract and apply changes
           CHANGES=$(echo "$CLAUDE_RESPONSE" | sed -n '/<changes>/,/<\/changes>/p' | sed '1d;$d')
@@ -182,6 +181,19 @@ jobs:
             echo "No changes were made"
             echo "CHANGES_MADE=false" >> $GITHUB_ENV
           fi
+
+      - name: Comment if API key is missing
+        if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY == ''
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: process.env.ISSUE_NUMBER,
+              body: `Unable to process this issue automatically: ANTHROPIC_API_KEY is not configured in repository secrets.`
+            });
 
       - name: Create Pull Request
         if: env.CHANGES_MADE == 'true' && fromJSON(steps.issue.outputs.result).should_process

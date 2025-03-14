@@ -1,4 +1,5 @@
-{ lib,  buildGoModule, fetchFromGitHub }:
+# Copied from original gitsign.nix
+{ lib, buildGoModule, fetchFromGitHub }:
 
 buildGoModule rec {
   pname = "gitsign";
@@ -13,7 +14,7 @@ buildGoModule rec {
 
   vendorSha256 = "sha256-3LZ0mRVZpxjCd8a4kXinnaQA4c+jEbnRIHmOeqo/+9k=";
 
-#   subPackages = [
-#    "cmd/gitsign-credential-cache"
-#  ];
+  # subPackages = [
+  #   "cmd/gitsign-credential-cache"
+  # ];
 }

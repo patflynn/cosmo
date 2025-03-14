@@ -1,0 +1,24 @@
+name: Nix Format Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  nix-fmt-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      
+      - name: Check Nix formatting
+        run: |
+          find . -name "*.nix" -type f -not -path "./result*" | xargs nix-shell -p nixpkgs-fmt --run "nixpkgs-fmt --check"

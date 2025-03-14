@@ -1,5 +1,10 @@
 # Cosmo: Cross-Platform NixOS Configuration
 
+> ## ⚠️ WARNING: EXPERIMENTAL CONFIGURATIONS ⚠️
+> **Most configurations in this repository have not been thoroughly tested and should NOT be used in production environments.** 
+> 
+> **These are primarily reference configurations for learning purposes. Use at your own risk.**
+
 A unified NixOS configuration system for desktops, servers, macOS, and ChromeOS.
 
 [![NixOS Configuration Test](https://github.com/patflynn/cosmo/actions/workflows/nixos-test.yml/badge.svg)](https://github.com/patflynn/cosmo/actions/workflows/nixos-test.yml)

@@ -18,3 +18,4 @@
 - Prefer declarative configuration over imperative changes
 - Follow NixOS module system patterns and best practices
 - Keep configurations modular with clear separation of concerns
+- Always use the Github PR workflow without being prompted to push and generate PRs.

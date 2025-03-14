@@ -4,6 +4,7 @@ A unified NixOS configuration system for desktops, servers, macOS, and ChromeOS.
 
 [![NixOS Configuration Test](https://github.com/patflynn/cosmo/actions/workflows/nixos-test.yml/badge.svg)](https://github.com/patflynn/cosmo/actions/workflows/nixos-test.yml)
 [![Nix Format Check](https://github.com/patflynn/cosmo/actions/workflows/nix-fmt.yml/badge.svg)](https://github.com/patflynn/cosmo/actions/workflows/nix-fmt.yml)
+[![Daily Package Updates](https://github.com/patflynn/cosmo/actions/workflows/daily-update.yml/badge.svg)](https://github.com/patflynn/cosmo/actions/workflows/daily-update.yml)
 
 ## Overview
 

@@ -35,31 +35,145 @@ cosmo/
     └── legacy.md       # Legacy configuration history
 ```
 
-## Usage
+## Setup Prerequisites
+
+### For All Platforms
+
+1. **Install Nix**:
+   ```bash
+   # For multi-user installation (recommended):
+   sh <(curl -L https://nixos.org/nix/install) --daemon
+   
+   # For single-user installation:
+   sh <(curl -L https://nixos.org/nix/install) --no-daemon
+   ```
+
+2. **Enable Flakes**:
+   ```bash
+   mkdir -p ~/.config/nix
+   echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+   ```
+
+3. **Clone Repository**:
+   ```bash
+   git clone https://github.com/patflynn/cosmo.git
+   cd cosmo
+   ```
+
+### NixOS-Specific Setup
+
+1. **Install NixOS**: If you're starting from scratch, install NixOS by following the [official installation guide](https://nixos.org/manual/nixos/stable/index.html#sec-installation).
+
+2. **Add Hardware Configuration**:
+   ```bash
+   # Copy your existing hardware configuration
+   sudo cp /etc/nixos/hardware-configuration.nix modules/hosts/desktop/
+   
+   # Or use the ZFS configuration if applicable
+   # sudo cp /etc/nixos/hardware-configuration.nix modules/hosts/desktop-zfs/
+   ```
+
+3. **Adjust Host Settings**: Edit `modules/hosts/desktop/default.nix` or `modules/hosts/server/default.nix` to update hostname, network settings, etc.
+
+### macOS-Specific Setup
+
+1. **Install nix-darwin**:
+   ```bash
+   nix-build https://github.com/LnL7/nix-darwin/archive/master.tar.gz -A installer
+   ./result/bin/darwin-installer
+   ```
+
+2. **Install Home Manager**:
+   ```bash
+   nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+   nix-channel --update
+   ```
+
+3. **Configure System**:
+   If using an Intel Mac, edit `flake.nix` to change `aarch64-darwin` to `x86_64-darwin` in the macbook configuration.
+
+### ChromeOS-Specific Setup
+
+1. **Enable Linux (Crostini)**:
+   - Open Chrome OS Settings
+   - Go to "Linux development environment" section
+   - Click "Turn On" and follow the setup instructions
+
+2. **Install Nix**: Inside the Linux container:
+   ```bash
+   sh <(curl -L https://nixos.org/nix/install) --no-daemon
+   ```
+
+3. **Install Home Manager**:
+   ```bash
+   nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+   nix-channel --update
+   ```
+
+## Usage Instructions
 
 ### NixOS Desktop
 
 ```bash
-sudo nixos-rebuild switch --flake github:patflynn/cosmo#desktop
+# Test without making changes
+sudo nixos-rebuild test --flake .#desktop
+
+# Apply changes
+sudo nixos-rebuild switch --flake .#desktop
 ```
 
 ### NixOS Server
 
 ```bash
-sudo nixos-rebuild switch --flake github:patflynn/cosmo#server
+# Test without making changes
+sudo nixos-rebuild test --flake .#server
+
+# Apply changes
+sudo nixos-rebuild switch --flake .#server
 ```
 
 ### macOS
 
 ```bash
-darwin-rebuild switch --flake github:patflynn/cosmo#macbook
+# Test without making changes
+darwin-rebuild check --flake .#macbook
+
+# Apply changes
+darwin-rebuild switch --flake .#macbook
 ```
 
 ### ChromeOS
 
 ```bash
-home-manager switch --flake github:patflynn/cosmo#chromeos
+# Test without making changes
+home-manager build --flake .#chromeos
+
+# Apply changes
+home-manager switch --flake .#chromeos
 ```
+
+## Customization
+
+### Adding Packages
+
+1. **System-wide Packages** (NixOS): Edit `modules/common/default.nix` or the host-specific configuration in `modules/hosts/<host>/default.nix`.
+
+2. **User Packages**: 
+   - For all platforms: Edit `home/common/default.nix`
+   - For platform-specific packages: Edit `home/linux/default.nix` or `home/darwin/default.nix`
+
+### Adding Custom Configuration
+
+1. **Create a new module**: Create a file in the appropriate directory:
+   ```bash
+   # For a new service in NixOS
+   touch modules/common/myservice.nix
+   
+   # For a new application configuration
+   touch home/common/myapp.nix
+   ```
+
+2. **Import the new module**: Add an import statement in the appropriate default.nix file.
 
 ## Migration Notes
 
@@ -72,3 +186,20 @@ Testing documentation and procedures are available in the GitHub issues:
 - [Test and finalize server configuration](https://github.com/patflynn/cosmo/issues/13)
 - [Test and finalize macOS configuration](https://github.com/patflynn/cosmo/issues/14)
 - [Test and finalize ChromeOS configuration](https://github.com/patflynn/cosmo/issues/15)
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Configuration doesn't apply**: Make sure you're using the correct flake target and have the right permissions.
+
+2. **Hardware detection issues**: Ensure your hardware configuration is correctly set up in the host-specific directory.
+
+3. **Package conflicts**: Check for conflicting packages and use overlays to resolve them.
+
+### Getting Help
+
+If you encounter issues, check:
+1. The [NixOS Wiki](https://nixos.wiki/)
+2. The [NixOS Discourse](https://discourse.nixos.org/)
+3. Or file an issue in this repository

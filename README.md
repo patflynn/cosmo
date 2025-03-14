@@ -1,6 +1,6 @@
-# cosmo
+# Cosmo: Cross-Platform NixOS Configuration
 
-Cross-platform NixOS configuration for desktops, servers, macOS, and ChromeOS.
+A unified NixOS configuration system for desktops, servers, macOS, and ChromeOS.
 
 [![NixOS Configuration Test](https://github.com/patflynn/cosmo/actions/workflows/nixos-test.yml/badge.svg)](https://github.com/patflynn/cosmo/actions/workflows/nixos-test.yml)
 [![Nix Format Check](https://github.com/patflynn/cosmo/actions/workflows/nix-fmt.yml/badge.svg)](https://github.com/patflynn/cosmo/actions/workflows/nix-fmt.yml)
@@ -13,6 +13,26 @@ This repository contains unified configurations for multiple systems:
 - **NixOS Server**: Minimal configuration for home servers
 - **macOS**: Using nix-darwin for system configuration
 - **ChromeOS**: Using standalone home-manager
+
+## Repository Structure
+
+```
+cosmo/
+├── flake.nix           # Main entry point for all configurations
+├── modules/            # NixOS modules
+│   ├── common/         # Shared NixOS configuration
+│   └── hosts/          # Host-specific configurations
+│       ├── desktop/    # Desktop configuration
+│       ├── desktop-zfs/# ZFS-based desktop configuration
+│       └── server/     # Server configuration
+├── home/               # Home-manager configurations
+│   ├── common/         # Shared home-manager config
+│   ├── linux/          # Linux-specific home config
+│   └── darwin/         # macOS-specific home config
+├── pkgs/               # Custom package definitions
+└── docs/               # Documentation
+    └── legacy.md       # Legacy configuration history
+```
 
 ## Usage
 
@@ -40,25 +60,14 @@ darwin-rebuild switch --flake github:patflynn/cosmo#macbook
 home-manager switch --flake github:patflynn/cosmo#chromeos
 ```
 
-## Structure
+## Migration Notes
 
-```
-cosmo/
-├── flake.nix           # Main entry point for all configurations
-├── modules/            # NixOS modules
-│   ├── common/         # Shared NixOS configuration
-│   └── hosts/          # Host-specific configurations
-├── home/               # Home-manager configurations
-│   ├── common/         # Shared home-manager config
-│   ├── linux/          # Linux-specific home config
-│   └── darwin/         # macOS-specific home config
-└── docs/               # Documentation
-```
+This repository has undergone a significant restructuring to unify configurations across platforms. The legacy configuration files are preserved locally but removed from git tracking. See [docs/legacy.md](docs/legacy.md) for details on the migration and preservation of hardware-specific configurations.
 
-## Legacy Install
+## Testing Status
 
-```bash
-curl -L https://raw.githubusercontent.com/patflynn/cosmo/master/install.sh | sh
-```
-
-For more detailed documentation, see the [docs](./docs/) directory.
+Testing documentation and procedures are available in the GitHub issues:
+- [Test and finalize desktop configuration](https://github.com/patflynn/cosmo/issues/12)
+- [Test and finalize server configuration](https://github.com/patflynn/cosmo/issues/13)
+- [Test and finalize macOS configuration](https://github.com/patflynn/cosmo/issues/14)
+- [Test and finalize ChromeOS configuration](https://github.com/patflynn/cosmo/issues/15)

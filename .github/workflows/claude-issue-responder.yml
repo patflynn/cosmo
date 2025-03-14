@@ -33,10 +33,9 @@ jobs:
           echo "ISSUE_NUMBER=${{ github.event.issue.number || github.event.inputs.issue_number }}" >> $GITHUB_ENV
           echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
           
-      - name: Install Python dependencies
+      - name: Install Claude CLI
         run: |
-          pip install anthropic
-          pip install requests
+          npm install -g @anthropic-ai/claude-cli
 
       - name: Get issue details
         id: issue
@@ -107,16 +106,14 @@ jobs:
           fi
           
       - name: Process issue with Claude
-        if: fromJSON(steps.issue.outputs.result).should_process
+        if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''
         id: claude_response
         run: |
           ISSUE_TITLE="${{ fromJSON(steps.issue.outputs.result).title }}"
           ISSUE_BODY="${{ fromJSON(steps.issue.outputs.result).body }}"
           
-          # Create comprehensive prompt for Claude that simulates Claude Code capabilities
+          # Create comprehensive prompt for Claude Code
           cat > prompt.txt << EOL
-          You are Claude, an advanced AI assistant from Anthropic, emulating the capabilities of Claude Code.
-          
           # Repository Context
           You're working in a NixOS configuration repository with these characteristics:
           - The repository contains NixOS configuration files for multiple platforms
@@ -166,7 +163,7 @@ jobs:
           You need to:
           1. Analyze the issue and determine what files need to be modified
           2. Think step by step about what code changes would fix the issue
-          3. Propose specific, well-formatted code changes
+          3. Propose specific, well-formatted code changes that match the NixOS style
           4. Write a clear summary of your changes
           
           # Response Format
@@ -198,60 +195,9 @@ jobs:
           </summary>
           EOL
           
-          # Create Python script to call Anthropic API
-          cat > call_claude.py << EOL
-import anthropic
-import os
-import sys
-import json
-import time
-
-def call_claude_with_retry(prompt_content, max_retries=3):
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    
-    for attempt in range(max_retries):
-        try:
-            message = client.messages.create(
-                model="claude-3-opus-20240229",
-                max_tokens=4000,
-                temperature=0.1,
-                system="You are Claude, a highly capable AI assistant simulating Claude Code. You analyze GitHub issues and generate precise file changes to fix them. Your focus is on understanding repository context and providing accurate, production-ready code changes.",
-                messages=[
-                    {"role": "user", "content": prompt_content}
-                ]
-            )
-            return message.content[0].text
-        except Exception as e:
-            print(f"Error calling Claude API (attempt {attempt+1}/{max_retries}): {str(e)}")
-            if attempt < max_retries - 1:
-                # Exponential backoff: 2, 4, 8 seconds
-                sleep_time = 2 ** (attempt + 1)
-                print(f"Retrying in {sleep_time} seconds...")
-                time.sleep(sleep_time)
-            else:
-                raise e
-
-# Main execution
-try:
-    with open(sys.argv[1], 'r') as f:
-        prompt_content = f.read()
-    
-    response = call_claude_with_retry(prompt_content)
-    print(response)
-except Exception as e:
-    print(f"ERROR: {str(e)}")
-    sys.exit(1)
-EOL
-
-          # Run the Python script to get Claude's response
-          echo "Calling Claude API to analyze the issue..."
-          CLAUDE_RESPONSE=$(python3 call_claude.py prompt.txt)
-          
-          # Check if the response was successful
-          if [[ $? -ne 0 ]]; then
-            echo "Error: Failed to get a valid response from Claude API"
-            exit 1
-          fi
+          # Run Claude Code with the prompt
+          # Use --allowedTools to restrict what Claude can do for security
+          CLAUDE_RESPONSE=$(claude -p prompt.txt --allowedTools "View,GlobTool,GrepTool,LS")
           
           # Save full response for debugging
           echo "$CLAUDE_RESPONSE" > full_response.txt
@@ -281,7 +227,7 @@ EOL
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Apply changes
-        if: fromJSON(steps.issue.outputs.result).should_process
+        if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''
         run: |
           # Parse changes file and apply modifications
           FILE_PATTERN="File: "
@@ -331,8 +277,21 @@ EOL
             echo "CHANGES_MADE=false" >> $GITHUB_ENV
           fi
 
+      - name: Comment if API key is missing
+        if: fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY == ''
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: process.env.ISSUE_NUMBER,
+              body: `Unable to process this issue automatically: ANTHROPIC_API_KEY is not configured in repository secrets.`
+            });
+
       - name: Create Pull Request
-        if: env.CHANGES_MADE == 'true' && fromJSON(steps.issue.outputs.result).should_process
+        if: env.CHANGES_MADE == 'true' && fromJSON(steps.issue.outputs.result).should_process && env.ANTHROPIC_API_KEY != ''
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

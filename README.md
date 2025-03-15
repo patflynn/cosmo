@@ -3,7 +3,7 @@
 > ## ⚠️ WARNING: EXPERIMENTAL CONFIGURATIONS ⚠️
 > **Most configurations in this repository have not been thoroughly tested (OR AT ALL!) and should NOT be used in any environments!** 
 > 
-> **These are primarily reference configurations for learning purposes. Use at your own risk.**
+> **These are primarily untested AI generated configurations for learning purposes. Use at your own risk.**
 
 A unified NixOS configuration system for desktops, servers, macOS, and ChromeOS.
 

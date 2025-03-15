@@ -200,11 +200,33 @@ jobs:
           
           if [[ "${{ needs.update-dependencies.outputs.update_success }}" != "true" ]]; then
             TITLE="${TITLE}Failed to update flake"
-            BODY="${BODY}## Failure Details\n\nFailed to update flake inputs.\n\nError: ${{ needs.update-dependencies.outputs.update_output }}"
+            BODY="${BODY}## Failure Details\n\nFailed to update flake inputs.\n\nError: ${{ needs.update-dependencies.outputs.update_output }}\n\n"
+            BODY="${BODY}## Affected Components\n- [x] Flake update\n- [ ] Desktop configuration\n- [ ] Server configuration\n- [ ] Home Manager configuration"
           else
             TITLE="${TITLE}Tests failed with updated packages"
-            BODY="${BODY}## Failure Details\n\nTests failed after updating packages.\n\n${{ needs.test-updated-configs.outputs.failure_details }}"
+            BODY="${BODY}## Failure Details\n\nTests failed after updating packages.\n\n${{ needs.test-updated-configs.outputs.failure_details }}\n\n"
+            
+            BODY="${BODY}## Affected Components\n"
+            if [[ "${{ needs.test-updated-configs.outputs.desktop_success }}" != "true" ]]; then
+              BODY="${BODY}- [x] Desktop configuration\n"
+            else
+              BODY="${BODY}- [ ] Desktop configuration\n"
+            fi
+            
+            if [[ "${{ needs.test-updated-configs.outputs.server_success }}" != "true" ]]; then
+              BODY="${BODY}- [x] Server configuration\n"
+            else
+              BODY="${BODY}- [ ] Server configuration\n"
+            fi
+            
+            if [[ "${{ needs.test-updated-configs.outputs.homemanager_success }}" != "true" ]]; then
+              BODY="${BODY}- [x] Home Manager configuration\n"
+            else
+              BODY="${BODY}- [ ] Home Manager configuration\n"
+            fi
           fi
+          
+          BODY="${BODY}\n\n## Error Messages\n\`\`\`\n${{ needs.update-dependencies.outputs.update_output }}\n\`\`\`"
           
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "body<<EOF" >> $GITHUB_OUTPUT
@@ -212,10 +234,11 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
       
       - name: Create Issue
-        uses: peter-evans/create-issue@v5
-        with:
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           title: ${{ steps.failure-reason.outputs.title }}
           body: ${{ steps.failure-reason.outputs.body }}
-          labels: |
-            bug
-            dependencies
+        with:
+          filename: .github/ISSUE_TEMPLATE/package-update-failure.md
+          search_existing: open

@@ -59,7 +59,9 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/linux;
+            home-manager.users.patrick = import ./home/linux { 
+              inherit (inputs) doom-emacs; 
+            };
           }
           kolide-launcher.nixosModules.x86_64-linux.default
         ];
@@ -75,7 +77,9 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/linux;
+            home-manager.users.patrick = import ./home/linux { 
+              inherit (inputs) doom-emacs; 
+            };
           }
         ];
         specialArgs = inputs;
@@ -90,7 +94,9 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/linux;
+            home-manager.users.patrick = import ./home/linux { 
+              inherit (inputs) doom-emacs; 
+            };
           }
         ];
         specialArgs = inputs;
@@ -106,7 +112,9 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/darwin;
+            home-manager.users.patrick = import ./home/darwin { 
+              inherit (inputs) doom-emacs; 
+            };
           }
         ];
         specialArgs = inputs;
@@ -118,7 +126,7 @@
       chromeos = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [
-          ./home/linux
+          (import ./home/linux { inherit (inputs) doom-emacs; })
           {
             # ChromeOS-specific overrides
             home.username = "patrick";

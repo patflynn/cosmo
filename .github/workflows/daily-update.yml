@@ -195,50 +195,43 @@ jobs:
       - name: Determine failure reason
         id: failure-reason
         run: |
-          TITLE="Package Update Failure: "
-          BODY="The daily package update workflow failed on $(date).\n\n"
-          
           if [[ "${{ needs.update-dependencies.outputs.update_success }}" != "true" ]]; then
-            TITLE="${TITLE}Failed to update flake"
-            BODY="${BODY}## Failure Details\n\nFailed to update flake inputs.\n\nError: ${{ needs.update-dependencies.outputs.update_output }}\n\n"
-            BODY="${BODY}## Affected Components\n- [x] Flake update\n- [ ] Desktop configuration\n- [ ] Server configuration\n- [ ] Home Manager configuration"
+            echo "failure_type=Failed to update flake" >> $GITHUB_ENV
+            echo "error_details=${{ needs.update-dependencies.outputs.update_output }}" >> $GITHUB_ENV
+            echo "flake_status=- [x] Flake update" >> $GITHUB_ENV
+            echo "desktop_status=- [ ] Desktop configuration" >> $GITHUB_ENV
+            echo "server_status=- [ ] Server configuration" >> $GITHUB_ENV
+            echo "home_status=- [ ] Home Manager configuration" >> $GITHUB_ENV
           else
-            TITLE="${TITLE}Tests failed with updated packages"
-            BODY="${BODY}## Failure Details\n\nTests failed after updating packages.\n\n${{ needs.test-updated-configs.outputs.failure_details }}\n\n"
+            echo "failure_type=Tests failed with updated packages" >> $GITHUB_ENV
+            echo "error_details<<EOF" >> $GITHUB_ENV
+            echo "${{ needs.test-updated-configs.outputs.failure_details }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            echo "flake_status=- [ ] Flake update" >> $GITHUB_ENV
             
-            BODY="${BODY}## Affected Components\n"
             if [[ "${{ needs.test-updated-configs.outputs.desktop_success }}" != "true" ]]; then
-              BODY="${BODY}- [x] Desktop configuration\n"
+              echo "desktop_status=- [x] Desktop configuration" >> $GITHUB_ENV
             else
-              BODY="${BODY}- [ ] Desktop configuration\n"
+              echo "desktop_status=- [ ] Desktop configuration" >> $GITHUB_ENV
             fi
             
             if [[ "${{ needs.test-updated-configs.outputs.server_success }}" != "true" ]]; then
-              BODY="${BODY}- [x] Server configuration\n"
+              echo "server_status=- [x] Server configuration" >> $GITHUB_ENV
             else
-              BODY="${BODY}- [ ] Server configuration\n"
+              echo "server_status=- [ ] Server configuration" >> $GITHUB_ENV
             fi
             
             if [[ "${{ needs.test-updated-configs.outputs.homemanager_success }}" != "true" ]]; then
-              BODY="${BODY}- [x] Home Manager configuration\n"
+              echo "home_status=- [x] Home Manager configuration" >> $GITHUB_ENV
             else
-              BODY="${BODY}- [ ] Home Manager configuration\n"
+              echo "home_status=- [ ] Home Manager configuration" >> $GITHUB_ENV
             fi
           fi
-          
-          BODY="${BODY}\n\n## Error Messages\n\`\`\`\n${{ needs.update-dependencies.outputs.update_output }}\n\`\`\`"
-          
-          echo "title=$TITLE" >> $GITHUB_OUTPUT
-          echo "body<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$BODY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
       
       - name: Create Issue
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          title: ${{ steps.failure-reason.outputs.title }}
-          body: ${{ steps.failure-reason.outputs.body }}
         with:
           filename: .github/ISSUE_TEMPLATE/package-update-failure.md
           search_existing: open

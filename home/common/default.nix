@@ -6,6 +6,7 @@
     ./git.nix
     ./zsh.nix
     ./tmux.nix
+    ./emacs.nix
   ];
 
   # Common packages for all environments

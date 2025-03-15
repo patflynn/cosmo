@@ -60,6 +60,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux { 
+              config = {};
               inherit (nixpkgs) lib pkgs;
               inherit (inputs) doom-emacs; 
             };
@@ -79,6 +80,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux { 
+              config = {};
               inherit (nixpkgs) lib pkgs;
               inherit (inputs) doom-emacs; 
             };
@@ -97,6 +99,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux { 
+              config = {};
               inherit (nixpkgs) lib pkgs;
               inherit (inputs) doom-emacs; 
             };
@@ -116,6 +119,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/darwin { 
+              config = {};
               inherit (nixpkgs) lib pkgs;
               inherit (inputs) doom-emacs; 
             };
@@ -131,6 +135,7 @@
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [
           (import ./home/linux { 
+            config = {};
             inherit (nixpkgs) lib;
             pkgs = nixpkgs.legacyPackages.x86_64-linux;
             inherit (inputs) doom-emacs; 

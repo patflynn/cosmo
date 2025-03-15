@@ -3,7 +3,7 @@
 
 {
   imports = [
-    (import ../common { inherit lib pkgs doom-emacs; })
+    (import ../common { inherit config lib pkgs doom-emacs; })
     ./i3.nix
     ./alacritty.nix
   ];

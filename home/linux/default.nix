@@ -1,9 +1,9 @@
 # Linux-specific home-manager configuration
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, doom-emacs ? null, ... }:
 
 {
   imports = [
-    ../common
+    (import ../common { inherit doom-emacs; })
     ./i3.nix
     ./alacritty.nix
   ];

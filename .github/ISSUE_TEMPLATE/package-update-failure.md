@@ -21,6 +21,9 @@ The daily package update workflow failed on {{ date | date('YYYY-MM-DD') }}.
 {{ env.error_details }}
 ```
 
+## Diagnostic Information
+{{ env.diagnostic_info }}
+
 ## Possible Solutions
 Any suggestions for resolving the issue.
 

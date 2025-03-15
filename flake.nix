@@ -23,8 +23,6 @@
     };
     
     # Additional tools
-    kolide-launcher.url = "github:znewman01/kolide-launcher";
-    kolide-launcher.inputs.nixpkgs.follows = "nixpkgs";
     
     emacs-overlay = { 
       url = "github:nix-community/emacs-overlay"; 
@@ -45,7 +43,6 @@
     darwin, 
     doom-emacs, 
     emacs-overlay, 
-    kolide-launcher, 
     ... 
   }: {
     # NixOS configurations
@@ -61,7 +58,6 @@
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux;
           }
-          kolide-launcher.nixosModules.x86_64-linux.default
         ];
         specialArgs = inputs;
       };

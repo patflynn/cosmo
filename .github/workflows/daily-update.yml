@@ -195,59 +195,43 @@ jobs:
       - name: Determine failure reason
         id: failure-reason
         run: |
-          TYPE=""
-          ERROR_DETAILS=""
-          
           if [[ "${{ needs.update-dependencies.outputs.update_success }}" != "true" ]]; then
-            TYPE="Failed to update flake"
-            ERROR_DETAILS="Error: ${{ needs.update-dependencies.outputs.update_output }}"
-            FLAKE_STATUS="- [x] Flake update"
-            DESKTOP_STATUS="- [ ] Desktop configuration"
-            SERVER_STATUS="- [ ] Server configuration"
-            HOME_STATUS="- [ ] Home Manager configuration"
+            echo "failure_type=Failed to update flake" >> $GITHUB_ENV
+            echo "error_details=${{ needs.update-dependencies.outputs.update_output }}" >> $GITHUB_ENV
+            echo "flake_status=- [x] Flake update" >> $GITHUB_ENV
+            echo "desktop_status=- [ ] Desktop configuration" >> $GITHUB_ENV
+            echo "server_status=- [ ] Server configuration" >> $GITHUB_ENV
+            echo "home_status=- [ ] Home Manager configuration" >> $GITHUB_ENV
           else
-            TYPE="Tests failed with updated packages"
-            ERROR_DETAILS="${{ needs.test-updated-configs.outputs.failure_details }}"
-            FLAKE_STATUS="- [ ] Flake update"
+            echo "failure_type=Tests failed with updated packages" >> $GITHUB_ENV
+            echo "error_details<<EOF" >> $GITHUB_ENV
+            echo "${{ needs.test-updated-configs.outputs.failure_details }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+            echo "flake_status=- [ ] Flake update" >> $GITHUB_ENV
             
             if [[ "${{ needs.test-updated-configs.outputs.desktop_success }}" != "true" ]]; then
-              DESKTOP_STATUS="- [x] Desktop configuration"
+              echo "desktop_status=- [x] Desktop configuration" >> $GITHUB_ENV
             else
-              DESKTOP_STATUS="- [ ] Desktop configuration"
+              echo "desktop_status=- [ ] Desktop configuration" >> $GITHUB_ENV
             fi
             
             if [[ "${{ needs.test-updated-configs.outputs.server_success }}" != "true" ]]; then
-              SERVER_STATUS="- [x] Server configuration"
+              echo "server_status=- [x] Server configuration" >> $GITHUB_ENV
             else
-              SERVER_STATUS="- [ ] Server configuration"
+              echo "server_status=- [ ] Server configuration" >> $GITHUB_ENV
             fi
             
             if [[ "${{ needs.test-updated-configs.outputs.homemanager_success }}" != "true" ]]; then
-              HOME_STATUS="- [x] Home Manager configuration"
+              echo "home_status=- [x] Home Manager configuration" >> $GITHUB_ENV
             else
-              HOME_STATUS="- [ ] Home Manager configuration"
+              echo "home_status=- [ ] Home Manager configuration" >> $GITHUB_ENV
             fi
           fi
-          
-          echo "failure_type=$TYPE" >> $GITHUB_OUTPUT
-          echo "error_details<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$ERROR_DETAILS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "flake_status=$FLAKE_STATUS" >> $GITHUB_OUTPUT
-          echo "desktop_status=$DESKTOP_STATUS" >> $GITHUB_OUTPUT
-          echo "server_status=$SERVER_STATUS" >> $GITHUB_OUTPUT
-          echo "home_status=$HOME_STATUS" >> $GITHUB_OUTPUT
       
       - name: Create Issue
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          failure_type: ${{ steps.failure-reason.outputs.failure_type }}
-          error_details: ${{ steps.failure-reason.outputs.error_details }}
-          flake_status: ${{ steps.failure-reason.outputs.flake_status }}
-          desktop_status: ${{ steps.failure-reason.outputs.desktop_status }}
-          server_status: ${{ steps.failure-reason.outputs.server_status }}
-          home_status: ${{ steps.failure-reason.outputs.home_status }}
         with:
           filename: .github/ISSUE_TEMPLATE/package-update-failure.md
           search_existing: open

@@ -1,9 +1,9 @@
 # macOS-specific home-manager configuration
-{ config, lib, pkgs, doom-emacs ? null, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   imports = [
-    (import ../common { inherit config lib pkgs doom-emacs; })
+    ../common
   ];
 
   # macOS-specific packages

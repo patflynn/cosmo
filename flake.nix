@@ -26,15 +26,16 @@
     kolide-launcher.url = "github:znewman01/kolide-launcher";
     kolide-launcher.inputs.nixpkgs.follows = "nixpkgs";
     
-    emacs-overlay = { 
-      url = "github:nix-community/emacs-overlay"; 
-    };
+    # We'll re-enable these after the PR is fixed
+    # emacs-overlay = { 
+    #   url = "github:nix-community/emacs-overlay"; 
+    # };
     
-    doom-emacs = {
-      url = "github:nix-community/nix-doom-emacs";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.emacs-overlay.follows = "emacs-overlay";
-    };
+    # doom-emacs = {
+    #   url = "github:nix-community/nix-doom-emacs";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    #   inputs.emacs-overlay.follows = "emacs-overlay";
+    # };
   };
 
   outputs = inputs@{ 
@@ -43,8 +44,6 @@
     flake-utils, 
     home-manager, 
     darwin, 
-    doom-emacs, 
-    emacs-overlay, 
     kolide-launcher, 
     ... 
   }: {
@@ -59,12 +58,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/linux { 
-              config = {};
-              lib = nixpkgs.lib;
-              pkgs = nixpkgs.legacyPackages.x86_64-linux;
-              inherit (inputs) doom-emacs; 
-            };
+            home-manager.users.patrick = import ./home/linux;
           }
           kolide-launcher.nixosModules.x86_64-linux.default
         ];
@@ -80,12 +74,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/linux { 
-              config = {};
-              lib = nixpkgs.lib;
-              pkgs = nixpkgs.legacyPackages.x86_64-linux;
-              inherit (inputs) doom-emacs; 
-            };
+            home-manager.users.patrick = import ./home/linux;
           }
         ];
         specialArgs = inputs;
@@ -100,12 +89,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/linux { 
-              config = {};
-              lib = nixpkgs.lib;
-              pkgs = nixpkgs.legacyPackages.x86_64-linux;
-              inherit (inputs) doom-emacs; 
-            };
+            home-manager.users.patrick = import ./home/linux;
           }
         ];
         specialArgs = inputs;
@@ -121,12 +105,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.patrick = import ./home/darwin { 
-              config = {};
-              lib = nixpkgs.lib;
-              pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-              inherit (inputs) doom-emacs; 
-            };
+            home-manager.users.patrick = import ./home/darwin;
           }
         ];
         specialArgs = inputs;
@@ -138,12 +117,7 @@
       chromeos = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [
-          (import ./home/linux { 
-            config = {};
-            lib = nixpkgs.lib;
-            pkgs = nixpkgs.legacyPackages.x86_64-linux;
-            inherit (inputs) doom-emacs; 
-          })
+          (import ./home/linux)
           {
             # ChromeOS-specific overrides
             home.username = "patrick";

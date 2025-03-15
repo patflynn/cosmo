@@ -1,22 +1,12 @@
 ---
-title: Package Update Failure
+title: {{ title }}
+assignees: patflynn
 labels: bug, dependencies
-assignees: 
 ---
 
-## Failure Details
-Details about the package update failure.
-
-## Affected Components
-- [ ] Flake update
-- [ ] Desktop configuration
-- [ ] Server configuration 
-- [ ] Home Manager configuration
-
-## Error Messages
-```
-Error messages will appear here
-```
+{{ body }}
 
 ## Possible Solutions
 Any suggestions for resolving the issue.
+
+This issue was created automatically by the daily update workflow on {{ date | date('YYYY-MM-DD') }}.

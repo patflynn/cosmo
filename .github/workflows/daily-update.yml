@@ -195,50 +195,59 @@ jobs:
       - name: Determine failure reason
         id: failure-reason
         run: |
-          TITLE="Package Update Failure: "
-          BODY="The daily package update workflow failed on $(date).\n\n"
+          TYPE=""
+          ERROR_DETAILS=""
           
           if [[ "${{ needs.update-dependencies.outputs.update_success }}" != "true" ]]; then
-            TITLE="${TITLE}Failed to update flake"
-            BODY="${BODY}## Failure Details\n\nFailed to update flake inputs.\n\nError: ${{ needs.update-dependencies.outputs.update_output }}\n\n"
-            BODY="${BODY}## Affected Components\n- [x] Flake update\n- [ ] Desktop configuration\n- [ ] Server configuration\n- [ ] Home Manager configuration"
+            TYPE="Failed to update flake"
+            ERROR_DETAILS="Error: ${{ needs.update-dependencies.outputs.update_output }}"
+            FLAKE_STATUS="- [x] Flake update"
+            DESKTOP_STATUS="- [ ] Desktop configuration"
+            SERVER_STATUS="- [ ] Server configuration"
+            HOME_STATUS="- [ ] Home Manager configuration"
           else
-            TITLE="${TITLE}Tests failed with updated packages"
-            BODY="${BODY}## Failure Details\n\nTests failed after updating packages.\n\n${{ needs.test-updated-configs.outputs.failure_details }}\n\n"
+            TYPE="Tests failed with updated packages"
+            ERROR_DETAILS="${{ needs.test-updated-configs.outputs.failure_details }}"
+            FLAKE_STATUS="- [ ] Flake update"
             
-            BODY="${BODY}## Affected Components\n"
             if [[ "${{ needs.test-updated-configs.outputs.desktop_success }}" != "true" ]]; then
-              BODY="${BODY}- [x] Desktop configuration\n"
+              DESKTOP_STATUS="- [x] Desktop configuration"
             else
-              BODY="${BODY}- [ ] Desktop configuration\n"
+              DESKTOP_STATUS="- [ ] Desktop configuration"
             fi
             
             if [[ "${{ needs.test-updated-configs.outputs.server_success }}" != "true" ]]; then
-              BODY="${BODY}- [x] Server configuration\n"
+              SERVER_STATUS="- [x] Server configuration"
             else
-              BODY="${BODY}- [ ] Server configuration\n"
+              SERVER_STATUS="- [ ] Server configuration"
             fi
             
             if [[ "${{ needs.test-updated-configs.outputs.homemanager_success }}" != "true" ]]; then
-              BODY="${BODY}- [x] Home Manager configuration\n"
+              HOME_STATUS="- [x] Home Manager configuration"
             else
-              BODY="${BODY}- [ ] Home Manager configuration\n"
+              HOME_STATUS="- [ ] Home Manager configuration"
             fi
           fi
           
-          BODY="${BODY}\n\n## Error Messages\n\`\`\`\n${{ needs.update-dependencies.outputs.update_output }}\n\`\`\`"
-          
-          echo "title=$TITLE" >> $GITHUB_OUTPUT
-          echo "body<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$BODY" >> $GITHUB_OUTPUT
+          echo "failure_type=$TYPE" >> $GITHUB_OUTPUT
+          echo "error_details<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$ERROR_DETAILS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          echo "flake_status=$FLAKE_STATUS" >> $GITHUB_OUTPUT
+          echo "desktop_status=$DESKTOP_STATUS" >> $GITHUB_OUTPUT
+          echo "server_status=$SERVER_STATUS" >> $GITHUB_OUTPUT
+          echo "home_status=$HOME_STATUS" >> $GITHUB_OUTPUT
       
       - name: Create Issue
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          title: ${{ steps.failure-reason.outputs.title }}
-          body: ${{ steps.failure-reason.outputs.body }}
+          failure_type: ${{ steps.failure-reason.outputs.failure_type }}
+          error_details: ${{ steps.failure-reason.outputs.error_details }}
+          flake_status: ${{ steps.failure-reason.outputs.flake_status }}
+          desktop_status: ${{ steps.failure-reason.outputs.desktop_status }}
+          server_status: ${{ steps.failure-reason.outputs.server_status }}
+          home_status: ${{ steps.failure-reason.outputs.home_status }}
         with:
           filename: .github/ISSUE_TEMPLATE/package-update-failure.md
           search_existing: open

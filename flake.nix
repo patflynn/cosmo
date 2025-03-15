@@ -26,15 +26,16 @@
     kolide-launcher.url = "github:znewman01/kolide-launcher";
     kolide-launcher.inputs.nixpkgs.follows = "nixpkgs";
     
-    emacs-overlay = { 
-      url = "github:nix-community/emacs-overlay"; 
-    };
+    # We'll re-enable these after the PR is fixed
+    # emacs-overlay = { 
+    #   url = "github:nix-community/emacs-overlay"; 
+    # };
     
-    doom-emacs = {
-      url = "github:nix-community/nix-doom-emacs";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.emacs-overlay.follows = "emacs-overlay";
-    };
+    # doom-emacs = {
+    #   url = "github:nix-community/nix-doom-emacs";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    #   inputs.emacs-overlay.follows = "emacs-overlay";
+    # };
   };
 
   outputs = inputs@{ 
@@ -43,8 +44,6 @@
     flake-utils, 
     home-manager, 
     darwin, 
-    doom-emacs, 
-    emacs-overlay, 
     kolide-launcher, 
     ... 
   }: {
@@ -118,7 +117,7 @@
       chromeos = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [
-          ./home/linux
+          (import ./home/linux)
           {
             # ChromeOS-specific overrides
             home.username = "patrick";

@@ -3,7 +3,7 @@
 
 {
   imports = [
-    (import ../common { inherit doom-emacs; })
+    (import ../common { inherit lib pkgs doom-emacs; })
   ];
 
   # macOS-specific packages

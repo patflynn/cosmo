@@ -1,12 +1,12 @@
 # Common home-manager configuration shared between all systems
-{ config, lib, pkgs, doom-emacs ? null, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   imports = [
     ./git.nix
     ./zsh.nix
     ./tmux.nix
-    (import ./emacs.nix { inherit config lib pkgs doom-emacs; })
+    ./emacs.nix
   ];
 
   # Common packages for all environments

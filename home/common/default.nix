@@ -6,7 +6,7 @@
     ./git.nix
     ./zsh.nix
     ./tmux.nix
-    (import ./emacs.nix { inherit lib pkgs doom-emacs; })
+    (import ./emacs.nix { inherit config lib pkgs doom-emacs; })
   ];
 
   # Common packages for all environments

@@ -3,8 +3,18 @@ name: Nix Format Check
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '.github/workflows/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - 'README.md'
+      - 'docs/**'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '.github/workflows/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - 'README.md'
+      - 'docs/**'
 
 jobs:
   nix-fmt-check:

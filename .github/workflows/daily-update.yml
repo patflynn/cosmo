@@ -95,9 +95,16 @@ jobs:
           # Test if desktop config still builds after updates
           if nix build .#nixosConfigurations.desktop.config.system.build.toplevel --dry-run --allow-import-from-derivation; then
             echo "success=true" >> $GITHUB_OUTPUT
+            echo "desktop_error=" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
             echo "::error::Desktop configuration build failed"
+            
+            # Capture detailed error output
+            ERROR_OUTPUT=$(nix build .#nixosConfigurations.desktop.config.system.build.toplevel --dry-run --allow-import-from-derivation --show-trace 2>&1 || true)
+            echo "desktop_error<<EOF" >> $GITHUB_OUTPUT
+            echo "$ERROR_OUTPUT" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           fi
       
       - name: Test server configuration
@@ -106,9 +113,16 @@ jobs:
           # Test if server config still builds after updates
           if nix build .#nixosConfigurations.server.config.system.build.toplevel --dry-run --allow-import-from-derivation; then
             echo "success=true" >> $GITHUB_OUTPUT
+            echo "server_error=" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
             echo "::error::Server configuration build failed"
+            
+            # Capture detailed error output
+            ERROR_OUTPUT=$(nix build .#nixosConfigurations.server.config.system.build.toplevel --dry-run --allow-import-from-derivation --show-trace 2>&1 || true)
+            echo "server_error<<EOF" >> $GITHUB_OUTPUT
+            echo "$ERROR_OUTPUT" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           fi
       
       - name: Test home-manager configuration
@@ -117,9 +131,16 @@ jobs:
           # Test if home-manager config still builds
           if nix build .#homeConfigurations.chromeos.activationPackage --dry-run --impure; then
             echo "success=true" >> $GITHUB_OUTPUT
+            echo "homemanager_error=" >> $GITHUB_OUTPUT
           else
             echo "success=false" >> $GITHUB_OUTPUT
             echo "::error::Home Manager configuration build failed"
+            
+            # Capture detailed error output
+            ERROR_OUTPUT=$(nix build .#homeConfigurations.chromeos.activationPackage --dry-run --impure --show-trace 2>&1 || true)
+            echo "homemanager_error<<EOF" >> $GITHUB_OUTPUT
+            echo "$ERROR_OUTPUT" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           fi
       
       - name: Collect test results
@@ -139,6 +160,45 @@ jobs:
           echo "failure_details<<EOF" >> $GITHUB_OUTPUT
           echo -e "$DETAILS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Analyze package changes
+        id: analyze-changes
+        if: |
+          steps.test-desktop.outputs.success == 'false' ||
+          steps.test-server.outputs.success == 'false' ||
+          steps.test-homemanager.outputs.success == 'false'
+        run: |
+          # Analyze what changed in nixpkgs
+          echo "===== Analyzing package changes =====" >> $GITHUB_STEP_SUMMARY
+          
+          # Get list of changed package versions that might affect our build
+          echo "### Top-level package changes" >> $GITHUB_STEP_SUMMARY
+          nix-instantiate --eval -E 'with import <nixpkgs> {}; lib.version' | tr -d '"' >> $GITHUB_STEP_SUMMARY
+          
+          # Look for specific packages we depend on
+          echo "### Package change analysis" >> $GITHUB_STEP_SUMMARY
+          
+          # Capture detailed errors in env vars for issue creation
+          echo "nixpkgs_version=$(nix-instantiate --eval -E 'with import <nixpkgs> {}; lib.version' | tr -d '"')" >> $GITHUB_ENV
+          
+          # Capture full diagnostic info including errors
+          DIAGNOSTIC_INFO="## Nixpkgs Version\n$(nix-instantiate --eval -E 'with import <nixpkgs> {}; lib.version' | tr -d '"')\n\n"
+          
+          if [[ "${{ steps.test-desktop.outputs.success }}" == "false" ]]; then
+            DIAGNOSTIC_INFO="${DIAGNOSTIC_INFO}## Desktop Configuration Error\n\`\`\`\n${{ steps.test-desktop.outputs.desktop_error }}\n\`\`\`\n\n"
+          fi
+          
+          if [[ "${{ steps.test-server.outputs.success }}" == "false" ]]; then
+            DIAGNOSTIC_INFO="${DIAGNOSTIC_INFO}## Server Configuration Error\n\`\`\`\n${{ steps.test-server.outputs.server_error }}\n\`\`\`\n\n"
+          fi
+          
+          if [[ "${{ steps.test-homemanager.outputs.success }}" == "false" ]]; then
+            DIAGNOSTIC_INFO="${DIAGNOSTIC_INFO}## Home Manager Error\n\`\`\`\n${{ steps.test-homemanager.outputs.homemanager_error }}\n\`\`\`\n\n"
+          fi
+          
+          echo "diagnostic_info<<EOF" >> $GITHUB_ENV
+          echo -e "$DIAGNOSTIC_INFO" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
   create-update-pr:
     needs: test-updated-configs
@@ -212,6 +272,9 @@ jobs:
             echo "desktop_status=- [x] Desktop configuration (Test)" >> $GITHUB_ENV
             echo "server_status=- [x] Server configuration (Test)" >> $GITHUB_ENV
             echo "home_status=- [x] Home Manager configuration (Test)" >> $GITHUB_ENV
+            
+            # Sample diagnostic info for test mode
+            echo "diagnostic_info=## Test Mode Diagnostic Info\nThis is sample diagnostic information for test mode." >> $GITHUB_ENV
           elif [[ "${{ needs.update-dependencies.outputs.update_success }}" != "true" ]]; then
             echo "failure_type=Failed to update flake" >> $GITHUB_ENV
             echo "error_details=${{ needs.update-dependencies.outputs.update_output }}" >> $GITHUB_ENV
@@ -219,6 +282,14 @@ jobs:
             echo "desktop_status=- [ ] Desktop configuration" >> $GITHUB_ENV
             echo "server_status=- [ ] Server configuration" >> $GITHUB_ENV
             echo "home_status=- [ ] Home Manager configuration" >> $GITHUB_ENV
+            
+            # Basic diagnostic info for flake update failures
+            echo "diagnostic_info<<EOF" >> $GITHUB_ENV
+            echo "## Flake Update Error Details" >> $GITHUB_ENV
+            echo "\`\`\`" >> $GITHUB_ENV
+            echo "${{ needs.update-dependencies.outputs.update_output }}" >> $GITHUB_ENV
+            echo "\`\`\`" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
           else
             echo "failure_type=Tests failed with updated packages" >> $GITHUB_ENV
             echo "error_details<<EOF" >> $GITHUB_ENV
@@ -243,6 +314,8 @@ jobs:
             else
               echo "home_status=- [ ] Home Manager configuration" >> $GITHUB_ENV
             fi
+            
+            # The diagnostic_info will be set by the analyze-changes step
           fi
       
       - name: Create Issue

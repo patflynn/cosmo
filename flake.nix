@@ -23,8 +23,6 @@
     };
     
     # Additional tools
-    kolide-launcher.url = "github:znewman01/kolide-launcher";
-    kolide-launcher.inputs.nixpkgs.follows = "nixpkgs";
     
     # We'll re-enable these after the PR is fixed
     # emacs-overlay = { 
@@ -44,7 +42,6 @@
     flake-utils, 
     home-manager, 
     darwin, 
-    kolide-launcher, 
     ... 
   }: {
     # NixOS configurations
@@ -60,7 +57,6 @@
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux;
           }
-          kolide-launcher.nixosModules.x86_64-linux.default
         ];
         specialArgs = inputs;
       };

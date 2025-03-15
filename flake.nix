@@ -60,6 +60,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux { 
+              inherit (nixpkgs) lib;
               inherit (inputs) doom-emacs; 
             };
           }
@@ -78,6 +79,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux { 
+              inherit (nixpkgs) lib;
               inherit (inputs) doom-emacs; 
             };
           }
@@ -95,6 +97,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/linux { 
+              inherit (nixpkgs) lib;
               inherit (inputs) doom-emacs; 
             };
           }
@@ -113,6 +116,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.users.patrick = import ./home/darwin { 
+              inherit (nixpkgs) lib;
               inherit (inputs) doom-emacs; 
             };
           }
@@ -126,7 +130,10 @@
       chromeos = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         modules = [
-          (import ./home/linux { inherit (inputs) doom-emacs; })
+          (import ./home/linux { 
+            inherit (nixpkgs) lib;
+            inherit (inputs) doom-emacs; 
+          })
           {
             # ChromeOS-specific overrides
             home.username = "patrick";

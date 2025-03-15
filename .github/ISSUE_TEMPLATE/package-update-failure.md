@@ -1,5 +1,5 @@
 ---
-title: "Package Update Failure: {{ env.failure_type }}"
+title: Package Update Failure - {{ env.failure_type }}
 assignees: patflynn
 labels: bug, dependencies
 ---
@@ -8,7 +8,7 @@ labels: bug, dependencies
 
 The daily package update workflow failed on {{ date | date('YYYY-MM-DD') }}.
 
-Type: {{ env.failure_type }}
+**Type of failure:** {{ env.failure_type }}
 
 ## Affected Components
 {{ env.flake_status }}

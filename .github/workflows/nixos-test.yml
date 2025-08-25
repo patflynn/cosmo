@@ -27,7 +27,7 @@ jobs:
   nix-flake-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -43,7 +43,7 @@ jobs:
   nixos-desktop-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -61,7 +61,7 @@ jobs:
   nixos-server-dry-run:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Install Nix
         uses: cachix/install-nix-action@v31
@@ -80,7 +80,7 @@ jobs:
   # darwin-dry-run:
   #   runs-on: macos-latest
   #   steps:
-  #     - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v5
   #     
   #     - name: Install Nix
   #       uses: cachix/install-nix-action@v31

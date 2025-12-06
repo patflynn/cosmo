@@ -12,6 +12,7 @@
   # If you are Legacy BIOS, you might need: boot.loader.grub.device = "/dev/sda";
 
   networking.hostName = "classic-laddie";
+  networking.hostId= "8425e349";
   networking.networkmanager.enable = true;
 
   # Set your time zone

@@ -18,7 +18,7 @@ result
 
 # Legacy directories - preserved locally but ignored from git
 bin/
-classic-laddie/
+/classic-laddie/
 X/
 alacritty.nix
 code.nix

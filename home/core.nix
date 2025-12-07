@@ -11,7 +11,6 @@
     btop         # Fancy htop
     
     # Emacs (The Editor)
-    emacs        # The editor itself
     
     # Language Servers
     nixd         # Nix LSP

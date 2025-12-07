@@ -35,6 +35,7 @@ It defines the hardware, operating system, services, and user environments for t
 - [x] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.
 - [x] Create a "Base Guest" module (shared config for all VMs).
 - [ ] Deploy first Dev VM (`johnny-walker`).
+- [ ] Implement Secret Management (sops-nix/agenix) to secure passwords and keys.
 
 ### Phase 3: Services
 - [ ] Deploy Media Stack (Jellyfin/Plex) in a NixOS Container.

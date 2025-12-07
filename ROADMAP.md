@@ -42,3 +42,4 @@ It defines the hardware, operating system, services, and user environments for t
 
 ### Phase 4: Expansion
 - [ ] Onboard other hardware (MacBooks, WSL) into the Flake.
+- [ ] Onboard NixOS VM (WSL2).

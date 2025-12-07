@@ -2,7 +2,7 @@
 
 This is the central NixOS configuration repository for my infrastructure.
 
-## Status: Fresh Start 2025
+## Status: Fresh Start
 
 This repository is currently in **Phase 1** of the [Roadmap](./ROADMAP.md).
 

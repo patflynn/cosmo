@@ -22,10 +22,12 @@
   users.users.patrick = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" ];
+    hashedPassword = "$6$ZtyAYsmFObdDrWxk$t/B4v4b8hHt3gSIjDiLy70fVwrzjjxC9/MRKAWuG/gQqlLZ/PVVclOR1bihX7l/RI8MLPUTS1vjV.ch8tYRb0/";
+    
     # You can add your SSH key here to ensure you don't get locked out
     openssh.authorizedKeys.keys = [
       # makers-mark.ubuntu
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILc8u2oEFD+sn9vmX0gEbf62V4fmHGSvu10ENPkci3Yd" 
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILc8u2oEFD+sn9vmX0gEbf62V4fmHGSvu10ENPkci3Yd"
     ];
   };
 

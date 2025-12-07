@@ -21,7 +21,7 @@ It defines the hardware, operating system, services, and user environments for t
 
 ## Implementation Phases
 
-### Phase 1: The Foundation (Current)
+### Phase 1: The Foundation
 - [x] Boot `classic-laddie` with minimal Flake-based config.
 - [x] Establish SSH access with declarative keys.
 - [x] Format drives for ZFS.

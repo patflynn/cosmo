@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ../../modules/common/system.nix
   ];
 
   # Bootloader (Keep what matches your hardware!)
@@ -50,15 +51,6 @@
     settings.PasswordAuthentication = false;
     settings.PermitRootLogin = "no";
   };
-
-  # Basic System Packages
-  environment.systemPackages = with pkgs; [
-    vim
-    git
-    wget
-    curl
-    htop
-  ];
 
   # Enable Flakes and new command line tools
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

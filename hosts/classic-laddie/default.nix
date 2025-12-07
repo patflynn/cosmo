@@ -54,5 +54,5 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Do not change this unless you reinstall the OS
-  system.stateVersion = "23.11"; 
+  system.stateVersion = "25.11"; 
 }

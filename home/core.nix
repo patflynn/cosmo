@@ -38,10 +38,50 @@
     
     shellAliases = {
       ll = "ls -l";
+      ed = "emacsclient -t"; # Quick edit in terminal
     };
+
+    history = {
+      size = 10000;
+      path = "${config.xdg.dataHome}/zsh/history";
+    };
+
+    initContent = ''
+      # Add $HOME/bin to PATH
+      export PATH="$HOME/bin:$PATH"
+      
+      # Ergonomics
+      setopt AUTO_CD              # cd by typing directory name
+      setopt EXTENDED_HISTORY     # record timestamp of command in HISTFILE
+      setopt HIST_EXPIRE_DUPS_FIRST # delete duplicates first when HISTFILE size exceeds HISTSIZE
+      setopt HIST_IGNORE_DUPS     # ignore duplicated commands history list
+      setopt HIST_IGNORE_SPACE    # ignore commands that start with space
+      setopt HIST_VERIFY          # show command with history expansion to user before running it
+      setopt SHARE_HISTORY        # share command history data
+    '';
+  };
+
+  programs.tmux = {
+    enable = true;
+    prefix = "C-q"; # Remap prefix from 'C-b' to 'C-q'
+    keyMode = "emacs";
+    mouse = true; # Enable mouse support
+    terminal = "screen-256color";
+    historyLimit = 100000;
+    
+    extraConfig = ''
+      set-option -g status-style fg=white,bg=colour23
+      set -g base-index 1
+      set-window-option -g mode-keys emacs
+      unbind-key C-b
+    '';
   };
 
   programs.starship = {
+    enable = true;
+  };
+
+  services.emacs = {
     enable = true;
   };
 

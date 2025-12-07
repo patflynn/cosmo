@@ -9,6 +9,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      NIX_ABORT_ON_WARN: true
     steps:
     - uses: actions/checkout@v4
     - uses: cachix/install-nix-action@v30

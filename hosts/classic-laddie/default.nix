@@ -12,8 +12,14 @@
   # If you are Legacy BIOS, you might need: boot.loader.grub.device = "/dev/sda";
 
   networking.hostName = "classic-laddie";
-  networking.hostId= "8425e349";
+  networking.hostId= "8425e349"; # Required for ZFS
   networking.networkmanager.enable = true;
+
+  # Storage Support (Roadmap Phase 1)
+  boot.supportedFilesystems = [ "zfs" ];
+
+  # Remote Access (Roadmap Phase 1)
+  services.tailscale.enable = true;
 
   # Set your time zone
   time.timeZone = "America/New_York";

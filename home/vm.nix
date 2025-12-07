@@ -4,6 +4,6 @@
   imports = [ ./dev.nix ];
 
   programs.zsh.shellAliases = {
-    update = "sudo nixos-rebuild switch --flake .#wsl";
+    update = "sudo nixos-rebuild switch --flake .#johnny-walker";
   };
 }

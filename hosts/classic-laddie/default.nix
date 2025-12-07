@@ -37,7 +37,7 @@
   # Enable SSH so you can access the server
   services.openssh = {
     enable = true;
-    settings.PasswordAuthentication = tfalse;
+    settings.PasswordAuthentication = false;
     settings.PermitRootLogin = "no";
   };
 

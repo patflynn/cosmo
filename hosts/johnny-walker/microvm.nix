@@ -3,11 +3,16 @@
 {
   microvm = {
     hypervisor = "qemu";
-    mem = 4096;
-    vcpu = 2;
+    mem = 20480;
+    vcpu = 24;
 
     # Shared directory for persistent data (like a virtual disk)
     shares = [ {
+      source = "/nix/store";
+      mountPoint = "/nix/store";
+      tag = "store";
+      proto = "virtiofs";
+    } {
       source = "/var/lib/microvms/johnny-walker/etc";
       mountPoint = "/etc";
       tag = "etc";
@@ -16,6 +21,11 @@
       source = "/var/lib/microvms/johnny-walker/home";
       mountPoint = "/home";
       tag = "home";
+      proto = "virtiofs";
+    } {
+      source = "/var/lib/microvms/johnny-walker/var-lib";
+      mountPoint = "/var/lib";
+      tag = "var-lib";
       proto = "virtiofs";
     } ];
 

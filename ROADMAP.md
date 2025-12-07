@@ -29,7 +29,7 @@ It defines the hardware, operating system, services, and user environments for t
 - [x] Configure Tailscale for secure remote access.
 
 ### Phase 2: The Virtualization Host
-- [ ] **Priority:** Setup CI (GitHub Actions) to verify builds on push/PR.
+- [x] **Priority:** Setup CI (GitHub Actions) to verify builds on push/PR.
 - [ ] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.
 - [ ] Create a "Base Guest" module (shared config for all VMs).
 - [ ] Deploy first Dev VM (`dev-patrick`).

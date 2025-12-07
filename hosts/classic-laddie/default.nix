@@ -32,10 +32,12 @@
     ];
   };
 
+
+  security.sudo.wheelNeedsPassword = true;
   # Enable SSH so you can access the server
   services.openssh = {
     enable = true;
-    settings.PasswordAuthentication = true; # Set to false once keys are working
+    settings.PasswordAuthentication = tfalse;
     settings.PermitRootLogin = "no";
   };
 

@@ -32,9 +32,9 @@ It defines the hardware, operating system, services, and user environments for t
 - [x] **Priority:** Setup CI (GitHub Actions) to verify builds on push/PR.
 - [ ] Generate and commit `flake.lock` (requires Nix machine).
 - [ ] Enhance CI: Add formatting check (nixfmt) and expand build matrix.
-- [ ] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.
-- [ ] Create a "Base Guest" module (shared config for all VMs).
-- [ ] Deploy first Dev VM (`dev-patrick`).
+- [x] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.
+- [x] Create a "Base Guest" module (shared config for all VMs).
+- [ ] Deploy first Dev VM (`johnny-walker`).
 
 ### Phase 3: Services
 - [ ] Deploy Media Stack (Jellyfin/Plex) in a NixOS Container.

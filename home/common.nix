@@ -11,11 +11,6 @@
     btop         # Fancy htop
     
     # Emacs (The Editor)
-    
-    # Language Servers
-    nixd         # Nix LSP
-    python3
-    nodejs    
   ];
 
   programs.git = {

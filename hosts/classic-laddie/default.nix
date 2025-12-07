@@ -1,9 +1,31 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
     ../../modules/common/system.nix
+    inputs.microvm.nixosModules.host
+  ];
+
+  # Define the MicroVMs hosted by this machine
+  microvm.vms.johnny-walker = {
+    # The configuration for the Guest VM
+    config = {
+      imports = [
+        ../johnny-walker/default.nix
+        ../johnny-walker/microvm.nix
+      ];
+    };
+    
+    # We use the flake's pkgs to ensure consistency
+    pkgs = pkgs;
+  };
+
+  # Ensure persistent directories exist on the host
+  systemd.tmpfiles.rules = [
+    "d /var/lib/microvms/johnny-walker/etc 0755 root root -"
+    "d /var/lib/microvms/johnny-walker/home 0755 root root -"
+    "d /var/lib/microvms/johnny-walker/var-lib 0755 root root -"
   ];
 
   # Bootloader (Keep what matches your hardware!)
@@ -27,12 +49,17 @@
 
   # Enable zsh system wide
   programs.zsh.enable = true;
+
+  # Virtualization Host Role
+  virtualisation.libvirtd.enable = true;
+  programs.dconf.enable = true; # Required for virt-manager
+  environment.systemPackages = with pkgs; [ virt-manager ];
   
   # Essential User Setup
   users.users.patrick = {
     isNormalUser = true;
     shell = pkgs.zsh;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [ "wheel" "networkmanager" "libvirtd" ];
     # Brain virus
     hashedPassword = "$6$ZtyAYsmFObdDrWxk$t/B4v4b8hHt3gSIjDiLy70fVwrzjjxC9/MRKAWuG/gQqlLZ/PVVclOR1bihX7l/RI8MLPUTS1vjV.ch8tYRb0/";
     

@@ -21,10 +21,11 @@
 
 	  home-manager.nixosModules.home-manager
 	  {
- 	    home-manager.useGlobakPkgs = true;
+ 	    home-manager.useGlobalPkgs = true;
 	    home-manager.useUserPackages = true;
 	    
 	    home-manager.users.patrick = import ./home/server.nix;
+	  }
         ];
       };
     };

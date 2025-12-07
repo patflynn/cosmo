@@ -24,9 +24,9 @@ It defines the hardware, operating system, services, and user environments for t
 ### Phase 1: The Foundation (Current)
 - [x] Boot `classic-laddie` with minimal Flake-based config.
 - [x] Establish SSH access with declarative keys.
-- [ ] **Critical Decision:** Format drives for ZFS?
-- [ ] Setup `home-manager` for the shared "Ergonomics" layer (Shell, Git, Keys).
-- [ ] Configure Tailscale for secure remote access.
+- [x] Format drives for ZFS.
+- [x] Setup `home-manager` for the shared "Ergonomics" layer (Shell, Git, Keys).
+- [x] Configure Tailscale for secure remote access.
 
 ### Phase 2: The Virtualization Host
 - [ ] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.

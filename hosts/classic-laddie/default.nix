@@ -1,10 +1,25 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
     ../../modules/common/system.nix
+    inputs.microvm.nixosModules.host
   ];
+
+  # Define the MicroVMs hosted by this machine
+  microvm.vms.johnny-walker = {
+    # The configuration for the Guest VM
+    config = {
+      imports = [
+        ../johnny-walker/default.nix
+        ../johnny-walker/microvm.nix
+      ];
+    };
+    
+    # We use the flake's pkgs to ensure consistency
+    pkgs = pkgs;
+  };
 
   # Bootloader (Keep what matches your hardware!)
   # If your hardware-configuration.nix says you are EFI, use systemd-boot:

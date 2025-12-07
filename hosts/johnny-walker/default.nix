@@ -2,15 +2,13 @@
 
 {
   imports = [
-    ./hardware-configuration.nix
+    # Hardware config is now handled by microvm.nix
     ../../modules/common/system.nix
     ../../modules/common/guest.nix
   ];
 
-  # Use systemd-boot for EFI
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
+  # Bootloader is handled by MicroVM (direct kernel boot)
+  
   networking.hostName = "johnny-walker";
   networking.networkmanager.enable = true;
 

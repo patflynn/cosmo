@@ -46,7 +46,7 @@
       path = "${config.xdg.dataHome}/zsh/history";
     };
 
-    initExtra = ''
+    initContent = ''
       # Add $HOME/bin to PATH
       export PATH="$HOME/bin:$PATH"
       

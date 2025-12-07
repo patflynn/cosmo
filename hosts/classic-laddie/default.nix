@@ -18,6 +18,9 @@
   # Set your time zone
   time.timeZone = "America/New_York";
 
+  # Enable zsh system wide
+  programs.zsh.enable = true
+  
   # Essential User Setup
   users.users.patrick = {
     isNormalUser = true;

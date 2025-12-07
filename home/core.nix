@@ -20,9 +20,11 @@
 
   programs.git = {
     enable = true;
-    userName = "Patrick Flynn";
-    userEmail = "big.pat@gmail.com"; 
-    extraConfig = {
+    settings = {
+      user = {
+        name = "Patrick Flynn";
+        email = "big.pat@gmail.com"; 
+      };
       init.defaultBranch = "main";
       pull.rebase = true;
     };

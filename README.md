@@ -16,3 +16,7 @@ See [AGENTS.md](./AGENTS.md) for common administrative commands.
 *   `hosts/`: System configurations (NixOS).
 *   `home/`: User configurations (Home Manager).
 *   `old-mess/`: Legacy configuration (Reference only).
+
+## Setup Guides
+
+*   [Doom Emacs Setup](./docs/doom-emacs-setup.md): Manual steps to bootstrap Doom Emacs.

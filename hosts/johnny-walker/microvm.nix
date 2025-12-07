@@ -30,7 +30,6 @@
     } ];
 
     interfaces = [ {
-      type = "user"; # User-mode networking (slirp) for easiest setup without root bridge config
       type = "macvtap";
       id = "vm-net"; 
       mac = "02:00:00:00:00:01";

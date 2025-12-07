@@ -19,13 +19,12 @@
         modules = [
           ./hosts/classic-laddie/default.nix
 
-	  home-manager.nixosModules.home-manager
-	  {
- 	    home-manager.useGlobalPkgs = true;
-	    home-manager.useUserPackages = true;
-	    
-	    home-manager.users.patrick = import ./home/server.nix;
-	  }
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.patrick = import ./home/server.nix;
+          }
         ];
       };
     };

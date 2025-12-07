@@ -27,12 +27,17 @@
 
   # Enable zsh system wide
   programs.zsh.enable = true;
+
+  # Virtualization Host Role
+  virtualisation.libvirtd.enable = true;
+  programs.dconf.enable = true; # Required for virt-manager
+  environment.systemPackages = with pkgs; [ virt-manager ];
   
   # Essential User Setup
   users.users.patrick = {
     isNormalUser = true;
     shell = pkgs.zsh;
-    extraGroups = [ "wheel" "networkmanager" ];
+    extraGroups = [ "wheel" "networkmanager" "libvirtd" ];
     # Brain virus
     hashedPassword = "$6$ZtyAYsmFObdDrWxk$t/B4v4b8hHt3gSIjDiLy70fVwrzjjxC9/MRKAWuG/gQqlLZ/PVVclOR1bihX7l/RI8MLPUTS1vjV.ch8tYRb0/";
     

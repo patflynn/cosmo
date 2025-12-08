@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/common/system.nix
+    ../../modules/common/users.nix
     inputs.microvm.nixosModules.host
   ];
 
@@ -47,31 +48,13 @@
   # Set your time zone
   time.timeZone = "America/New_York";
 
-  # Enable zsh system wide
-  programs.zsh.enable = true;
-
   # Virtualization Host Role
   virtualisation.libvirtd.enable = true;
   programs.dconf.enable = true; # Required for virt-manager
   environment.systemPackages = with pkgs; [ virt-manager ];
   
-  # Essential User Setup
-  users.users.patrick = {
-    isNormalUser = true;
-    shell = pkgs.zsh;
-    extraGroups = [ "wheel" "networkmanager" "libvirtd" ];
-    # Brain virus
-    hashedPassword = "$6$ZtyAYsmFObdDrWxk$t/B4v4b8hHt3gSIjDiLy70fVwrzjjxC9/MRKAWuG/gQqlLZ/PVVclOR1bihX7l/RI8MLPUTS1vjV.ch8tYRb0/";
-    
-    # You can add your SSH key here to ensure you don't get locked out
-    openssh.authorizedKeys.keys = [
-      # makers-mark.ubuntu
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILc8u2oEFD+sn9vmX0gEbf62V4fmHGSvu10ENPkci3Yd"
-      # Chrome Secure Shell
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHo0Oc728AfV2EMn30DhTWSqdWhmY8xR6np/qf6U7xvn cloud-ssh"
-    ];
-  };
-
+  # Host-specific user configuration
+  users.users.patrick.extraGroups = [ "libvirtd" ];
 
   security.sudo.wheelNeedsPassword = true;
   # Enable SSH so you can access the server
@@ -80,9 +63,6 @@
     settings.PasswordAuthentication = false;
     settings.PermitRootLogin = "no";
   };
-
-  # Enable Flakes and new command line tools
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Do not change this unless you reinstall the OS
   system.stateVersion = "25.11"; 

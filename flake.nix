@@ -14,9 +14,12 @@
 
     microvm.url = "github:astro/microvm.nix";
     microvm.inputs.nixpkgs.follows = "nixpkgs";
+
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, microvm, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, microvm, sops-nix, ... }@inputs: {
     nixosConfigurations = {
       # Hostname: classic-laddie
       classic-laddie = nixpkgs.lib.nixosSystem {
@@ -24,6 +27,7 @@
         specialArgs = { inherit inputs; };
         modules = [
           ./hosts/classic-laddie/default.nix
+          sops-nix.nixosModules.sops
 
           home-manager.nixosModules.home-manager
           {
@@ -41,6 +45,7 @@
         modules = [
           ./hosts/wsl/default.nix
           inputs.nixos-wsl.nixosModules.wsl
+          sops-nix.nixosModules.sops
 
           home-manager.nixosModules.home-manager
           {

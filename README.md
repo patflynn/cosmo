@@ -10,12 +10,12 @@ This repository is currently in **Phase 1** of the [Roadmap](./ROADMAP.md).
 
 See [AGENTS.md](./AGENTS.md) for common administrative commands.
 
-## Structure
-
-*   `flake.nix`: Entry point.
-*   `hosts/`: System configurations (NixOS).
-*   `home/`: User configurations (Home Manager).
-*   `old-mess/`: Legacy configuration (Reference only).
+├── home/        # Home Manager configurations (User environment)
+├── hosts/       # Machine-specific configurations
+├── modules/     # Reusable NixOS modules
+├── secrets/     # Encrypted secrets (SOPS)
+├── flake.nix    # Entry point
+└── ...
 
 ## Setup Guides
 

@@ -51,3 +51,16 @@ sudo nixos-rebuild switch --flake .
 - **User**: The primary configured user in Nix modules is `patrick`.
 - **WSL**: The `wsl` host configuration handles Windows Subsystem for Linux specifics.
 - **MicroVM**: `johnny-walker` is a MicroVM managed by `classic-laddie`.
+
+## Secret Management
+
+We use **sops-nix** with **age** to manage secrets.
+
+1.  **Storage**: Encrypted secrets live in `secrets/secrets.yaml`.
+2.  **Configuration**: Access policies are in `.sops.yaml` (root).
+3.  **Workflow**:
+    - **Add/Edit Secret**: `nix shell nixpkgs#sops --command sops secrets/secrets.yaml`
+    - **Add New Host**:
+        1.  Get host public key: `cat /etc/ssh/ssh_host_ed25519_key.pub | nix shell nixpkgs#ssh-to-age --command ssh-to-age`
+        2.  Add to `.sops.yaml`.
+        3.  Re-encrypt: `nix shell nixpkgs#sops --command sops updatekeys secrets/secrets.yaml`

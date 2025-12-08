@@ -30,9 +30,13 @@
     } ];
 
     interfaces = [ {
-      type = "user"; # User-mode networking (slirp) for easiest setup without root bridge config
-      id = "vm-net";
+      type = "macvtap";
+      id = "vm-net"; 
       mac = "02:00:00:00:00:01";
+      macvtap = {
+        link = "enp4s0"; # The physical interface on classic-laddie
+        mode = "bridge"; 
+      };
     } ];
   };
 }

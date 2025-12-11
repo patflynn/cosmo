@@ -50,22 +50,28 @@ sudo chmod 644 /var/lib/libvirt/images/johnny-walker.qcow2
 sudo chown libvirt-qemu:kvm /var/lib/libvirt/images/johnny-walker.qcow2
 ```
 
-## Step 3: Create VM (virt-manager)
+## Step 3: Create VM (virsh)
 
-1.  Open **Virtual Machine Manager** (`virt-manager`).
-2.  Click **Create New Virtual Machine**.
-3.  **Step 1**: Choose "Import existing disk image".
-4.  **Step 2**: 
-    -   **Provide the existing storage path**: Browse to `/var/lib/libvirt/images/johnny-walker.qcow2`.
-    -   **OS Type**: generic (or Linux 2024/latest).
-5.  **Step 3**: Configure Resources:
-    -   **Memory**: 20480 MB (20 GB)
-    -   **CPUs**: 24
-6.  **Step 4**: Name the VM `johnny-walker`.
-    -   **Network Selection**: Select "Bridge device" -> `enp4s0` (or `virbr0`).
-7.  Click **Finish**.
+Instead of using `virt-manager`, we can define and start the VM using `virsh` commands.
 
-The VM should boot directly into the fully configured `johnny-walker` system.
+1.  **Locate XML Definition**: The VM definition is checked into the repository at `hosts/johnny-walker/libvirt-domain.xml`.
+    
+    *Note: Adjust the network source in this file (`virbr0` or `enp4s0`) if necessary for your `classic-laddie` host network configuration.*
+
+2.  **Define the VM**:
+
+    ```bash
+    cd ~/hack/cosmo
+    virsh define hosts/johnny-walker/libvirt-domain.xml
+    ```
+
+3.  **Start the VM**:
+
+    ```bash
+    virsh start johnny-walker
+    ```
+
+The VM `johnny-walker` should now be defined and started on your `classic-laddie` host. You can connect to it via SSH (assuming the VM successfully boots and gets an IP on the bridge).
 
 ## Post-Install
 

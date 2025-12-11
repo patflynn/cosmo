@@ -52,22 +52,20 @@
       };
 
       # Hostname: johnny-walker
-      # This is now hosted by classic-laddie as a MicroVM.
-      # To build it standalone, we would need to wrap it in microvm.lib.nixosSystem
-      # johnny-walker = nixpkgs.lib.nixosSystem {
-      #   system = "x86_64-linux";
-      #   specialArgs = { inherit inputs; };
-      #   modules = [
-      #     ./hosts/johnny-walker/default.nix
-      #
-      #     home-manager.nixosModules.home-manager
-      #     {
-      #       home-manager.useGlobalPkgs = true;
-      #       home-manager.useUserPackages = true;
-      #       home-manager.users.patrick = import ./home/vm.nix;
-      #     }
-      #   ];
-      # };
+      johnny-walker = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/johnny-walker/default.nix
+
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.patrick = import ./home/vm.nix;
+          }
+        ];
+      };
     };
   };
 }

@@ -15,7 +15,7 @@
       interop.appendWindowsPath = true;
       network.generateHosts = true;
     };
-    defaultUser = "patrick";  # Replace with your username
+    defaultUser = "patrick"; # Replace with your username
     startMenuLaunchers = true;
   };
 
@@ -24,14 +24,14 @@
 
   # WSL-specific packages
   environment.systemPackages = with pkgs; [
-    wslu  # WSL utilities
+    wslu # WSL utilities
     dos2unix
     ntfs3g
   ];
 
   # Set up GUI support
   services.xserver = {
-    enable = false;  # No need for X11 server in WSL by default
+    enable = false; # No need for X11 server in WSL by default
   };
 
   # Allow unfree packages
@@ -46,10 +46,10 @@
   # WSL-specific optimizations
   # Reduces initial memory usage
   boot.isContainer = true;
-  
+
   # Networking is handled by Windows
   networking.dhcpcd.enable = false;
-  
+
   # Disable systemd services that don't work well in WSL
   systemd.services.systemd-udevd.enable = false;
   systemd.services.NetworkManager-wait-online.enable = false;

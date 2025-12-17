@@ -21,7 +21,7 @@
 
   # Disable these for WSL2
   boot.loader.grub.enable = false;
-  
+
   # Basic networking
   networking.useDHCP = lib.mkDefault true;
 }

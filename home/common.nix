@@ -4,12 +4,12 @@
   # Shell & Tools
   home.packages = with pkgs; [
     # Core Tools
-    ripgrep      # Fast grep (Essential for Doom Emacs)
-    fd           # Fast find (Essential for Doom Emacs)
-    jq           # JSON parser
-    tree         # Directory viewer
-    btop         # Fancy htop
-    
+    ripgrep # Fast grep (Essential for Doom Emacs)
+    fd # Fast find (Essential for Doom Emacs)
+    jq # JSON parser
+    tree # Directory viewer
+    btop # Fancy htop
+
     # Emacs (The Editor)
   ];
 
@@ -18,7 +18,7 @@
     settings = {
       user = {
         name = "Patrick Flynn";
-        email = "big.pat@gmail.com"; 
+        email = "big.pat@gmail.com";
       };
       init.defaultBranch = "main";
       pull.rebase = true;
@@ -34,13 +34,13 @@
       };
     };
   };
-  
+
   programs.zsh = {
     enable = true;
     enableCompletion = true;
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
-    
+
     shellAliases = {
       ll = "ls -l";
       ed = "emacsclient -t"; # Quick edit in terminal
@@ -79,7 +79,7 @@
     mouse = true; # Enable mouse support
     terminal = "screen-256color";
     historyLimit = 100000;
-    
+
     extraConfig = ''
       set-option -g status-style fg=white,bg=colour23
       set -g base-index 1

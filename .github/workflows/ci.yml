@@ -16,7 +16,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       
       - name: Check Formatting
-        run: nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check .
+        run: nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check flake.nix hosts home modules
 
   build:
     runs-on: ubuntu-latest

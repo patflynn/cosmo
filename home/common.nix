@@ -92,6 +92,16 @@
     enable = true;
   };
 
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.config/emacs/bin"
+  ];
+
+  xdg.configFile = {
+    "doom/config.el".source = ./doom/config.el;
+    "doom/init.el".source = ./doom/init.el;
+    "doom/packages.el".source = ./doom/packages.el;
+  };
+
   services.emacs = {
     enable = true;
   };

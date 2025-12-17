@@ -50,16 +50,16 @@ ssh user@classic-laddie "sudo chown root:root /var/lib/libvirt/images/johnny-wal
 
 ## Step 3: Define and Start VM (on classic-laddie, via SSH)
 
-Define and start the VM on `classic-laddie` using `virsh`. The XML definition is piped from your local machine.
+Define and start the VM on `classic-laddie` using `virsh`. The XML definition is piped from your local machine. We connect to the **system** instance (`qemu:///system`) to ensure we have privileges for network creation.
 
 ```bash
 # Define the VM on classic-laddie (run from your dev machine/WSL2)
 # Ensure you are in the cosmo repo directory on your dev machine
 cd ~/hack/cosmo
-cat hosts/johnny-walker/libvirt-domain.xml | ssh user@classic-laddie "virsh define /dev/stdin"
+cat hosts/johnny-walker/libvirt-domain.xml | ssh user@classic-laddie "virsh -c qemu:///system define /dev/stdin"
 
 # Start the VM on classic-laddie (run from your dev machine/WSL2)
-ssh user@classic-laddie "virsh start johnny-walker"
+ssh user@classic-laddie "virsh -c qemu:///system start johnny-walker"
 ```
 
 The VM `johnny-walker` should now be defined and started on your `classic-laddie` host. You can connect to it via SSH (assuming the VM successfully boots and gets an IP on the bridge).

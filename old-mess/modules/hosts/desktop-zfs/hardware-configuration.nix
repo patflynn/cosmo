@@ -6,38 +6,44 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
-  
+
   networking.hostId = "93ce0154";
 
-  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"];
+  boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "tank/encrypt/local/root";
+    {
+      device = "tank/encrypt/local/root";
       fsType = "zfs";
     };
 
   fileSystems."/nix" =
-    { device = "tank/encrypt/local/nix";
+    {
+      device = "tank/encrypt/local/nix";
       fsType = "zfs";
     };
 
   fileSystems."/cache" =
-    { device = "tank/encrypt/local/cache";
+    {
+      device = "tank/encrypt/local/cache";
       fsType = "zfs";
     };
 
   fileSystems."/persist" =
-    { device = "tank/encrypt/safe/persist";
+    {
+      device = "tank/encrypt/safe/persist";
       fsType = "zfs";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/BE84-EC4A";
+    {
+      device = "/dev/disk/by-uuid/BE84-EC4A";
       fsType = "vfat";
     };
 

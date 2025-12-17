@@ -14,7 +14,7 @@
   # If you are Legacy BIOS, you might need: boot.loader.grub.device = "/dev/sda";
 
   networking.hostName = "classic-laddie";
-  networking.hostId= "8425e349"; # Required for ZFS
+  networking.hostId = "8425e349"; # Required for ZFS
   networking.networkmanager.enable = true;
 
   # Storage Support (Roadmap Phase 1)
@@ -30,7 +30,7 @@
   virtualisation.libvirtd.enable = true;
   programs.dconf.enable = true; # Required for virt-manager
   environment.systemPackages = with pkgs; [ virt-manager ];
-  
+
   # Host-specific user configuration
   users.users.patrick.extraGroups = [ "libvirtd" ];
 
@@ -43,5 +43,5 @@
   };
 
   # Do not change this unless you reinstall the OS
-  system.stateVersion = "25.11"; 
+  system.stateVersion = "25.11";
 }

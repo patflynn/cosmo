@@ -11,10 +11,10 @@
     # Network Tools
     wget
     curl
-    
+
     # System Monitor
     htop
-    
+
     # Version Control
     git
   ];

@@ -30,8 +30,8 @@ It defines the hardware, operating system, services, and user environments for t
 
 ### Phase 2: The Virtualization Host
 - [x] **Priority:** Setup CI (GitHub Actions) to verify builds on push/PR.
-- [ ] Generate and commit `flake.lock`.
-- [ ] Enhance CI: Add formatting check (nixfmt) and expand build matrix.
+- [x] Generate and commit `flake.lock`.
+- [x] Enhance CI: Add formatting check (nixfmt) and expand build matrix.
 - [x] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.
 - [x] Create a "Base Guest" module (shared config for all VMs).
 - [x] Deploy first Dev VM (`johnny-walker`).

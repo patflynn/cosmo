@@ -11,9 +11,14 @@
 
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
+
+    nixos-generators = {
+      url = "github:nix-community/nixos-generators";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, nixos-generators, ... }@inputs: {
     nixosConfigurations = {
       # Hostname: classic-laddie
       classic-laddie = nixpkgs.lib.nixosSystem {
@@ -62,6 +67,23 @@
             home-manager.users.patrick = import ./home/vm.nix;
           }
         ];
+      };
+    };
+
+    packages.x86_64-linux = {
+      johnny-walker-image = nixos-generators.nixosGenerate {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/johnny-walker/default.nix
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.patrick = import ./home/vm.nix;
+          }
+        ];
+        format = "qcow";
       };
     };
   };

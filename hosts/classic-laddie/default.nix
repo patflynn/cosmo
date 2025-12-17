@@ -34,7 +34,6 @@
   # Host-specific user configuration
   users.users.patrick.extraGroups = [ "libvirtd" ];
 
-
   security.sudo.wheelNeedsPassword = true;
   # Enable SSH so you can access the server
   services.openssh = {
@@ -42,9 +41,6 @@
     settings.PasswordAuthentication = false;
     settings.PermitRootLogin = "no";
   };
-
-  # Enable Flakes and new command line tools
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Do not change this unless you reinstall the OS
   system.stateVersion = "25.11"; 

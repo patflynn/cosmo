@@ -7,7 +7,7 @@
     enable = true;
     package = pkgs.emacs;
   };
-  
+
   # Basic emacs dependencies
   home.packages = with pkgs; [
     git

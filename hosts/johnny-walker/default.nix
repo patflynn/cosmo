@@ -21,7 +21,7 @@
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  
+
   networking.hostName = "johnny-walker";
   networking.networkmanager.enable = true;
 
@@ -34,5 +34,5 @@
   # Enable Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  system.stateVersion = "25.11"; 
+  system.stateVersion = "25.11";
 }

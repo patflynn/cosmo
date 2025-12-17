@@ -16,7 +16,7 @@ It defines the hardware, operating system, services, and user environments for t
     * Remote Access via SSH and Tailscale only.
 * **Storage:** ZFS (configured at install time).
 * **Isolation Strategy:**
-    * *Heavy/Insecure Workloads (Dev, User Compute):* **VMs** (MicroVMs or Libvirt).
+    * *Heavy/Insecure Workloads (Dev, User Compute):* **VMs** (Libvirt/KVM).
     * *Trusted Infrastructure (Media, DNS, Home Auto):* **NixOS Containers** (lightweight, declarative).
 
 ## Implementation Phases
@@ -30,11 +30,11 @@ It defines the hardware, operating system, services, and user environments for t
 
 ### Phase 2: The Virtualization Host
 - [x] **Priority:** Setup CI (GitHub Actions) to verify builds on push/PR.
-- [ ] Generate and commit `flake.lock` (requires Nix machine).
-- [ ] Enhance CI: Add formatting check (nixfmt) and expand build matrix.
+- [x] Generate and commit `flake.lock`.
+- [x] Enhance CI: Add formatting check (nixfmt) and expand build matrix.
 - [x] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.
 - [x] Create a "Base Guest" module (shared config for all VMs).
-- [ ] Deploy first Dev VM (`johnny-walker`).
+- [x] Deploy first Dev VM (`johnny-walker`).
 - [ ] Implement Secret Management (sops-nix/agenix) to secure passwords and keys.
 
 ### Phase 3: Services
@@ -42,5 +42,5 @@ It defines the hardware, operating system, services, and user environments for t
 - [ ] Deploy Home Automation (Home Assistant) in a Container/VM.
 
 ### Phase 4: Expansion
-- [ ] Onboard other hardware (MacBooks, WSL) into the Flake.
-- [ ] Onboard NixOS VM (WSL2).
+- [ ] Onboard other hardware (MacBooks).
+- [x] Onboard NixOS VM (WSL2).

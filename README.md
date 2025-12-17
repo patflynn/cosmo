@@ -1,4 +1,5 @@
 # Cosmo
+[![CI Build Status](https://github.com/patflynn/cosmo/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/patflynn/cosmo/actions/workflows/ci.yml)
 
 This is the central NixOS configuration repository for my infrastructure.
 

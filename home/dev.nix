@@ -13,6 +13,10 @@
     # Build Tools
     gnumake
     gcc
+
+    # CLIs
+    github-cli # GitHub CLI (gh)
+    gemini-cli # Gemini CLI
   ];
   
   # Git adjustments for dev if needed (e.g. signing keys)

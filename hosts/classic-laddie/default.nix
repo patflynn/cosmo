@@ -5,7 +5,6 @@
     ./hardware-configuration.nix
     ../../modules/common/system.nix
     ../../modules/common/users.nix
-    inputs.microvm.nixosModules.host
   ];
 
   # Bootloader (Keep what matches your hardware!)

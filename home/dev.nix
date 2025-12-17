@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [ ./common.nix ];
@@ -17,6 +17,9 @@
     # CLIs
     github-cli # GitHub CLI (gh)
     gemini-cli # Gemini CLI
+
+    # Age tools
+    inputs.agenix.packages."${system}".default
   ];
 
   # Git adjustments for dev if needed (e.g. signing keys)

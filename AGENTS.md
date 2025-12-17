@@ -9,7 +9,7 @@ The project follows a **Host-Centric** and **Layered** architecture.
 - **`flake.nix`**: The entry point. Defines `nixosConfigurations` for each host (e.g., `classic-laddie`, `wsl`).
 - **`hosts/`**: Contains host-specific configurations.
   - Each directory (e.g., `hosts/classic-laddie/`) should contain a `default.nix` (configuration) and `hardware-configuration.nix`.
-  - **`classic-laddie`** acts as a hypervisor for the **`johnny-walker`** MicroVM.
+  - **`classic-laddie`** is the physical server.
 - **`home/`**: Home Manager configurations (User: `patrick`).
   - **`common.nix`**: Base configuration shared across all machines (shell, git, core tools).
   - **`*.nix`** (e.g., `server.nix`, `wsl.nix`): Host/Context-specific overrides that import `common.nix`.
@@ -50,4 +50,4 @@ sudo nixos-rebuild switch --flake .
 ## Contextual Knowledge
 - **User**: The primary configured user in Nix modules is `patrick`.
 - **WSL**: The `wsl` host configuration handles Windows Subsystem for Linux specifics.
-- **MicroVM**: `johnny-walker` is a MicroVM managed by `classic-laddie`.
+- **Virtualization**: `johnny-walker` is a standalone VM (QEMU/KVM).

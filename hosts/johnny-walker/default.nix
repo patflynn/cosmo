@@ -8,6 +8,16 @@
     ../../modules/common/guest.nix
   ];
 
+  # VM Specs: 24GB RAM, 24 vCPUs, 100GB Disk
+  # These settings apply when building a VM image for testing (nixos-rebuild build-vm)
+  virtualisation.vmVariant = {
+    virtualisation = {
+      memorySize = 24576; # 24GB
+      cores = 24;
+      diskSize = 102400; # 100GB
+    };
+  };
+
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -20,6 +30,9 @@
 
   # Enable SSH
   services.openssh.enable = true;
+
+  # Enable Flakes
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   system.stateVersion = "25.11"; 
 }

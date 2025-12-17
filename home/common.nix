@@ -50,6 +50,7 @@
       la = "ls -la";
       grep = "grep --color=auto";
       hm = "home-manager";
+      emacs = "emacs -nw";
     };
 
     history = {

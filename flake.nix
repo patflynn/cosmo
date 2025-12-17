@@ -11,12 +11,9 @@
 
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
-
-    microvm.url = "github:astro/microvm.nix";
-    microvm.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, microvm, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
     nixosConfigurations = {
       # Hostname: classic-laddie
       classic-laddie = nixpkgs.lib.nixosSystem {
@@ -52,22 +49,20 @@
       };
 
       # Hostname: johnny-walker
-      # This is now hosted by classic-laddie as a MicroVM.
-      # To build it standalone, we would need to wrap it in microvm.lib.nixosSystem
-      # johnny-walker = nixpkgs.lib.nixosSystem {
-      #   system = "x86_64-linux";
-      #   specialArgs = { inherit inputs; };
-      #   modules = [
-      #     ./hosts/johnny-walker/default.nix
-      #
-      #     home-manager.nixosModules.home-manager
-      #     {
-      #       home-manager.useGlobalPkgs = true;
-      #       home-manager.useUserPackages = true;
-      #       home-manager.users.patrick = import ./home/vm.nix;
-      #     }
-      #   ];
-      # };
+      johnny-walker = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/johnny-walker/default.nix
+
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.patrick = import ./home/vm.nix;
+          }
+        ];
+      };
     };
   };
 }

@@ -4,28 +4,6 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/common/system.nix
-    inputs.microvm.nixosModules.host
-  ];
-
-  # Define the MicroVMs hosted by this machine
-  microvm.vms.johnny-walker = {
-    # The configuration for the Guest VM
-    config = {
-      imports = [
-        ../johnny-walker/default.nix
-        ../johnny-walker/microvm.nix
-      ];
-    };
-    
-    # We use the flake's pkgs to ensure consistency
-    pkgs = pkgs;
-  };
-
-  # Ensure persistent directories exist on the host
-  systemd.tmpfiles.rules = [
-    "d /var/lib/microvms/johnny-walker/etc 0755 root root -"
-    "d /var/lib/microvms/johnny-walker/home 0755 root root -"
-    "d /var/lib/microvms/johnny-walker/var-lib 0755 root root -"
   ];
 
   # Bootloader (Keep what matches your hardware!)

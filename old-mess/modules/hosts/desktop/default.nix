@@ -25,7 +25,7 @@
   # Audio configuration
   # Disable PipeWire to avoid conflicts
   services.pipewire.enable = false;
-  
+
   # Use PulseAudio for sound
   services.pulseaudio = {
     enable = true;
@@ -48,7 +48,7 @@
     maim
     xclip
   ];
-  
+
   # For CI testing only
   nixpkgs.config.allowUnfree = true;
 }

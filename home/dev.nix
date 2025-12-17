@@ -6,10 +6,10 @@
   # Development Tools
   home.packages = with pkgs; [
     # Language Servers & Runtimes
-    nixd         # Nix LSP
+    nixd # Nix LSP
     python3
-    nodejs    
-    
+    nodejs
+
     # Build Tools
     gnumake
     gcc
@@ -18,6 +18,6 @@
     github-cli # GitHub CLI (gh)
     gemini-cli # Gemini CLI
   ];
-  
+
   # Git adjustments for dev if needed (e.g. signing keys)
 }

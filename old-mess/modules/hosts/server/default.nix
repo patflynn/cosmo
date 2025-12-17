@@ -26,7 +26,7 @@
   # Media drives
   # Configuration is moved to hardware-configuration.nix for CI
   # This will be removed after migration is complete
-  
+
   # Auto-update system
   system.autoUpgrade = {
     enable = true;

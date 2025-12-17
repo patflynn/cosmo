@@ -46,6 +46,8 @@ sudo nixos-rebuild switch --flake .
 ### 3. Contribution Workflow
 - **Branch Protection**: The `main` branch is protected. All changes must be submitted via Pull Requests (PRs).
 - **Commit Style**: Use declarative commit messages (e.g., "feat: Add new feature", "fix: Resolve bug").
+- **Branching**: Always start new feature or fix branches from an up-to-date `main` branch.
+- **Stacking PRs**: Do not stack Pull Requests (i.e., base a new PR on a branch that is not yet merged). Each PR should be independent and target `main` unless you are explicitly asked to do otherwise.
 
 ## Contextual Knowledge
 - **User**: The primary configured user in Nix modules is `patrick`.

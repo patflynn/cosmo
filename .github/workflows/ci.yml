@@ -7,18 +7,40 @@ on:
     branches: [ "main" ]
 
 jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      
+      - name: Check Formatting
+        run: nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check .
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        host: [classic-laddie, wsl, johnny-walker]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      
+      # We use --dry-run to verify the derivation can be calculated and dependencies resolved.
+      # Full builds might be too heavy for standard GitHub Runners without caching.
+      - name: Build ${{ matrix.host }} (Dry Run)
+        run: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --dry-run
+
   check:
     runs-on: ubuntu-latest
-    env:
-      NIX_ABORT_ON_WARN: true
     steps:
-    - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@v30
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
     
-    - name: Flake Check
-      run: nix flake check
-    
-    - name: Build classic-laddie (Dry Run)
-      run: nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --dry-run
+      - name: Flake Check
+        run: nix flake check

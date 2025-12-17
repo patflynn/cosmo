@@ -31,7 +31,7 @@
       <model type='virtio'/>
     </interface>
     <serial type='pty'>
-      <target type='system' port='0'/>
+      <target port='0'/>
     </serial>
     <console type='pty'>
       <target type='serial' port='0'/>

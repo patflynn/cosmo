@@ -6,6 +6,9 @@
     # but use "nixos-24.11" if you want rock-solid stability.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    agenix.url = "github:ryantm/agenix";
+    agenix.inputs.nixpkgs.follows = "nixpkgs";
+
     home-manager.url = "github:nix-community/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -24,6 +27,7 @@
       nixpkgs,
       home-manager,
       nixos-generators,
+      agenix,
       ...
     }@inputs:
     {
@@ -39,6 +43,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.users.patrick = import ./home/server.nix;
             }
           ];
@@ -56,6 +61,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.users.patrick = import ./home/wsl.nix;
             }
           ];
@@ -72,6 +78,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.users.patrick = import ./home/vm.nix;
             }
           ];
@@ -88,6 +95,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.users.patrick = import ./home/vm.nix;
             }
           ];

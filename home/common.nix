@@ -60,7 +60,7 @@
     initContent = ''
       # Add $HOME/bin to PATH
       export PATH="$HOME/bin:$PATH"
-      
+
       # Ergonomics
       setopt AUTO_CD              # cd by typing directory name
       setopt EXTENDED_HISTORY     # record timestamp of command in HISTFILE

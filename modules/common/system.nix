@@ -20,5 +20,8 @@
   ];
 
   # Enable Flakes and new command line tools
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 }

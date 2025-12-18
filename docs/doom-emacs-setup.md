@@ -1,51 +1,45 @@
 # Doom Emacs Setup
 
-Since `doom-emacs` manages its own configuration and packages outside of Nix (imperatively), it must be installed manually after the NixOS environment is set up.
+Since `doom-emacs` manages its own configuration and packages outside of Nix (imperatively), the core program must be installed manually after the NixOS environment is set up.
+
+However, the **user configuration** (`config.el`, `init.el`, `packages.el`) is managed by Home Manager in this repository.
 
 ## Prerequisites
 
-Ensure your NixOS configuration has the following packages installed (already present in `home/core.nix`):
-- `git`
-- `emacs`
-- `ripgrep`
-- `fd`
+Ensure your NixOS/Home Manager configuration has been applied. This ensures:
+1.  Dependencies are installed (defined in `home/common.nix`): `git`, `emacs`, `ripgrep`, `fd`.
+2.  Config files are linked: `~/.config/doom` should already contain symlinks to the files in `home/doom/`.
 
 ## Installation
 
 1.  **Clone Doom Emacs:**
     ```bash
-    git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
+    git clone --depth 1 [https://github.com/doomemacs/doomemacs](https://github.com/doomemacs/doomemacs) ~/.config/emacs
     ```
 
 2.  **Install Doom:**
     ```bash
     ~/.config/emacs/bin/doom install
     ```
-    *   Answer 'yes' to generating an env file.
-    *   Answer 'yes' to installing fonts if asked (though Nix likely manages fonts, it doesn't hurt).
+    * **Env File:** Answer 'yes' to generate an env file.
+    * **Config:** If asked to generate a private config, answer **NO**. We want to use the existing config managed by Nix (in `~/.config/doom`).
+    * **Fonts:** Answer 'yes' to installing fonts if asked.
 
-## Configuration
+## Configuration & Updates
 
-To restore or use the configuration from this repository:
+Because `~/.config/doom` is managed by Nix (symlinked from `home/doom/`), you do not need to manually copy files.
 
-1.  **Create/Clear the config directory:**
-    ```bash
-    mkdir -p ~/.config/doom
-    ```
+To apply changes:
 
-2.  **Copy config from the repository:**
-    *   *Note: Adjust the source path if your repo location differs.*
-    ```bash
-    # Example: Copying from the legacy folder for now
-    cp -r ~/hack/cosmo/old-mess/home/common/doom.d/* ~/.config/doom/
-    ```
-
-3.  **Sync changes:**
+1.  **Edit Source:** Modify files in `home/doom/` inside this repository.
+2.  **Apply Nix:** Run `rebuild` (or `home-manager switch`) to update the symlinks.
+    * *Note: This does not instantly update Doom's packages.*
+3.  **Sync Doom:** If you modified `packages.el` or `init.el`, run:
     ```bash
     ~/.config/emacs/bin/doom sync
     ```
 
 ## Usage
 
--   Ensure `~/.config/emacs/bin` is in your `PATH` for convenience.
+-   Ensure `~/.config/emacs/bin` is in your `PATH` (or use the aliases defined in `home/common.nix`).
 -   Run `doom doctor` to diagnose issues.

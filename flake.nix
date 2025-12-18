@@ -15,6 +15,11 @@
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
+    pre-commit-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-generators = {
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -28,9 +33,11 @@
       home-manager,
       nixos-generators,
       agenix,
+      pre-commit-hooks,
       ...
     }@inputs:
     {
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
       nixosConfigurations = {
         # Hostname: classic-laddie
         classic-laddie = nixpkgs.lib.nixosSystem {
@@ -102,6 +109,21 @@
           ];
           format = "qcow";
         };
+      };
+
+      checks.x86_64-linux = {
+        pre-commit-check = pre-commit-hooks.lib.x86_64-linux.run {
+          src = ./.;
+          hooks = {
+            nixfmt-rfc-style.enable = true;
+            detect-private-keys.enable = true;
+          };
+        };
+      };
+
+      devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
+        inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
+        buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages;
       };
     };
 }

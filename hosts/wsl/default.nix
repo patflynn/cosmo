@@ -18,5 +18,12 @@
     startMenuLaunchers = true;
   };
 
+  # Not really used but needed for host authentication for age
+  services.openssh = {
+    enable = true;
+    settings.PasswordAuthentication = false;
+    settings.PermitRootLogin = "no";
+  };
+
   system.stateVersion = "24.11";
 }

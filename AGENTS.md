@@ -16,7 +16,10 @@ The project follows a **Host-Centric** and **Layered** architecture.
   - **Note**: Home Manager is integrated as a NixOS module in `flake.nix`, not standalone.
 - **`modules/`**: Reusable NixOS modules.
   - `modules/common/system.nix`: Base system configuration (locale, basic packages) imported by all hosts.
-- **`old-mess/`**: Legacy configuration (reference only, do not modify or use unless migrating).
+- **`secrets/`**: Encrypted secrets and access control.
+  - Managed via **Agenix**.
+  - `secrets.nix`: Defines access rules (public keys) for encrypted files.
+  - `*.age`: Encrypted binary files containing actual secrets.
 
 ## Development Guidelines
 
@@ -32,24 +35,3 @@ The project follows a **Host-Centric** and **Layered** architecture.
 Apply changes to the current system:
 ```bash
 sudo nixos-rebuild switch --flake .
-```
-(Or `--flake .#hostname` if strictly necessary, but auto-detection usually works).
-
-#### Managing Packages
-- **System-wide** (available to root & all users):
-  - Edit `modules/common/system.nix` (for all hosts) or `hosts/<hostname>/default.nix` (for specific host).
-  - Add to `environment.systemPackages`.
-- **User-specific** (Home Manager):
-  - Edit `home/common.nix` (for all hosts) or `home/<context>.nix` (for specific context).
-  - Add to `home.packages`.
-
-### 3. Contribution Workflow
-- **Branch Protection**: The `main` branch is protected. All changes must be submitted via Pull Requests (PRs).
-- **Commit Style**: Use declarative commit messages (e.g., "feat: Add new feature", "fix: Resolve bug").
-- **Branching**: Always start new feature or fix branches from an up-to-date `main` branch.
-- **Stacking PRs**: Do not stack Pull Requests (i.e., base a new PR on a branch that is not yet merged). Each PR should be independent and target `main` unless you are explicitly asked to do otherwise.
-
-## Contextual Knowledge
-- **User**: The primary configured user in Nix modules is `patrick`.
-- **WSL**: The `wsl` host configuration handles Windows Subsystem for Linux specifics.
-- **VM**: `johnny-walker` is a standalone virtualized development workstation (QEMU/KVM) hosted on `classic-laddie`.

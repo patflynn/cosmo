@@ -3,9 +3,10 @@
 
 This is the central NixOS configuration repository for my infrastructure.
 
-## Status: Fresh Start
+## Status: Virtualization Host
 
-This repository is currently in **Phase 1** of the [Roadmap](./ROADMAP.md).
+This repository is currently in **Phase 2** of the [Roadmap](./ROADMAP.md).
+The foundation (ZFS, Networking, SSH) is complete, and the focus is now on Virtualization, Secrets Management, and Automation.
 
 ## Usage
 
@@ -13,12 +14,12 @@ See [AGENTS.md](./AGENTS.md) for common administrative commands.
 
 ## Structure
 
-*   `flake.nix`: Entry point.
-*   `hosts/`: System configurations (NixOS).
-*   `home/`: User configurations (Home Manager).
-*   `old-mess/`: Legacy configuration (Reference only).
+* `flake.nix`: Entry point.
+* `hosts/`: System configurations (NixOS).
+* `home/`: User configurations (Home Manager).
+* `modules/`: Reusable NixOS modules.
 
 ## Setup Guides
 
-*   [Doom Emacs Setup](./docs/doom-emacs-setup.md): Manual steps to bootstrap Doom Emacs.
-*   [Secrets Management](./docs/secrets-management.md): How to add, edit, and rekey encrypted secrets (Agenix).
+* [Doom Emacs Setup](./docs/doom-emacs-setup.md): Manual steps to bootstrap Doom Emacs.
+* [Secrets Management](./docs/secrets-management.md): How to add, edit, and rekey encrypted secrets (Agenix).

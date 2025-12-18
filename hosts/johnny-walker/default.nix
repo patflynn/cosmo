@@ -28,6 +28,8 @@
   # Set your time zone
   time.timeZone = "America/New_York";
 
+  # Enable tailscale
+  services.tailscale.enable = true;
   # Enable SSH
   services.openssh.enable = true;
 

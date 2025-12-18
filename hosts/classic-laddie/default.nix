@@ -18,6 +18,23 @@
   boot.loader.efi.canTouchEfiVariables = true;
   # If you are Legacy BIOS, you might need: boot.loader.grub.device = "/dev/sda";
 
+  # Enable proprietary software (required for Nvidia drivers)
+  nixpkgs.config.allowUnfree = true;
+
+  # Graphics
+  hardware.graphics.enable = true;
+
+  # Nvidia Driver Configuration
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia = {
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    powerManagement.finegrained = false;
+    open = false;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+  };
+
   networking.hostName = "classic-laddie";
   networking.hostId = "8425e349"; # Required for ZFS
   networking.networkmanager.enable = true;

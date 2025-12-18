@@ -39,3 +39,4 @@ shells/
 tmux/
 work.nix
 zsh/
+.pre-commit-config.yaml

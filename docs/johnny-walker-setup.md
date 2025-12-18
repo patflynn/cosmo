@@ -8,6 +8,7 @@ This guide details the setup for the `johnny-walker` development environment.
 - **Host**: `classic-laddie` (NixOS, KVM/Libvirt enabled)
 - **Guest**: `johnny-walker` (NixOS, Standalone Flake Configuration)
 - **Hypervisor**: QEMU/KVM via `virsh` (headless)
+- **Graphics**: Virtio-GPU with 3D Acceleration (requires Host GPU)
 
 ## Prerequisites
 

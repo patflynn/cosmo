@@ -28,14 +28,18 @@ It defines the hardware, operating system, services, and user environments for t
 - [x] Setup `home-manager` for the shared "Ergonomics" layer (Shell, Git, Keys).
 - [x] Configure Tailscale for secure remote access.
 
-### Phase 2: The Virtualization Host
+### Phase 2: The Virtualization Host & Automation
 - [x] **Priority:** Setup CI (GitHub Actions) to verify builds on push/PR.
 - [x] Generate and commit `flake.lock`.
 - [x] Enhance CI: Add formatting check (nixfmt) and expand build matrix.
 - [x] Enable Virtualization (Libvirt/KVM) on `classic-laddie`.
 - [x] Create a "Base Guest" module (shared config for all VMs).
 - [x] Deploy first Dev VM (`johnny-walker`).
-- [ ] Implement Secret Management (sops-nix/agenix) to secure passwords and keys.
+- [x] Implement Secret Management (sops-nix/agenix) to secure passwords and keys.
+- [ ] **Ruthless Automation:** Eliminate manual bootstrapping steps.
+    - *Targets:* Doom Emacs install, VM image transfers, and Secret rekeying workflows.
+- [ ] **Automate Maintenance:** Configure hosts to auto-update from upstream daily and garbage collect (prevent drift).
+- [ ] **Enhance CI:** Configure auto-merge for flake.lock update PRs if CI passes.
 
 ### Phase 3: Services
 - [ ] Deploy Media Stack (Jellyfin/Plex) in a NixOS Container.

@@ -38,7 +38,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/classic-laddie/default.nix
-
+            agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
@@ -56,7 +56,7 @@
           modules = [
             ./hosts/wsl/default.nix
             inputs.nixos-wsl.nixosModules.wsl
-
+            agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
@@ -73,7 +73,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/johnny-walker/default.nix
-
+            agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
@@ -91,6 +91,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/johnny-walker/default.nix
+            agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;

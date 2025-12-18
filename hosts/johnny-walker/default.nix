@@ -22,6 +22,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Enable Graphics
+  hardware.graphics.enable = true;
+
   networking.hostName = "johnny-walker";
   networking.networkmanager.enable = true;
 

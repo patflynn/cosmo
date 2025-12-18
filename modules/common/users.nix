@@ -7,6 +7,10 @@ in
   programs.zsh.enable = true;
 
   age.secrets.user-password.file = ../../secrets/user-password.age;
+
+  # cause that's how I roll! (for now)
+  users.mutableUsers = false;
+
   users.users.patrick = {
     isNormalUser = true;
     shell = pkgs.zsh;

@@ -39,7 +39,7 @@ It defines the hardware, operating system, services, and user environments for t
 - [ ] **Ruthless Automation:** Eliminate manual bootstrapping steps.
     - *Targets:* Doom Emacs install, VM image transfers, and Secret rekeying workflows.
 - [x] **Automate Maintenance:** Configure hosts to auto-update from upstream daily and garbage collect (prevent drift).
-- [ ] **Enhance CI:** Configure auto-merge for flake.lock update PRs if CI passes.
+- [x] **Enhance CI:** Configure auto-merge for flake.lock update PRs if CI passes.
 
 ### Phase 3: Services
 - [ ] Deploy Media Stack (Jellyfin/Plex) in a NixOS Container.

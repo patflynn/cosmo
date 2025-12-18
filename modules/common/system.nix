@@ -24,4 +24,22 @@
     "nix-command"
     "flakes"
   ];
+
+  # Automate Maintenance
+  # Update the system daily from the upstream repo and clean up old generations
+  system.autoUpgrade = {
+    enable = true;
+    flake = "github:patflynn/cosmo";
+    flags = [
+      "-L" # print build logs
+    ];
+    dates = "02:00";
+    randomizedDelaySec = "45min";
+  };
+
+  nix.gc = {
+    automatic = true;
+    dates = "daily";
+    options = "--delete-older-than 7d";
+  };
 }

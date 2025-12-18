@@ -38,7 +38,7 @@ It defines the hardware, operating system, services, and user environments for t
 - [x] Implement Secret Management (sops-nix/agenix) to secure passwords and keys.
 - [ ] **Ruthless Automation:** Eliminate manual bootstrapping steps.
     - *Targets:* Doom Emacs install, VM image transfers, and Secret rekeying workflows.
-- [ ] **Automate Maintenance:** Configure hosts to auto-update from upstream daily and garbage collect (prevent drift).
+- [x] **Automate Maintenance:** Configure hosts to auto-update from upstream daily and garbage collect (prevent drift).
 - [ ] **Enhance CI:** Configure auto-merge for flake.lock update PRs if CI passes.
 
 ### Phase 3: Services

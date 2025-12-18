@@ -21,3 +21,4 @@ See [AGENTS.md](./AGENTS.md) for common administrative commands.
 ## Setup Guides
 
 *   [Doom Emacs Setup](./docs/doom-emacs-setup.md): Manual steps to bootstrap Doom Emacs.
+*   [Secrets Management](./docs/secrets-management.md): How to add, edit, and rekey encrypted secrets (Agenix).

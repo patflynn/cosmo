@@ -35,6 +35,10 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
+  # Allow qemu-libvirtd to access the GPU
+  users.groups.video.members = [ "qemu-libvirtd" ];
+  users.groups.render.members = [ "qemu-libvirtd" ];
+
   networking.hostName = "classic-laddie";
   networking.hostId = "8425e349"; # Required for ZFS
   networking.networkmanager.enable = true;

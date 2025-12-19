@@ -7,6 +7,12 @@
     xwayland.enable = true; # Required for Steam/X11 apps
   };
 
+  # Enable the Display Manager (SDDM) generically
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true;
+  };
+
   # Hint Electron apps to use Wayland
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 

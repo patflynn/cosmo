@@ -22,7 +22,8 @@
       };
       init.defaultBranch = "main";
       pull.rebase = true;
-      aliases = {
+    };
+    aliases = {
         st = "status";
         co = "checkout";
         ci = "commit";
@@ -36,8 +37,8 @@
         pr = "!git push -u origin HEAD && gh pr create --fill";
         land = "!gh pr merge --auto --merge --delete-branch && git checkout main && git pull";
         sweep = "!git checkout main && git pull && git branch --merged main | grep -v 'main$' | xargs -r git branch -d";
-      };
     };
+
   };
 
   programs.direnv = {

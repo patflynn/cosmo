@@ -20,11 +20,14 @@
   ];
 
   # Enable Flakes and new command line tools
-  nix.settings.experimental-features = [
-    "nix-command"
-    "flakes"
+  nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+    # Increase buffer to 64MB to fix "download buffer is full" warnings
     download-buffer-size = 67108864;
-  ];
+  };
 
   # Automate Maintenance
   # Update the system daily from the upstream repo and clean up old generations

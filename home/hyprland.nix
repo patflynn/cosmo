@@ -36,7 +36,8 @@ let
         echo "Applying Stream Resolution: ''${WIDTH}x''${HEIGHT}@''${FPS}"
         
         # 1. Create Headless Output (if not exists)
-        # We assume HEADLESS-1 for simplicity. 
+        # We assume HEADLESS-1 for simplicity. This virtual output acts as the
+        # primary display for the stream, matching the client's resolution exactly.
         # Check if it exists?
         if $HYPRCTL monitors | grep "HEADLESS-1"; then
             echo "HEADLESS-1 already exists."

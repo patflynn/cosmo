@@ -47,5 +47,11 @@
     "flakes"
   ];
 
+  # AUTO-LOGIN: Specific to this machine's role as a headless game console
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "patrick";
+  };
+
   system.stateVersion = "25.11";
 }

@@ -2,14 +2,75 @@
 let
   # A script to adapt Hyprland to the Moonlight client's resolution
   sunshine-switch-res = pkgs.writeShellScriptBin "sunshine-switch-res" ''
-    # If variables are missing, default to 4K (3840x2160@60)
-    # SUNSHINE_CLIENT_WIDTH/HEIGHT are provided by Sunshine when a client connects
+    # Enable logging
+    exec > /tmp/sunshine-switch-res.log 2>&1
+    echo "--- Sunshine Resolution Switcher ($1) started at $(date) ---"
+    
+    ACTION=$1
+    
+    # Defaults
     WIDTH=''${SUNSHINE_CLIENT_WIDTH:-3840}
     HEIGHT=''${SUNSHINE_CLIENT_HEIGHT:-2160}
     FPS=''${SUNSHINE_CLIENT_FPS:-60}
 
-    # Tell Hyprland to change resolution
-    ${pkgs.hyprland}/bin/hyprctl keyword monitor ", ''${WIDTH}x''${HEIGHT}@''${FPS},auto,1"
+    # Ensure HYPRLAND_INSTANCE_SIGNATURE is set
+    if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
+        RUNTIME_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+        export XDG_RUNTIME_DIR="$RUNTIME_DIR"
+        if [ -d "$RUNTIME_DIR/hypr" ]; then
+             INSTANCE=$(ls -td "$RUNTIME_DIR/hypr"/*/ | head -n 1)
+        elif [ -d "/tmp/hypr" ]; then
+             INSTANCE=$(ls -td /tmp/hypr/*/ | head -n 1)
+        fi
+        if [ -n "$INSTANCE" ]; then
+            export HYPRLAND_INSTANCE_SIGNATURE=$(basename "$INSTANCE")
+        else
+            echo "Error: Could not find Hyprland instance signature."
+            exit 1
+        fi
+    fi
+
+    HYPRCTL="${pkgs.hyprland}/bin/hyprctl"
+
+    if [ "$ACTION" == "do" ]; then
+        echo "Applying Stream Resolution: ''${WIDTH}x''${HEIGHT}@''${FPS}"
+        
+        # 1. Create Headless Output (if not exists)
+        # We assume HEADLESS-1 for simplicity. 
+        # Check if it exists?
+        if $HYPRCTL monitors | grep "HEADLESS-1"; then
+            echo "HEADLESS-1 already exists."
+        else
+            echo "Creating HEADLESS-1..."
+            $HYPRCTL output create headless
+        fi
+
+        # 2. Configure Headless to Client Resolution
+        echo "Setting HEADLESS-1 to ''${WIDTH}x''${HEIGHT}@''${FPS}..."
+        $HYPRCTL keyword monitor "HEADLESS-1, ''${WIDTH}x''${HEIGHT}@''${FPS}, auto, 1"
+        
+        # 3. Disable Virtual-1 (Physical/QEMU) to force apps to Headless
+        echo "Disabling Virtual-1..."
+        $HYPRCTL keyword monitor "Virtual-1, disable"
+        
+    elif [ "$ACTION" == "undo" ]; then
+        echo "Reverting to Default..."
+        
+        # 1. Re-enable Virtual-1
+        echo "Enabling Virtual-1..."
+        $HYPRCTL keyword monitor "Virtual-1, preferred, auto, 1"
+        
+        # 2. Remove Headless
+        echo "Removing HEADLESS-1..."
+        $HYPRCTL output remove HEADLESS-1
+        
+    else
+        echo "Unknown action: $ACTION"
+        exit 1
+    fi
+    
+    echo "Done."
+    $HYPRCTL monitors
   '';
 in
 {
@@ -27,14 +88,14 @@ in
       };
       apps = [
         {
-          name = "Desktop";
+          name = "Hyprland Desktop";
           image-path = "desktop.png";
           prep-cmd = [
             {
               # Run the script to switch resolution when connecting
-              do = "${sunshine-switch-res}/bin/sunshine-switch-res";
+              do = "${sunshine-switch-res}/bin/sunshine-switch-res do";
               # Run the script again (which defaults to 4K if no vars) when disconnecting
-              undo = "${sunshine-switch-res}/bin/sunshine-switch-res";
+              undo = "${sunshine-switch-res}/bin/sunshine-switch-res undo";
             }
           ];
           exclude-global-env = false;

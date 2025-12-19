@@ -23,12 +23,16 @@
     dedicatedServer.openFirewall = true;
   };
 
-  # --- Remote Access (Sunshine) ---
+  # Remote Access (Sunshine) ---
   # Only enable this if you intend to stream from this machine
   services.sunshine = {
     enable = true;
     autoStart = true;
     capSysAdmin = true;
     openFirewall = true;
+    settings = {
+      verbose = true; # Enable verbose logging for debugging
+      file_apps = "/home/patrick/.config/sunshine/apps.json";
+    };
   };
 }

@@ -31,6 +31,9 @@
         unstage = "reset HEAD --";
         last = "log -1 HEAD";
         cleanup = "!git branch --merged | egrep -v \"(^\\*|main|master|dev)\" | xargs git branch -d";
+        up = "!git fetch origin && git rebase origin/main";
+        start = "!git checkout main && git pull && git checkout -b";
+        sweep = "!git checkout main && git pull && git branch --merged main | grep -v 'main$' | xargs -r git branch -d";
       };
     };
   };

@@ -53,7 +53,27 @@
   time.timeZone = "America/New_York";
 
   # Virtualization Host Role
-  virtualisation.libvirtd.enable = true;
+  virtualisation.libvirtd = {
+    enable = true;
+    qemu = {
+      package = pkgs.qemu_kvm;
+      runAsRoot = true; # Ensures access to all devices (optional but safer for nvidia)
+      swtpm.enable = true;
+      ovmf.enable = true;
+      # Whitelist NVIDIA devices in the cgroup configuration
+      verbatimConfig = ''
+        cgroup_device_acl = [
+          "/dev/null", "/dev/full", "/dev/zero",
+          "/dev/random", "/dev/urandom",
+          "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+          "/dev/rtc","/dev/hpet", "/dev/vfio/vfio",
+          "/dev/nvidia0", "/dev/nvidiactl", "/dev/nvidia-modeset", "/dev/nvidia-uvm", "/dev/nvidia-uvm-tools",
+          "/dev/dri/renderD128"
+        ]
+      '';
+    };
+  };
+
   programs.dconf.enable = true; # Required for virt-manager
   environment.systemPackages = with pkgs; [ virt-manager ];
 

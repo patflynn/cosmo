@@ -40,13 +40,16 @@
       <target type='virtio' name='org.qemu.guest_agent.0'/>
       <address type='virtio-serial' controller='0' bus='0' port='1'/>
     </channel>
+    <graphics type='egl-headless'>
+      <gl rendernode='/dev/dri/renderD128'/>
+    </graphics>
     <graphics type='spice' autoport='yes'>
       <listen type='none'/>
       <image compression='off'/>
-      <gl enable='yes'/>
+      <gl enable='no'/>
     </graphics>
     <video>
-      <model type='virtio' heads='1' primary='yes'>
+      <model type='virtio' vram='65536' heads='1' primary='yes'>
         <acceleration accel3d='yes'/>
       </model>
     </video>

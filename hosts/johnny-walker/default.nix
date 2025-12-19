@@ -30,7 +30,13 @@
 
   networking.hostName = "johnny-walker";
   networking.networkmanager.enable = true;
-
+  # Open specific ports for this host
+  networking.firewall = {
+    enable = true;
+    # Example: Allow Sunshine TCP if it wasn't opened automatically
+    allowedTCPPorts = [ 47998 47999 48010 ];
+    allowedUDPPorts = [ 47998 47999 48000 ];
+  };
   # Set your time zone
   time.timeZone = "America/New_York";
 

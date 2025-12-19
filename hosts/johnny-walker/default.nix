@@ -6,6 +6,7 @@
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/guest.nix
+    ../../modules/common/workstation.nix
   ];
 
   # VM Specs: 24GB RAM, 24 vCPUs, 100GB Disk
@@ -31,6 +32,8 @@
   # Set your time zone
   time.timeZone = "America/New_York";
 
+  # Ensure the user is auto-logged in so Sunshine/Hyprland starts on boot
+  services.getty.autologinUser = "patrick";
   # Enable tailscale
   services.tailscale.enable = true;
   # Enable SSH

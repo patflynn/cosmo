@@ -59,7 +59,7 @@
       package = pkgs.qemu_kvm;
       runAsRoot = true; # Ensures access to all devices (optional but safer for nvidia)
       swtpm.enable = true;
-      ovmf.enable = true;
+
       # Whitelist NVIDIA devices in the cgroup configuration
       verbatimConfig = ''
         cgroup_device_acl = [

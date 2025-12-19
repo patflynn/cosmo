@@ -49,7 +49,7 @@
       <gl enable='no'/>
     </graphics>
     <video>
-      <model type='virtio' vram='65536' heads='1' primary='yes'>
+      <model type='virtio' vram='262144' heads='1' primary='yes'>
         <acceleration accel3d='yes'/>
       </model>
     </video>

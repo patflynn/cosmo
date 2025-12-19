@@ -24,7 +24,7 @@
     gemini-cli # Gemini CLI
 
     # Age tools
-    inputs.agenix.packages."${system}".default
+    inputs.agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
   ];
 
   # Git adjustments for dev if needed (e.g. signing keys)

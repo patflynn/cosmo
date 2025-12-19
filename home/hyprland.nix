@@ -15,32 +15,37 @@ in
 {
   # The new hotness
   home.packages = with pkgs; [ 
-    ghostty 
+    kitty 
     sunshine-switch-res
   ];
 
   # Declarative Sunshine Configuration
-  xdg.configFile."sunshine/apps.json".text = builtins.toJSON {
-    env = {
-      PATH = "$(PATH)";
+  xdg.configFile."sunshine/apps.json" = {
+    text = builtins.toJSON {
+      env = {
+        PATH = "$(PATH)";
+      };
+      apps = [
+        {
+          name = "Desktop";
+          image-path = "desktop.png";
+          prep-cmd = [
+            {
+              # Run the script to switch resolution when connecting
+              do = "${sunshine-switch-res}/bin/sunshine-switch-res";
+              # Run the script again (which defaults to 4K if no vars) when disconnecting
+              undo = "${sunshine-switch-res}/bin/sunshine-switch-res";
+            }
+          ];
+          exclude-global-env = false;
+          auto-detach = "true";
+        }
+      ];
     };
-    apps = [
-      {
-        name = "Desktop";
-        image-path = "desktop.png";
-        prep-cmd = [
-          {
-            # Run the script to switch resolution when connecting
-            do = "${sunshine-switch-res}/bin/sunshine-switch-res";
-            # Run the script again (which defaults to 4K if no vars) when disconnecting
-            undo = "${sunshine-switch-res}/bin/sunshine-switch-res";
-          }
-        ];
-        exclude-global-env = false;
-        auto-detach = "true";
-      }
-    ];
+    force = true; # Overwrite existing file
   };
+
+
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -51,7 +56,7 @@ in
 
       # --- General ---
       "$mainMod" = "SUPER";
-      "$terminal" = "ghostty";
+      "$terminal" = "kitty";
 
       # --- Input ---
       input = {

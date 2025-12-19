@@ -86,6 +86,7 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = { inherit inputs; };
+              home-manager.backupFileExtension = "bak"; # For clobbering existing config files
               home-manager.users.patrick = import ./home/vm.nix;
             }
           ];

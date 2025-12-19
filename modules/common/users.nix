@@ -14,6 +14,8 @@ in
   users.users.patrick = {
     isNormalUser = true;
     shell = pkgs.zsh;
+    # Enabled systemd user instance to persist (fixes WSL2 update error)
+    linger = true;
     extraGroups = [
       "wheel"
       "networkmanager"

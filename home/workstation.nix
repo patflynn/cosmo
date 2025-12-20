@@ -1,10 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, osConfig, ... }:
 
 {
   imports = [ ./dev.nix ];
 
-  # Workstation specific home-manager config (e.g. specialized aliases)
   programs.zsh.shellAliases = {
-    # Add any workstation-specific aliases here
+    update = "sudo nixos-rebuild switch --flake .#${osConfig.networking.hostName}";
   };
 }

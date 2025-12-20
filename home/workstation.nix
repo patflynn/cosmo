@@ -1,4 +1,9 @@
-{ config, pkgs, osConfig, ... }:
+{
+  config,
+  pkgs,
+  osConfig,
+  ...
+}:
 
 {
   imports = [ ./dev.nix ];

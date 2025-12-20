@@ -51,7 +51,7 @@
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/server.nix;
+              home-manager.users.patrick = import ./home/workstation-host.nix;
             }
           ];
         };

@@ -22,29 +22,29 @@
       };
       init.defaultBranch = "main";
       pull.rebase = true;
-    };
-    aliases = {
-      # Basics
-      st = "status";
-      co = "checkout";
-      ci = "commit";
-      br = "branch";
-      unstage = "reset HEAD --";
-      last = "log -1 HEAD";
-      lg = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)' --all";
+      alias = {
+        # Basics
+        st = "status";
+        co = "checkout";
+        ci = "commit";
+        br = "branch";
+        unstage = "reset HEAD --";
+        last = "log -1 HEAD";
+        lg = "log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)' --all";
 
-      # The Power Loop
-      up = "!git fetch origin && git rebase origin/main";
-      start = "!git checkout main && git pull && git checkout -b";
-      save = "!git add -A && git commit -m";
-      pr = "!git push -u origin HEAD && gh pr create --fill";
+        # The Power Loop
+        up = "!git fetch origin && git rebase origin/main";
+        start = "!git checkout main && git pull && git checkout -b";
+        save = "!git add -A && git commit -m";
+        pr = "!git push -u origin HEAD && gh pr create --fill";
 
-      # Merge & Cleanup
-      land = "!gh pr merge --auto --merge --delete-branch && git checkout main && git pull";
-      sweep = "!git checkout main && git pull && git branch --merged main | grep -v 'main$' | xargs -r git branch -d";
+        # Merge & Cleanup
+        land = "!gh pr merge --auto --merge --delete-branch && git checkout main && git pull";
+        sweep = "!git checkout main && git pull && git branch --merged main | grep -v 'main$' | xargs -r git branch -d";
 
-      # List all aliases (The meta-alias)
-      alias = "!git config --get-regexp ^alias\\. | sed -e s/^alias\\.// -e s/\\ /\\ =\\ /";
+        # List all aliases (The meta-alias)
+        alias = "!git config --get-regexp ^alias\\. | sed -e s/^alias\\.// -e s/\\ /\\ =\\ /";
+      };
     };
   };
 

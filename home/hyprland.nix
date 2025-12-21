@@ -12,7 +12,7 @@
       # For headless/streaming, we often want a fixed resolution.
       # Format: name, resolution, position, scale
       monitor = [
-        "HEADLESS-1, 1920x1080@60, 0x0, 1"
+        "HEADLESS-1, 3840x2160@60, 0x0, 1"
         ", preferred, auto, 1"
       ];
 

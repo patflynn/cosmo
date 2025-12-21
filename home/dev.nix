@@ -27,5 +27,9 @@
     inputs.agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
   ];
 
+  programs.zsh.shellAliases = {
+    update = "sudo nixos-rebuild switch --flake .";
+  };
+
   # Git adjustments for dev if needed (e.g. signing keys)
 }

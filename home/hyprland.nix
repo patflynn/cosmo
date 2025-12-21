@@ -5,9 +5,9 @@ let
     # Enable logging
     exec > /tmp/sunshine-switch-res.log 2>&1
     echo "--- Sunshine Resolution Switcher ($1) started at $(date) ---"
-    
+
     ACTION=$1
-    
+
     # Defaults
     WIDTH=''${SUNSHINE_CLIENT_WIDTH:-3840}
     HEIGHT=''${SUNSHINE_CLIENT_HEIGHT:-2160}
@@ -31,14 +31,12 @@ let
     fi
 
     HYPRCTL="${pkgs.hyprland}/bin/hyprctl"
+    JQ="${pkgs.jq}/bin/jq"
 
     if [ "$ACTION" == "do" ]; then
         echo "Applying Stream Resolution: ''${WIDTH}x''${HEIGHT}@''${FPS}"
         
         # 1. Create Headless Output (if not exists)
-        # We assume HEADLESS-1 for simplicity. This virtual output acts as the
-        # primary display for the stream, matching the client's resolution exactly.
-        # Check if it exists?
         if $HYPRCTL monitors | grep "HEADLESS-1"; then
             echo "HEADLESS-1 already exists."
         else
@@ -50,16 +48,33 @@ let
         echo "Setting HEADLESS-1 to ''${WIDTH}x''${HEIGHT}@''${FPS}..."
         $HYPRCTL keyword monitor "HEADLESS-1, ''${WIDTH}x''${HEIGHT}@''${FPS}, auto, 1"
         
-        # 3. Disable Virtual-1 (Physical/QEMU) to force apps to Headless
-        echo "Disabling Virtual-1..."
-        $HYPRCTL keyword monitor "Virtual-1, disable"
+        # 3. Disable Physical Monitor to force apps to Headless
+        # Find current physical monitor (not HEADLESS)
+        CURRENT_MONITOR=$($HYPRCTL monitors -j | $JQ -r '.[] | select(.name | startswith("HEADLESS") | not) | .name' | head -n 1)
+        
+        if [ -n "$CURRENT_MONITOR" ]; then
+             echo "Detected physical monitor: $CURRENT_MONITOR"
+             echo "$CURRENT_MONITOR" > /tmp/sunshine-monitor-backup
+             
+             echo "Disabling $CURRENT_MONITOR..."
+             $HYPRCTL keyword monitor "$CURRENT_MONITOR, disable"
+        else
+             echo "No physical monitor detected or only HEADLESS active."
+        fi
         
     elif [ "$ACTION" == "undo" ]; then
         echo "Reverting to Default..."
         
-        # 1. Re-enable Virtual-1
-        echo "Enabling Virtual-1..."
-        $HYPRCTL keyword monitor "Virtual-1, preferred, auto, 1"
+        # 1. Re-enable Physical Monitor
+        if [ -f /tmp/sunshine-monitor-backup ]; then
+             OLD_MONITOR=$(cat /tmp/sunshine-monitor-backup)
+             echo "Re-enabling $OLD_MONITOR..."
+             $HYPRCTL keyword monitor "$OLD_MONITOR, preferred, auto, 1"
+             rm /tmp/sunshine-monitor-backup
+        else
+             echo "No backup found, enabling all/default..."
+             $HYPRCTL keyword monitor ", preferred, auto, 1"
+        fi
         
         # 2. Remove Headless
         echo "Removing HEADLESS-1..."
@@ -69,15 +84,15 @@ let
         echo "Unknown action: $ACTION"
         exit 1
     fi
-    
+
     echo "Done."
     $HYPRCTL monitors
   '';
 in
 {
   # The new hotness
-  home.packages = with pkgs; [ 
-    kitty 
+  home.packages = with pkgs; [
+    kitty
     sunshine-switch-res
   ];
 
@@ -106,8 +121,6 @@ in
     };
     force = true; # Overwrite existing file
   };
-
-
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -149,7 +162,7 @@ in
         "$mainMod, up, movefocus, u"
         "$mainMod, down, movefocus, d"
       ];
-      
+
       # --- Look & Feel ---
       general = {
         gaps_in = 5;

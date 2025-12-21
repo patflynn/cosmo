@@ -15,6 +15,7 @@
     wofi # App launcher
     kdePackages.dolphin # File manager
     bibata-cursors
+    google-chrome
   ];
 
   # --- Theming ---

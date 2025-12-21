@@ -28,8 +28,8 @@
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-        "col.inactive_border" = "rgba(595959aa)";
+        "col.active_border" = "rgb(cba6f7) rgb(94e2d5) 45deg"; # Catppuccin Mocha Mauve -> Teal
+        "col.inactive_border" = "rgb(585b70)"; # Catppuccin Mocha Surface2
         layout = "dwindle";
       };
 
@@ -45,7 +45,7 @@
           enabled = true;
           range = 4;
           render_power = 3;
-          color = "rgba(1a1a1aee)";
+          color = "rgba(1e1e2eee)"; # Catppuccin Mocha Base
         };
       };
 

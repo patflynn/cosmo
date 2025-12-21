@@ -1,7 +1,10 @@
 { config, pkgs, ... }:
 
 {
-  imports = [ ./common.nix ];
+  imports = [
+    ./common.nix
+    ./hyprland.nix
+  ];
 
   programs.zsh.shellAliases = {
     # System Maintenance

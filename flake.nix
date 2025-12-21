@@ -73,44 +73,9 @@
             }
           ];
         };
-
-        # Hostname: johnny-walker
-        johnny-walker = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            ./hosts/johnny-walker/default.nix
-            agenix.nixosModules.default
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.backupFileExtension = "bak"; # For clobbering existing config files
-              home-manager.users.patrick = import ./home/vm.nix;
-            }
-          ];
-        };
       };
 
-      packages.x86_64-linux = {
-        johnny-walker-image = nixos-generators.nixosGenerate {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            ./hosts/johnny-walker/default.nix
-            agenix.nixosModules.default
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/vm.nix;
-            }
-          ];
-          format = "qcow";
-        };
-      };
+      packages.x86_64-linux = { };
 
       checks.x86_64-linux = {
         pre-commit-check = pre-commit-hooks.lib.x86_64-linux.run {

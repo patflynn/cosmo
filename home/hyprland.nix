@@ -61,6 +61,7 @@
         "$mainMod, C, killactive,"
         "$mainMod, M, exit,"
         "$mainMod, E, exec, dolphin"
+        "$mainMod, G, exec, google-chrome-stable"
         "$mainMod, V, togglefloating,"
         "$mainMod, R, exec, wofi --show drun"
         "$mainMod, P, pseudo," # pseudotile

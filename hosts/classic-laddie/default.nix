@@ -59,6 +59,9 @@
     user = "patrick";
   };
 
+  # Enable hardware acceleration for Sunshine
+  services.sunshine.package = pkgs.sunshine.override { cudaSupport = true; };
+
   # Virtualization Host Role
   virtualisation.libvirtd = {
     enable = true;

@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  config,
+  pkgs,
+  ...
+}:
+
 let
   # A script to adapt Hyprland to the Moonlight client's resolution
   sunshine-switch-res = pkgs.writeShellScriptBin "sunshine-switch-res" ''
@@ -125,57 +130,83 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
     settings = {
-      # --- Display ---
+      # --- Monitors ---
       # Default to 4K on boot
       monitor = ",3840x2160@60,auto,1";
-
-      # --- General ---
-      "$mainMod" = "SUPER";
-      "$terminal" = "kitty";
 
       # --- Input ---
       input = {
         kb_layout = "us";
         follow_mouse = 1;
-        touchpad = {
-          natural_scroll = false;
-        };
+        sensitivity = 0; # -1.0 - 1.0, 0 means no modification.
       };
 
-      # --- Keybindings ---
-      bind = [
-        # System
-        "$mainMod, Q, exec, $terminal"
-        "$mainMod, C, killactive,"
-        "$mainMod, M, exit,"
-        "$mainMod, E, exec, dolphin" # File manager placeholder
-        "$mainMod, V, togglefloating,"
-        "$mainMod, R, exec, wofi --show drun"
-
-        # Manual Resolution Switching (Backup)
-        "$mainMod, F1, exec, ${sunshine-switch-res}/bin/sunshine-switch-res" # Will reset to default if run manually
-        "$mainMod, F2, exec, hyprctl keyword monitor ',1920x1080@60,auto,1'"
-
-        # Focus
-        "$mainMod, left, movefocus, l"
-        "$mainMod, right, movefocus, r"
-        "$mainMod, up, movefocus, u"
-        "$mainMod, down, movefocus, d"
-      ];
-
-      # --- Look & Feel ---
+      # --- General ---
       general = {
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-        "col.inactive_border" = "rgba(595959aa)";
+        "col.active_border" = "rgb(cba6f7) rgb(94e2d5) 45deg"; # Catppuccin Mocha Mauve -> Teal
+        "col.inactive_border" = "rgb(585b70)"; # Catppuccin Mocha Surface2
         layout = "dwindle";
       };
 
+      # --- Decoration ---
       decoration = {
         rounding = 10;
+        blur = {
+          enabled = true;
+          size = 3;
+          passes = 1;
+        };
+        shadow = {
+          enabled = true;
+          range = 4;
+          render_power = 3;
+          color = "rgba(1e1e2eee)"; # Catppuccin Mocha Base
+        };
       };
+
+      # --- Cursor ---
+      cursor = {
+        no_hardware_cursors = true;
+      };
+
+      # --- Keybindings ---
+      "$mainMod" = "SUPER";
+      bind = [
+        "$mainMod, Q, exec, kitty"
+        "$mainMod, C, killactive,"
+        "$mainMod, M, exit,"
+        "$mainMod, E, exec, dolphin"
+        "$mainMod, G, exec, google-chrome-stable"
+        "$mainMod, V, togglefloating,"
+        "$mainMod, R, exec, wofi --show drun"
+        "$mainMod, P, pseudo," # pseudotile
+
+        # Manual Resolution Switching (Backup)
+        "$mainMod, F1, exec, ${sunshine-switch-res}/bin/sunshine-switch-res"
+        "$mainMod, F2, exec, hyprctl keyword monitor ',1920x1080@60,auto,1'"
+
+        # Move focus with mainMod + arrow keys
+        "$mainMod, left, movefocus, l"
+        "$mainMod, right, movefocus, r"
+        "$mainMod, up, movefocus, u"
+        "$mainMod, down, movefocus, d"
+
+        # Switch workspaces with mainMod + [0-9]
+        "$mainMod, 1, workspace, 1"
+        "$mainMod, 2, workspace, 2"
+        "$mainMod, 3, workspace, 3"
+        "$mainMod, 4, workspace, 4"
+        "$mainMod, 5, workspace, 5"
+      ];
+
+      # --- Startup ---
+      exec-once = [
+        # Sunshine is handled by systemd at the system level,
+        # but you can add user-level apps here.
+      ];
     };
   };
 }

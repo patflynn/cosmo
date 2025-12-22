@@ -10,6 +10,7 @@
     ./hardware-configuration.nix
     ../../modules/common/system.nix
     ../../modules/common/users.nix
+    ../../modules/common/workstation.nix
   ];
 
   # Bootloader (Keep what matches your hardware!)
@@ -57,6 +58,13 @@
 
   # Set your time zone
   time.timeZone = "America/New_York";
+
+  # AUTO-LOGIN: Facilitates headless streaming via Sunshine
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "patrick";
+  };
+  services.getty.autologinUser = "patrick";
 
   # Virtualization Host Role
   virtualisation.libvirtd = {

@@ -49,3 +49,4 @@ It defines the hardware, operating system, services, and user environments for t
 - [ ] Onboard other hardware (MacBooks).
 - [x] Onboard NixOS VM (WSL2).
 - [ ] **Remote Workstation:** Setup a state-of-the-art GUI windowing system with high-performance remoting (e.g., Wayland/Hyprland + Sunshine/Moonlight) on `johnny-walker`.
+    - [ ] **Dynamic Resolution:** Implement script/hook to automatically set host resolution to match the connecting Sunshine client.

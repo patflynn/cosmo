@@ -12,6 +12,8 @@
     ../../modules/common/users.nix
   ];
 
+  networking.hostName = "wsl";
+
   wsl = {
     enable = true;
     defaultUser = "patrick";

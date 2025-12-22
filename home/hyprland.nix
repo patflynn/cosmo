@@ -93,8 +93,13 @@
       # --- Startup ---
       exec-once = [
         "hyprctl output create headless"
-        "sunshine-resolution 1920 1080 60"
+        "sunshine-resolution 3840 2160 60"
+        "sleep 5 && systemctl --user start sunshine"
       ];
+
+      debug = {
+        disable_logs = false;
+      };
     };
   };
 }

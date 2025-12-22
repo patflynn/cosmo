@@ -94,8 +94,23 @@
         disable_logs = false;
       };
     };
-    extraConfig = ''
-      exec-once = /etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 > /home/patrick/hypr-startup.log 2>&1 && systemctl --user start sunshine >> /home/patrick/hypr-startup.log 2>&1
-    '';
+  };
+
+  systemd.user.services.hyprland-autostart = {
+    Unit = {
+      Description = "Hyprland Autostart (Monitor & Sunshine)";
+      After = [ "graphical-session.target" ];
+      Wants = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 && systemctl --user start sunshine'";
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
   };
 }

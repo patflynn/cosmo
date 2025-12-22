@@ -90,16 +90,14 @@
         "$mainMod SHIFT, 5, movetoworkspace, 5"
       ];
 
-      # --- Startup ---
-      exec-once = [
-        "/etc/profiles/per-user/patrick/bin/hyprctl output create headless"
-        "/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60"
-        "sleep 5 && systemctl --user start sunshine"
-      ];
-
       debug = {
         disable_logs = false;
       };
     };
+    extraConfig = ''
+      exec-once = /etc/profiles/per-user/patrick/bin/hyprctl output create headless
+      exec-once = /etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60
+      exec-once = sleep 5 && systemctl --user start sunshine
+    '';
   };
 }

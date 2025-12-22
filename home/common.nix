@@ -20,6 +20,9 @@
         name = "Patrick Flynn";
         email = "big.pat@gmail.com";
       };
+      advice = {
+        skippedCherryPicks = false;
+      };
       init.defaultBranch = "main";
       pull.rebase = true;
       alias = {

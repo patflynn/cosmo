@@ -92,8 +92,8 @@
 
       # --- Startup ---
       exec-once = [
-        "hyprctl output create headless"
-        "sunshine-resolution 3840 2160 60"
+        "/etc/profiles/per-user/patrick/bin/hyprctl output create headless"
+        "/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60"
         "sleep 5 && systemctl --user start sunshine"
       ];
 

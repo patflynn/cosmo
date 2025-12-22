@@ -28,7 +28,7 @@
   ];
 
   programs.zsh.shellAliases = {
-    update = "sudo nixos-rebuild switch --flake .";
+    rebuild = "sudo nixos-rebuild switch --flake .";
   };
 
   # Git adjustments for dev if needed (e.g. signing keys)

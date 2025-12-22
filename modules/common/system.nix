@@ -36,6 +36,8 @@
     flake = "github:patflynn/cosmo";
     flags = [
       "-L" # print build logs
+      "--no-write-lock-file"
+      "--refresh"
     ];
     dates = "02:00";
     randomizedDelaySec = "45min";

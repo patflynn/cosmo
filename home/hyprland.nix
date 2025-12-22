@@ -17,6 +17,9 @@
         "HDMI-A-2, disable"
         "HDMI-A-3, disable"
         "HDMI-A-4, disable"
+        "DP-1, disable"
+        "DP-2, disable"
+        "DP-3, disable"
         ", preferred, auto, 1"
       ];
 

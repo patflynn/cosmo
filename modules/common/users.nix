@@ -21,6 +21,7 @@ in
       "networkmanager"
       "video"
       "render"
+      "input"
     ];
 
     hashedPasswordFile = config.age.secrets.user-password.path;

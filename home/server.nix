@@ -3,7 +3,6 @@
 {
   imports = [
     ./common.nix
-    ./hyprland.nix
   ];
 
   programs.zsh.shellAliases = {

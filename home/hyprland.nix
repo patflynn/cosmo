@@ -96,16 +96,23 @@
     };
   };
 
+  systemd.user.targets.hyprland-session = {
+    Unit = {
+      Description = "Hyprland session";
+      BindsTo = [ "graphical-session.target" ];
+      Wants = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+  };
+
   systemd.user.services.hyprland-autostart = {
     Unit = {
-      Description = "Hyprland Autostart (Monitor & Sunshine)";
-      # We don't want After=graphical-session.target because we ARE the ones
-      # supposed to start it or at least wait for the compositor to be ready.
+      Description = "Hyprland Autostart (Monitor & Session Target)";
       After = [ "dbus.service" ];
     };
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60'";
+      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 && systemctl --user start hyprland-session.target'";
       Restart = "on-failure";
       RestartSec = "5s";
     };

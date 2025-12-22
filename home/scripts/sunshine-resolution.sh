@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 # This script sets the Hyprland resolution to match the Sunshine client.
-# It expects arguments: WIDTH HEIGHT FPS
-# Or environment variables: SUNSHINE_CLIENT_WIDTH, SUNSHINE_CLIENT_HEIGHT, SUNSHINE_CLIENT_FPS
+# It also ensures a headless monitor exists if no other monitor is active.
 
 WIDTH=${1:-$SUNSHINE_CLIENT_WIDTH}
 HEIGHT=${2:-$SUNSHINE_CLIENT_HEIGHT}
@@ -18,9 +17,14 @@ FPS=${FPS:-60}
 
 # Attempt to find the running Hyprland instance signature
 if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
-    # Look for a socket in /tmp/hypr
-    # We take the most recent directory that isn't .lock
-    SIG=$(ls -t /tmp/hypr/ | grep -v "\.lock" | head -n 1)
+    # Search in /run/user/$(id -u)/hypr and /tmp/hypr
+    USER_RUNTIME_DIR="/run/user/$(id -u)/hypr"
+    if [ -d "$USER_RUNTIME_DIR" ]; then
+        SIG=$(ls -t "$USER_RUNTIME_DIR" | grep -v "\.lock" | head -n 1)
+    else
+        SIG=$(ls -t /tmp/hypr/ | grep -v "\.lock" | head -n 1)
+    fi
+
     if [ -n "$SIG" ]; then
         export HYPRLAND_INSTANCE_SIGNATURE="$SIG"
     else
@@ -29,14 +33,19 @@ if [ -z "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
     fi
 fi
 
-# Find the first available monitor if not specified
-# We use 'hyprctl monitors' to get the list.
-# We target the first monitor found.
+# Find the first available monitor
 MONITOR=$(hyprctl monitors -j | jq -r '.[0].name')
 
 if [ -z "$MONITOR" ] || [ "$MONITOR" == "null" ]; then
-    # Fallback if no monitor is active (unlikely if session is running, but possible if purely headless start)
-    MONITOR="HEADLESS-1"
+    echo "No monitor found, creating headless output..."
+    hyprctl output create headless
+    sleep 2
+    MONITOR=$(hyprctl monitors -j | jq -r '.[0].name')
+fi
+
+if [ -z "$MONITOR" ] || [ "$MONITOR" == "null" ]; then
+    echo "Failed to create or find a monitor."
+    exit 1
 fi
 
 echo "Setting resolution for $MONITOR to ${WIDTH}x${HEIGHT}@${FPS}"

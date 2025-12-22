@@ -95,9 +95,7 @@
       };
     };
     extraConfig = ''
-      exec-once = /etc/profiles/per-user/patrick/bin/hyprctl output create headless
-      exec-once = /etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60
-      exec-once = sleep 20 && systemctl --user start sunshine
+      exec-once = /etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 > /home/patrick/hypr-startup.log 2>&1 && systemctl --user start sunshine >> /home/patrick/hypr-startup.log 2>&1
     '';
   };
 }

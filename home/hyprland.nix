@@ -98,7 +98,7 @@
 
   systemd.user.targets.hyprland-session = {
     Unit = {
-      Description = "Hyprland session";
+      Description = lib.mkForce "Hyprland session";
       BindsTo = [ "graphical-session.target" ];
       Wants = [ "graphical-session.target" ];
       After = [ "graphical-session.target" ];

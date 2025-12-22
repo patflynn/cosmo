@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  lib,
   ...
 }:
 
@@ -90,16 +91,34 @@
         "$mainMod SHIFT, 5, movetoworkspace, 5"
       ];
 
-      # --- Startup ---
-      exec-once = [
-        "/etc/profiles/per-user/patrick/bin/hyprctl output create headless"
-        "/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60"
-        "sleep 5 && systemctl --user start sunshine"
-      ];
-
       debug = {
         disable_logs = false;
       };
+    };
+  };
+
+  systemd.user.targets.hyprland-session = {
+    Unit = {
+      Description = lib.mkForce "Hyprland session";
+      BindsTo = [ "graphical-session.target" ];
+      Wants = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+  };
+
+  systemd.user.services.hyprland-autostart = {
+    Unit = {
+      Description = "Hyprland Autostart (Monitor & Session Target)";
+      After = [ "dbus.service" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 && systemctl --user start hyprland-session.target'";
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+    Install = {
+      WantedBy = [ "default.target" ];
     };
   };
 }

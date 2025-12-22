@@ -79,6 +79,10 @@ fi
 echo "Setting resolution for $MONITOR to ${WIDTH}x${HEIGHT}@${FPS}" >> "$LOG_FILE"
 hyprctl keyword monitor "$MONITOR, ${WIDTH}x${HEIGHT}@${FPS}, 0x0, 1" >> "$LOG_FILE" 2>&1
 
+echo "Moving Workspace 1 to $MONITOR and switching to it..." >> "$LOG_FILE"
+hyprctl dispatch moveworkspacetomonitor 1 "$MONITOR" >> "$LOG_FILE" 2>&1
+hyprctl dispatch workspace 1 >> "$LOG_FILE" 2>&1
+
 echo "Ensuring graphical-session.target is started..." >> "$LOG_FILE"
 systemctl --user start graphical-session.target >> "$LOG_FILE" 2>&1
 

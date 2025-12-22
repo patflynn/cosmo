@@ -13,6 +13,9 @@
       # Format: name, resolution, position, scale
       monitor = [
         "HEADLESS-1, 3840x2160@60, 0x0, 1"
+        "HEADLESS-2, 3840x2160@60, 0x0, 1"
+        "HEADLESS-3, 3840x2160@60, 0x0, 1"
+        "HEADLESS-4, 3840x2160@60, 0x0, 1"
         ", preferred, auto, 1"
       ];
 

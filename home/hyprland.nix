@@ -95,10 +95,7 @@
       };
     };
     extraConfig = ''
-      exec-once = touch /home/patrick/hyprland-exec-once-ran
-      exec-once = /etc/profiles/per-user/patrick/bin/hyprctl output create headless &
-      exec-once = /etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 &
-      exec-once = sleep 10 && systemctl --user start sunshine &
+      exec-once = /etc/profiles/per-user/patrick/bin/hyprctl output create headless & sleep 2 && /etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 & sleep 15 && systemctl --user start sunshine &
     '';
   };
 }

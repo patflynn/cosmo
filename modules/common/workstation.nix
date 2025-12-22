@@ -21,6 +21,7 @@
     XDG_SESSION_TYPE = "wayland";
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    LD_LIBRARY_PATH = "/run/opengl-driver/lib";
   };
 
   # --- Gaming ---
@@ -35,7 +36,7 @@
   services.sunshine = {
     enable = true;
     autoStart = true;
-    capSysAdmin = true;
+    capSysAdmin = false;
     openFirewall = true;
   };
 }

@@ -47,9 +47,6 @@
   # Enable Hyprland on the host
   programs.hyprland.enable = true;
 
-  # Display Manager / Greeter
-  services.displayManager.ly.enable = true;
-
   # Storage Support (Roadmap Phase 1)
   boot.supportedFilesystems = [ "zfs" ];
 

@@ -12,10 +12,6 @@
       # For headless/streaming, we often want a fixed resolution.
       # Format: name, resolution, position, scale
       monitor = [
-        "HEADLESS-1, 3840x2160@60, 0x0, 1"
-        "HEADLESS-2, 3840x2160@60, 0x0, 1"
-        "HEADLESS-3, 3840x2160@60, 0x0, 1"
-        "HEADLESS-4, 3840x2160@60, 0x0, 1"
         "HDMI-A-1, disable"
         "HDMI-A-2, disable"
         "HDMI-A-3, disable"

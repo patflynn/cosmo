@@ -99,18 +99,18 @@
   systemd.user.services.hyprland-autostart = {
     Unit = {
       Description = "Hyprland Autostart (Monitor & Sunshine)";
-      After = [ "graphical-session.target" ];
-      Wants = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
+      # We don't want After=graphical-session.target because we ARE the ones
+      # supposed to start it or at least wait for the compositor to be ready.
+      After = [ "dbus.service" ];
     };
     Service = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 && systemctl --user start sunshine'";
+      Type = "simple";
+      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60'";
       Restart = "on-failure";
       RestartSec = "5s";
     };
     Install = {
-      WantedBy = [ "graphical-session.target" ];
+      WantedBy = [ "default.target" ];
     };
   };
 }

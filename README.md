@@ -10,6 +10,7 @@ The foundation (ZFS, Networking, SSH) is complete, and the focus is now on Virtu
 
 ## Usage
 
+All agents MUST read AGENTS.md for mandatory workflow constraints and PR requirements before making any changes.
 See [AGENTS.md](./AGENTS.md) for common administrative commands.
 
 ## Structure

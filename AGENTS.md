@@ -9,7 +9,7 @@ The project follows a **Host-Centric** and **Layered** architecture.
 - **`flake.nix`**: The entry point. Defines `nixosConfigurations` for each host (e.g., `classic-laddie`, `wsl`).
 - **`hosts/`**: Contains host-specific configurations.
   - Each directory (e.g., `hosts/classic-laddie/`) should contain a `default.nix` (configuration) and `hardware-configuration.nix`.
-  - **`classic-laddie`** acts as the physical host for the **`johnny-walker`** virtual workstation.
+  - **`classic-laddie`** acts as the physical host for virtual workstations (e.g., **`johnny-walker`**).
 - **`home/`**: Home Manager configurations (User: `patrick`).
   - **`common.nix`**: Base configuration shared across all machines (shell, git, core tools).
   - **`*.nix`** (e.g., `server.nix`, `wsl.nix`): Host/Context-specific overrides that import `common.nix`.

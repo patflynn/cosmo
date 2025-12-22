@@ -19,6 +19,8 @@ in
     extraGroups = [
       "wheel"
       "networkmanager"
+      "video"
+      "render"
     ];
 
     hashedPasswordFile = config.age.secrets.user-password.path;

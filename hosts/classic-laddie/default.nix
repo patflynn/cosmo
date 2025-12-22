@@ -58,7 +58,6 @@
     enable = true;
     user = "patrick";
   };
-  services.getty.autologinUser = "patrick";
 
   # Virtualization Host Role
   virtualisation.libvirtd = {

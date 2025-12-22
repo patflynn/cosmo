@@ -61,7 +61,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-            ./hosts/wsl/default.nix
+            ./hosts/makers-nix/default.nix
             inputs.nixos-wsl.nixosModules.wsl
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager

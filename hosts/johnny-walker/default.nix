@@ -34,8 +34,6 @@
   # Set your time zone
   time.timeZone = "America/New_York";
 
-  # Ensure the user is auto-logged in so Sunshine/Hyprland starts on boot
-  services.getty.autologinUser = "patrick";
   # Enable tailscale
   services.tailscale.enable = true;
   # Enable SSH

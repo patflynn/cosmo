@@ -12,6 +12,7 @@
     enable = true;
     wayland.enable = true;
   };
+  services.displayManager.defaultSession = "hyprland";
 
   # Hint Electron apps to use Wayland
   environment.sessionVariables = {

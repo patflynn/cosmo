@@ -92,8 +92,8 @@
 
       # --- Startup ---
       exec-once = [
-        # Sunshine is handled by systemd at the system level,
-        # but you can add user-level apps here.
+        "hyprctl output create headless"
+        "sunshine-resolution 1920 1080 60"
       ];
     };
   };

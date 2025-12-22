@@ -56,8 +56,8 @@
           ];
         };
 
-        # Hostname: wsl
-        wsl = nixpkgs.lib.nixosSystem {
+        # Hostname: makers-nix
+        makers-nix = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [

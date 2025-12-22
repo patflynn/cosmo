@@ -12,7 +12,7 @@
     ../../modules/common/users.nix
   ];
 
-  networking.hostName = "wsl";
+  networking.hostName = "makers-nix";
 
   wsl = {
     enable = true;

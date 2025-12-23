@@ -40,6 +40,8 @@
     openFirewall = true;
   };
 
+  networking.firewall.trustedInterfaces = [ "enp4s0" ];
+
   systemd.user.services.sunshine = {
     after = [ "hyprland-session.target" ];
     wants = [ "hyprland-session.target" ];

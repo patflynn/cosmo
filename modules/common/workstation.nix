@@ -37,7 +37,24 @@
     enable = true;
     autoStart = true;
     capSysAdmin = true;
-    openFirewall = true;
+    openFirewall = false; # Restricted to Tailscale below
+  };
+
+  # Secure Sunshine: Only allow traffic over the Tailscale interface
+  networking.firewall.interfaces."tailscale0" = {
+    allowedTCPPorts = [
+      47984
+      47989
+      47990
+      48010
+    ];
+    allowedUDPPorts = [
+      47998
+      47999
+      48000
+      48002
+      48010
+    ];
   };
 
   systemd.user.services.sunshine = {

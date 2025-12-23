@@ -57,6 +57,9 @@
     ];
   };
 
+  # Allow Tailscale to handle direct LAN paths correctly while keeping the local firewall tight.
+  networking.firewall.checkReversePath = "loose";
+
   systemd.user.services.sunshine = {
     after = [ "hyprland-session.target" ];
     wants = [ "hyprland-session.target" ];

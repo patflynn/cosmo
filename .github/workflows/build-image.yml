@@ -1,0 +1,32 @@
+name: Build Bud Lite Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'hosts/bud-lite/**'
+      - 'flake.nix'
+      - 'flake.lock'
+
+jobs:
+  build-lxc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build LXC Image
+        run: nix build .#bud-lite-image
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bud-lite-lxc
+          path: result/*
+          if-no-files-found: error

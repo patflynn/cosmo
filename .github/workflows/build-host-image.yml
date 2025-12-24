@@ -1,16 +1,19 @@
-name: Build Bud Lite Image
+name: Build Host Image
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'hosts/bud-lite/**'
-      - 'flake.nix'
-      - 'flake.lock'
+    inputs:
+      host:
+        description: 'Host to build image for'
+        required: true
+        default: 'bud-lite'
+        type: choice
+        options:
+          - bud-lite
+          - johnny-walker
 
 jobs:
-  build-lxc:
+  build-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -21,12 +24,12 @@ jobs:
             accept-flake-config = true
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build LXC Image
-        run: nix build .#bud-lite-image
+      - name: Build ${{ inputs.host }} Image
+        run: nix build .#${{ inputs.host }}-image
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bud-lite-lxc
+          name: ${{ inputs.host }}-image
           path: result/*
           if-no-files-found: error

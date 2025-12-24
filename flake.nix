@@ -15,6 +15,9 @@
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
+    nixos-crostini.url = "github:aldur/nixos-crostini";
+    nixos-crostini.inputs.nixpkgs.follows = "nixpkgs";
+
     pre-commit-hooks = {
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -32,6 +35,7 @@
       nixpkgs,
       home-manager,
       nixos-generators,
+      nixos-crostini,
       agenix,
       pre-commit-hooks,
       ...
@@ -39,6 +43,23 @@
     {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
       nixosConfigurations = {
+        # Hostname: bud-lite
+        bud-lite = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/bud-lite/default.nix
+            agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
+              home-manager.users.patrick = import ./home/dev.nix;
+            }
+          ];
+        };
+
         # Hostname: classic-laddie
         classic-laddie = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -93,6 +114,23 @@
       };
 
       packages.x86_64-linux = {
+        bud-lite-image = nixos-generators.nixosGenerate {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/bud-lite/default.nix
+            agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
+              home-manager.users.patrick = import ./home/dev.nix;
+            }
+          ];
+          format = "lxc";
+        };
+
         johnny-walker-image = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };

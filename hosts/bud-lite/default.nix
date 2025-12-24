@@ -7,7 +7,7 @@
 
 {
   imports = [
-    inputs.nixos-crostini.nixosModules.default
+    inputs.nixos-crostini.nixosModules.crostini
     ../../modules/common/system.nix
   ];
 

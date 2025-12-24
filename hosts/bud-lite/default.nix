@@ -12,9 +12,6 @@
 
   networking.hostName = "bud-lite";
 
-  # Crostini Integration
-  crostini.enable = true;
-
   # User Configuration (Bootstrap)
   # We are not using common/users.nix here to avoid agenix dependency on first boot
   users.mutableUsers = true;

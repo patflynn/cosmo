@@ -49,6 +49,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/bud-lite/default.nix
+            inputs.nixos-crostini.nixosModules.crostini
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             {
@@ -119,6 +120,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/bud-lite/default.nix
+            inputs.nixos-crostini.nixosModules.crostini
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             {

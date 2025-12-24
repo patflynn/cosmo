@@ -17,7 +17,10 @@
   users.mutableUsers = true;
   users.users.patrick = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "video" ];
+    extraGroups = [
+      "wheel"
+      "video"
+    ];
     initialPassword = "password"; # Change this after first login!
   };
 

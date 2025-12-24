@@ -115,7 +115,25 @@
       };
 
       packages.x86_64-linux = {
-        bud-lite-image = nixos-generators.nixosGenerate {
+        bud-lite-metadata = nixos-generators.nixosGenerate {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/bud-lite/default.nix
+            inputs.nixos-crostini.nixosModules.crostini
+            agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
+              home-manager.users.patrick = import ./home/dev.nix;
+            }
+          ];
+          format = "lxc-metadata";
+        };
+
+        bud-lite-rootfs = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [

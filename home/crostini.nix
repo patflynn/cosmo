@@ -12,6 +12,10 @@
   # Crostini Specific Configuration
   # This profile is designed for standalone Home Manager on Debian/Crostini.
 
+  home.packages = [
+    pkgs.home-manager
+  ];
+
   home.sessionVariables = {
     # Suppress Boehm GC warnings about /proc/stat access in containers
     GC_QUIET = "1";

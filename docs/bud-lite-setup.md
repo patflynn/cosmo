@@ -40,16 +40,16 @@ nix run home-manager/master -- switch --flake github:patflynn/cosmo#patrick@bud-
 
 ### 4. Set Default Shell
 
-Home Manager installs Zsh but cannot change your login shell on Debian. You must do this manually:
+Home Manager installs Zsh but cannot change your login shell on Debian. You must do this manually. Standard `chsh` often fails in Crostini due to PAM issues, so a direct edit of `/etc/passwd` is recommended:
 
 1.  Add the Nix Zsh path to valid shells:
     ```bash
     command -v zsh | sudo tee -a /etc/shells
     ```
 
-2.  Change your default shell:
+2.  Change your default shell (bypasses `chsh` PAM errors):
     ```bash
-    chsh -s $(command -v zsh)
+    sudo sed -i "s|$SHELL|$(command -v zsh)|" /etc/passwd
     ```
 
 Log out and log back in for this to take effect.

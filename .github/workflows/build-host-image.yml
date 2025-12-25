@@ -6,10 +6,9 @@ on:
       host:
         description: 'Host to build image for'
         required: true
-        default: 'bud-lite'
+        default: 'johnny-walker'
         type: choice
         options:
-          - bud-lite
           - johnny-walker
 
 jobs:
@@ -25,28 +24,10 @@ jobs:
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
       - name: Build ${{ inputs.host }} Image
-        if: inputs.host == 'bud-lite'
-        run: |
-          nix build .#bud-lite-metadata --out-link result-metadata
-          nix build .#bud-lite-rootfs --out-link result-rootfs
-
-      - name: Build ${{ inputs.host }} Image
-        if: inputs.host != 'bud-lite'
         run: nix build .#${{ inputs.host }}-image
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
-        if: inputs.host == 'bud-lite'
-        with:
-          name: bud-lite-lxc
-          path: |
-            result-metadata/*
-            result-rootfs/*
-          if-no-files-found: error
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        if: inputs.host != 'bud-lite'
         with:
           name: ${{ inputs.host }}-image
           path: result/*

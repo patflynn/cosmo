@@ -25,3 +25,4 @@ See [AGENTS.md](./AGENTS.md) for common administrative commands.
 * [Doom Emacs Setup](./docs/doom-emacs-setup.md): Manual steps to bootstrap Doom Emacs.
 * [Secrets Management](./docs/secrets-management.md): How to add, edit, and rekey encrypted secrets (Agenix).
 * [Generic VM Setup](./docs/vm-setup.md): How to build and deploy NixOS VMs (e.g., `johnny-walker`).
+* [Bud-Lite Setup](./docs/bud-lite-setup.md): Setup guide for the standalone Home Manager configuration on Crostini.

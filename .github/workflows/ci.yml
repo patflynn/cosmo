@@ -18,11 +18,11 @@ jobs:
       - name: Check Formatting
         run: nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check .
 
-  build:
+  build-nixos:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        host: [classic-laddie, makers-nix, johnny-walker, bud-lite]
+        host: [classic-laddie, makers-nix, johnny-walker]
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
@@ -33,6 +33,17 @@ jobs:
       # Full builds might be too heavy for standard GitHub Runners without caching.
       - name: Build ${{ matrix.host }} (Dry Run)
         run: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --dry-run
+
+  build-home:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Build patrick@bud-lite (Dry Run)
+        run: nix build .#homeConfigurations."patrick@bud-lite".activationPackage --dry-run
 
   check:
     runs-on: ubuntu-latest

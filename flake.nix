@@ -94,27 +94,35 @@
       };
 
       homeConfigurations = {
-        "patrick@bud-lite" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = { inherit inputs; };
-          modules = [
-            ./home/dev.nix
-            (
-              { lib, ... }:
-              {
-                home.username = "patrick";
-                home.homeDirectory = "/home/patrick";
 
-                programs.zsh.shellAliases = {
-                  # Override common.nix 'update' alias for Home Manager standalone
-                  update = lib.mkForce "home-manager switch --flake github:patflynn/cosmo#patrick@bud-lite";
-                  # Local rebuild for testing changes
-                  rebuild = lib.mkForce "home-manager switch --flake .#patrick@bud-lite";
-                };
-              }
-            )
+        "patrick@bud-lite" = home-manager.lib.homeManagerConfiguration {
+
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+
+          extraSpecialArgs = {
+
+            inherit inputs;
+
+            hostName = "bud-lite";
+
+          };
+
+          modules = [
+
+            ./home/crostini.nix
+
+            {
+
+              home.username = "patrick";
+
+              home.homeDirectory = "/home/patrick";
+
+            }
+
           ];
+
         };
+
       };
 
       packages.x86_64-linux = {

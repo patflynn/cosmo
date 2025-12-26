@@ -14,7 +14,7 @@ Ensure your NixOS/Home Manager configuration has been applied. This ensures:
 
 1.  **Clone Doom Emacs:**
     ```bash
-    git clone --depth 1 [https://github.com/doomemacs/doomemacs](https://github.com/doomemacs/doomemacs) ~/.config/emacs
+    git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
     ```
 
 2.  **Install Doom:**

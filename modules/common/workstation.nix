@@ -46,7 +46,12 @@
         {
           name = "Desktop";
           image-path = "desktop.png";
-          undo-cmd = [ "${pkgs.hyprlock}/bin/hyprlock" ];
+          prep-cmd = [
+            {
+              do = "${pkgs.coreutils}/bin/true";
+              undo = "${pkgs.hyprlock}/bin/hyprlock";
+            }
+          ];
         }
         {
           name = "Steam Big Picture";

@@ -74,7 +74,7 @@
       bind = [
         "$mainMod, Q, exec, kitty"
         "$mainMod, C, killactive,"
-        "$mainMod, M, exit,"
+        "$mainMod, M, exec, hyprlock" # Lock screen (safeguard against accidental exit)
         "$mainMod, E, exec, dolphin"
         "$mainMod, B, exec, google-chrome-stable"
         "$mainMod, V, togglefloating,"

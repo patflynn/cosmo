@@ -40,7 +40,12 @@
     openFirewall = false; # Restricted to Tailscale below
     applications = {
       env = {
-        PATH = "$(PATH):${pkgs.lib.makeBinPath [ pkgs.hyprlock ]}";
+        PATH = "$(PATH):${
+          pkgs.lib.makeBinPath [
+            pkgs.hyprlock
+            pkgs.hyprland
+          ]
+        }";
       };
       apps = [
         {
@@ -49,7 +54,7 @@
           prep-cmd = [
             {
               do = "${pkgs.coreutils}/bin/true";
-              undo = "${pkgs.hyprlock}/bin/hyprlock";
+              undo = "${pkgs.hyprland}/bin/hyprctl dispatch exec hyprlock";
             }
           ];
         }

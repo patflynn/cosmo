@@ -38,6 +38,39 @@
     autoStart = true;
     capSysAdmin = true;
     openFirewall = false; # Restricted to Tailscale below
+    applications = {
+      env = {
+        PATH = "$(PATH):${
+          pkgs.lib.makeBinPath [
+            pkgs.hyprlock
+            pkgs.hyprland
+          ]
+        }";
+      };
+      apps = [
+        {
+          name = "Desktop";
+          image-path = "desktop.png";
+          prep-cmd = [
+            {
+              do = "${pkgs.coreutils}/bin/true";
+              undo = "${pkgs.hyprland}/bin/hyprctl dispatch exec hyprlock";
+            }
+          ];
+        }
+        {
+          name = "Steam Big Picture";
+          detach-cmd = "${pkgs.util-linux}/bin/runuser -l patrick -c 'steam -shutdown'";
+          image-path = "steam.png";
+          prep-cmd = [
+            {
+              do = "${pkgs.util-linux}/bin/runuser -l patrick -c 'steam -bigpicture'";
+              undo = "${pkgs.util-linux}/bin/runuser -l patrick -c 'steam -shutdown'";
+            }
+          ];
+        }
+      ];
+    };
   };
 
   # Secure Sunshine: Only allow traffic over the Tailscale interface

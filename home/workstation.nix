@@ -8,6 +8,7 @@
   imports = [
     ./dev.nix
     ./hyprland.nix
+    ./hyprlock.nix
   ];
 
   # Essential workstation packages (User Level)

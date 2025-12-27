@@ -61,6 +61,10 @@
         no_hardware_cursors = true;
       };
 
+      exec-once = [
+        "hyprlock"
+      ];
+
       # --- Keybindings ---
       "$mainMod" = "SUPER";
       bind = [
@@ -72,6 +76,7 @@
         "$mainMod, V, togglefloating,"
         "$mainMod, R, exec, wofi --show drun"
         "$mainMod, P, pseudo," # pseudotile
+        "$mainMod, L, exec, hyprlock" # Lock screen
 
         # Move focus with mainMod + arrow keys
         "$mainMod, left, movefocus, l"

@@ -33,9 +33,10 @@ We use **Agenix** to store your VPN credentials securely.
     ```bash
     nix develop
     ```
-2.  Edit/Create the secret file:
+2.  Edit/Create the secret file (must be run from the secrets directory):
     ```bash
-    agenix -e secrets/media-vpn.age
+    cd secrets
+    agenix -e media-vpn.age
     ```
 3.  Paste your Mullvad WireGuard configuration in the following format (Key=Value):
     ```env

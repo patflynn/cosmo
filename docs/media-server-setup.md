@@ -84,12 +84,31 @@ Once deployed (`nixos-rebuild switch ...`), the services will be available at th
 
 ## 5. First-Time Configuration
 
+### 5.1. Claiming the Plex Server (Crucial Step)
+Since the server is headless, Plex may not allow you to "Claim" it (link it to your account) from a remote IP. You must use an SSH tunnel to access it as if you were on `localhost`.
+
+1.  **Open an SSH Tunnel** from your laptop/desktop:
+    ```bash
+    ssh -L 8888:localhost:32400 patrick@classic-laddie
+    ```
+2.  **Open in Browser:** Go to `http://localhost:8888/web`.
+3.  **Sign In:** You should now see the setup wizard to claim the server.
+4.  **Finish:** Once claimed, you can disconnect SSH and access it normally via `http://<server-ip>:32400`.
+
+### 5.2. App Configuration
 1.  **Prowlarr:**
     *   Add your Indexers (Usenet/Torrents).
     *   Connect Prowlarr to Sonarr and Radarr (Settings -> Apps).
 2.  **Overseerr:**
     *   Connect to your Plex server (sign in with Plex account).
     *   Connect to your Sonarr/Radarr instances.
-3.  **qBittorrent:**
-    *   **Critical:** Verify your IP. Use the "Execution Log" or a torrent IP checker to ensure it matches your VPN IP, not your home IP.
-    *   *(Note: The Gluetun container prevents traffic if the VPN is down, so this is robust by design.)*
+3.  **qBittorrent & SABnzbd:**
+    *   **Critical:** Verify your IP. Use the "Execution Log" (qBit) or "Status" (SAB) to ensure the detected external IP matches your Mullvad VPN IP.
+
+## 6. State & Backups
+
+Unlike the system configuration (managed by Nix), your application data (Plex database, Sonarr history, downloaded files) is **stateful**.
+
+*   **Config Location:** Application data lives in `/var/lib/` (e.g., `/var/lib/plex`, `/var/lib/sonarr`, `/var/lib/sabnzbd`).
+*   **Persistence:** These directories persist across reboots and `nixos-rebuild` operations.
+*   **Backup Strategy:** To backup your library metadata and settings, backup these directories.

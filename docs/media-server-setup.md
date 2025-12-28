@@ -11,10 +11,10 @@ This guide details the setup and configuration of the "State of the Art" media s
     *   **Radarr:** Movies
     *   **Prowlarr:** Indexer Manager (Syncs to Sonarr/Radarr)
 *   **Downloaders:**
-    *   **SABnzbd:** Usenet Downloader (Native).
+    *   **SABnzbd:** Usenet Downloader (Containerized).
     *   **qBittorrent:** Torrent Downloader (Containerized).
 *   **Security:**
-    *   **Gluetun:** VPN Client Container. Acts as a network gateway for qBittorrent to prevent IP leaks.
+    *   **Gluetun:** VPN Client Container. Acts as a network gateway for qBittorrent and SABnzbd to prevent IP leaks.
 
 ## 2. Prerequisites
 

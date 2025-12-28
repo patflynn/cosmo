@@ -77,12 +77,8 @@ in
       openFirewall = true;
     };
 
-    services.sabnzbd = {
-      enable = true;
-      group = "media";
-      configFile = "/var/lib/sabnzbd/sabnzbd.ini"; # Default
-    };
-    networking.firewall.allowedTCPPorts = [ 8080 ]; # SABnzbd default
+    # SABnzbd (Moved to container for VPN)
+    # services.sabnzbd removed.
 
     services.overseerr = {
       enable = true;
@@ -90,7 +86,7 @@ in
     };
 
     # ---------------------------------------------------------
-    # 4. Containerized Torrenting (Gluetun VPN + qBittorrent)
+    # 4. Containerized Torrenting & Usenet (Gluetun VPN)
     # ---------------------------------------------------------
 
     virtualisation.oci-containers.backend = "podman";
@@ -113,7 +109,8 @@ in
           FIREWALL_OUTBOUND_SUBNETS = "192.168.0.0/16"; # Allow Local LAN access
         };
         ports = [
-          "8081:8081" # Map qBittorrent WebUI out
+          "8081:8081" # qBittorrent WebUI
+          "8080:8080" # SABnzbd WebUI
           "6881:6881/tcp"
           "6881:6881/udp"
         ];
@@ -127,16 +124,32 @@ in
       qbittorrent = {
         image = "lscr.io/linuxserver/qbittorrent:latest";
         dependsOn = [ "gluetun" ];
-        extraOptions = [ "--network=container:gluetun" ]; # MAGIC: Use Gluetun's network
+        extraOptions = [ "--network=container:gluetun" ];
         environment = {
           PUID = "1000"; # patrick
-          PGID = "100"; # users (or media group ID)
+          PGID = "100"; # users
           TZ = "America/New_York";
           WEBUI_PORT = "8081";
         };
         volumes = [
           "/var/lib/qbittorrent/config:/config"
           "/mnt/media/downloads/torrents:/downloads"
+        ];
+      };
+
+      # The Usenet Client (Routed through Gluetun)
+      sabnzbd = {
+        image = "lscr.io/linuxserver/sabnzbd:latest";
+        dependsOn = [ "gluetun" ];
+        extraOptions = [ "--network=container:gluetun" ];
+        environment = {
+          PUID = "1000"; # patrick
+          PGID = "100"; # users
+          TZ = "America/New_York";
+        };
+        volumes = [
+          "/var/lib/sabnzbd/config:/config"
+          "/mnt/media/downloads/usenet:/downloads" # Will create 'complete' and 'incomplete' here
         ];
       };
     };

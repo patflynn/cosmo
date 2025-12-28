@@ -64,15 +64,18 @@ zfs create rpool/home
 
 # Storage Datasets
 zfs create tank/media
+zfs create tank/personal
 
 # mount before install
 mount -t zfs rpool/root /mnt
-mkdir -p /mnt/{nix,home,boot,mnt/media}
+mkdir -p /mnt/{nix,home,boot}
 
 mount -t zfs rpool/nix /mnt/nix
 mount -t zfs rpool/home /mnt/home
 mount /dev/nvme0n1p1 /mnt/boot
-mount -t zfs tank/media /mnt/mnt/media
+
+# NOTE: We do NOT mount tank/* datasets here to prevent nixos-generate-config 
+# from adding them to hardware-configuration.nix. They are manually defined in default.nix.
 
 # generate hardware config
 nixos-generate-config --root /mnt

@@ -87,9 +87,6 @@
   programs.dconf.enable = true; # Required for virt-manager
   environment.systemPackages = with pkgs; [ virt-manager ];
 
-  # Host-specific user configuration
-  users.users.patrick.extraGroups = [ "libvirtd" ];
-
   security.sudo.wheelNeedsPassword = true;
   # Enable SSH so you can access the server
   services.openssh = {
@@ -97,6 +94,38 @@
     settings.PasswordAuthentication = false;
     settings.PermitRootLogin = "no";
   };
+
+  # Define the media group for the service stack
+  users.groups.media = { };
+
+  # Ensure the patrick group is explicitly defined to avoid resolution errors
+  users.groups.family = { };
+
+  fileSystems."/mnt/personal" = {
+    device = "tank/personal";
+    fsType = "zfs";
+  };
+
+  fileSystems."/mnt/media" = {
+    device = "tank/media";
+    fsType = "zfs";
+  };
+
+  systemd.tmpfiles.rules = [
+    # Type Path             Mode User    Group   Age Argument
+    "d /mnt/media/movies    0775 patrick media   -   -"
+    "d /mnt/media/tv        0775 patrick media   -   -"
+    "d /mnt/media/music     0775 patrick media   -   -"
+    "d /mnt/personal/photos 0750 patrick family -   -"
+    "d /mnt/personal/videos 0750 patrick family -   -"
+  ];
+
+  # Host-specific user configuration
+  users.users.patrick.extraGroups = [
+    "libvirtd"
+    "family"
+    "media"
+  ];
 
   # Do not change this unless you reinstall the OS
   system.stateVersion = "25.11";

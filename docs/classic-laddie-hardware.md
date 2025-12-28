@@ -34,6 +34,11 @@ This document outlines the hardware specifications of the `classic-laddie` host 
 *   **Partitions:**
     *   `/dev/sda1`: 3.6 TiB (Solaris /usr & Apple ZFS)
     *   `/dev/sda9`: 8 MiB (Solaris reserved 1)
+*   **ZFS Configuration:**
+    *   Pool: `tank`
+    *   Datasets:
+        *   `tank/media`: Mounted at `/mnt/media`
+        *   `tank/personal`: Mounted at `/mnt/personal`
 
 ## Network Interfaces
 *   **Wired Ethernet:** Intel Corporation Ethernet Controller I225-V [8086:15f3]

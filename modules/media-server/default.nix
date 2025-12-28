@@ -37,7 +37,10 @@ in
 
     # Host `classic-laddie` defines the `media` group and basic mount points.
 
-    users.users.patrick.extraGroups = [ "media" ];
+    users.users.patrick.extraGroups = [
+      "media"
+      "podman"
+    ];
 
     # Allow Plex to read/write to the media directory
     users.users.plex.extraGroups = [ "media" ];
@@ -97,7 +100,9 @@ in
       # The VPN Gateway
       gluetun = {
         image = "qmcgaw/gluetun";
-        capabilities = [ "NET_ADMIN" ];
+        capabilities = {
+          NET_ADMIN = true;
+        };
         environmentFiles = [ cfg.vpnSecretPath ];
         environment = {
           VPN_SERVICE_PROVIDER = "mullvad";
@@ -135,7 +140,5 @@ in
         ];
       };
     };
-
-    users.users.patrick.extraGroups = [ "podman" ];
   };
 }

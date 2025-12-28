@@ -85,6 +85,15 @@ in
       openFirewall = true;
     };
 
+    # Open ports for containerized services (Gluetun/SABnzbd/qBittorrent)
+    # Native services open their own ports, but containers need explicit host firewall rules.
+    networking.firewall = {
+      allowedTCPPorts = [
+        8080 # SABnzbd
+        8081 # qBittorrent
+      ];
+    };
+
     # ---------------------------------------------------------
     # 4. Containerized Torrenting & Usenet (Gluetun VPN)
     # ---------------------------------------------------------

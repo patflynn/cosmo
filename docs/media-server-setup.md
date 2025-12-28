@@ -4,8 +4,8 @@ This guide details the setup and configuration of the "State of the Art" media s
 
 ## 1. The Stack
 
-*   **Media Server:** [Jellyfin](https://jellyfin.org/) (Native). Hardware accelerated (NVENC/VAAPI).
-*   **Request Manager:** [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) (Native). "Netflix-like" request interface.
+*   **Media Server:** [Plex](https://www.plex.tv/) (Native). Hardware accelerated (NVENC).
+*   **Request Manager:** [Overseerr](https://overseerr.dev/) (Native). "Netflix-like" request interface for Plex.
 *   **Automation (The Arrs):**
     *   **Sonarr:** TV Shows
     *   **Radarr:** Movies
@@ -18,7 +18,7 @@ This guide details the setup and configuration of the "State of the Art" media s
 
 ## 2. Prerequisites
 
-1.  **Nvidia GPU (Recommended):** The module is optimized for NVENC hardware acceleration.
+1.  **Nvidia GPU (Recommended):** The module is optimized for NVENC hardware acceleration (Plex Pass required for hardware transcoding).
 2.  **Mullvad VPN Account:** Required for the secure torrenting tunnel.
 3.  **Storage:** A large storage pool mounted at `/mnt/media`.
 
@@ -73,8 +73,8 @@ Once deployed (`nixos-rebuild switch ...`), the services will be available at th
 
 | Service | Port | Description |
 | :--- | :--- | :--- |
-| **Jellyfin** | `8096` | Media Player UI |
-| **Jellyseerr** | `5055` | Request UI (Start here!) |
+| **Plex** | `32400` | Media Player UI (Web) |
+| **Overseerr** | `5055` | Request UI (Start here!) |
 | **Sonarr** | `8989` | TV Management |
 | **Radarr** | `7878` | Movie Management |
 | **Prowlarr** | `9696` | Indexer Config |
@@ -86,8 +86,8 @@ Once deployed (`nixos-rebuild switch ...`), the services will be available at th
 1.  **Prowlarr:**
     *   Add your Indexers (Usenet/Torrents).
     *   Connect Prowlarr to Sonarr and Radarr (Settings -> Apps).
-2.  **Jellyseerr:**
-    *   Connect to your Jellyfin server.
+2.  **Overseerr:**
+    *   Connect to your Plex server (sign in with Plex account).
     *   Connect to your Sonarr/Radarr instances.
 3.  **qBittorrent:**
     *   **Critical:** Verify your IP. Use the "Execution Log" or a torrent IP checker to ensure it matches your VPN IP, not your home IP.

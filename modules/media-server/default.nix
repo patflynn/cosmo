@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.media-server = {
-    enable = lib.mkEnableOption "Media Server Stack (Jellyfin, Arrs, Torrent/VPN)";
+    enable = lib.mkEnableOption "Media Server Stack (Plex, Arrs, Torrent/VPN)";
     vpnSecretPath = lib.mkOption {
       type = lib.types.path;
       default = "/run/agenix/media-vpn";
@@ -19,7 +19,79 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # ... (existing config) ...
+
+    # ---------------------------------------------------------
+    # 1. System & Hardware Tweaks
+    # ---------------------------------------------------------
+
+    # Hardware acceleration is critical for transcoding.
+    # The host (classic-laddie) has an Nvidia GPU configured.
+    # Plex will automatically detect NVENC if the drivers are loaded system-wide.
+    hardware.graphics = {
+      enable = true;
+    };
+
+    # ---------------------------------------------------------
+    # 2. Permissions & Groups
+    # ---------------------------------------------------------
+
+    # Host `classic-laddie` defines the `media` group and basic mount points.
+
+    users.users.patrick.extraGroups = [ "media" ];
+
+    # Allow Plex to read/write to the media directory
+    users.users.plex.extraGroups = [ "media" ];
+
+    systemd.tmpfiles.rules = [
+      "d /mnt/media/downloads 0775 patrick media -"
+      "d /mnt/media/downloads/usenet 0775 sabnzbd media -"
+      "d /mnt/media/downloads/torrents 0775 patrick media -"
+    ];
+
+    # ---------------------------------------------------------
+    # 3. Native Services (The "Arr" Stack + Plex)
+    # ---------------------------------------------------------
+
+    services.plex = {
+      enable = true;
+      openFirewall = true;
+    };
+
+    services.sonarr = {
+      enable = true;
+      group = "media";
+      openFirewall = true;
+    };
+
+    services.radarr = {
+      enable = true;
+      group = "media";
+      openFirewall = true;
+    };
+
+    services.prowlarr = {
+      enable = true;
+      openFirewall = true;
+    };
+
+    services.sabnzbd = {
+      enable = true;
+      group = "media";
+      configFile = "/var/lib/sabnzbd/sabnzbd.ini"; # Default
+    };
+    networking.firewall.allowedTCPPorts = [ 8080 ]; # SABnzbd default
+
+    services.overseerr = {
+      enable = true;
+      openFirewall = true;
+    };
+
+    # ---------------------------------------------------------
+    # 4. Containerized Torrenting (Gluetun VPN + qBittorrent)
+    # ---------------------------------------------------------
+
+    virtualisation.oci-containers.backend = "podman";
+
     virtualisation.oci-containers.containers = {
 
       # The VPN Gateway
@@ -36,7 +108,6 @@ in
           FIREWALL_OUTBOUND_SUBNETS = "192.168.0.0/16"; # Allow Local LAN access
         };
         ports = [
-
           "8081:8081" # Map qBittorrent WebUI out
           "6881:6881/tcp"
           "6881:6881/udp"
@@ -65,8 +136,6 @@ in
       };
     };
 
-    # Allow podman to talk to outside world if needed (usually default is fine)
-    # But ensure our user can run podman if manual intervention needed
     users.users.patrick.extraGroups = [ "podman" ];
   };
 }

@@ -94,6 +94,20 @@ in
       ];
     };
 
+    # Allow services to talk to each other using friendly hostnames
+    # e.g., Sonarr can talk to "sabnzbd" instead of "localhost"
+    networking.hosts = {
+      "127.0.0.1" = [
+        "plex"
+        "sonarr"
+        "radarr"
+        "prowlarr"
+        "overseerr"
+        "sabnzbd"
+        "qbittorrent"
+      ];
+    };
+
     # ---------------------------------------------------------
     # 4. Containerized Torrenting & Usenet (Gluetun VPN)
     # ---------------------------------------------------------

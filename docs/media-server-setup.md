@@ -1,0 +1,94 @@
+# Media Server Setup Guide (2025)
+
+This guide details the setup and configuration of the "State of the Art" media server stack in Cosmo, utilizing native NixOS services for the application layer and a secure containerized environment for networking.
+
+## 1. The Stack
+
+*   **Media Server:** [Jellyfin](https://jellyfin.org/) (Native). Hardware accelerated (NVENC/VAAPI).
+*   **Request Manager:** [Jellyseerr](https://github.com/Fallenbagel/jellyseerr) (Native). "Netflix-like" request interface.
+*   **Automation (The Arrs):**
+    *   **Sonarr:** TV Shows
+    *   **Radarr:** Movies
+    *   **Prowlarr:** Indexer Manager (Syncs to Sonarr/Radarr)
+*   **Downloaders:**
+    *   **SABnzbd:** Usenet Downloader (Native).
+    *   **qBittorrent:** Torrent Downloader (Containerized).
+*   **Security:**
+    *   **Gluetun:** VPN Client Container. Acts as a network gateway for qBittorrent to prevent IP leaks.
+
+## 2. Prerequisites
+
+1.  **Nvidia GPU (Recommended):** The module is optimized for NVENC hardware acceleration.
+2.  **Mullvad VPN Account:** Required for the secure torrenting tunnel.
+3.  **Storage:** A large storage pool mounted at `/mnt/media`.
+
+## 3. Installation
+
+The setup is modularized in `modules/media-server/default.nix`.
+
+### Step 1: Create the VPN Secret
+We use **Agenix** to store your VPN credentials securely.
+
+1.  Enter the development shell:
+    ```bash
+    nix develop
+    ```
+2.  Edit/Create the secret file:
+    ```bash
+    agenix -e secrets/media-vpn.age
+    ```
+3.  Paste your Mullvad WireGuard configuration in the following format (Key=Value):
+    ```env
+    WIREGUARD_PRIVATE_KEY=your_private_key_here
+    WIREGUARD_ADDRESSES=10.xx.xx.xx/32
+    ```
+    *Get these details from the [Mullvad WireGuard Configuration Generator](https://mullvad.net/en/account/#/wireguard-config).*
+
+### Step 2: Enable the Module
+In your host configuration (e.g., `hosts/classic-laddie/default.nix`):
+
+1.  **Import the module:**
+    ```nix
+    imports = [
+      ../../modules/media-server/default.nix
+    ];
+    ```
+2.  **Enable the service:**
+    ```nix
+    modules.media-server.enable = true;
+    ```
+3.  **Map the Secret:**
+    ```nix
+    age.secrets."media-vpn" = {
+      file = ../../secrets/media-vpn.age;
+      owner = "patrick"; # Must be readable by the user running the container
+      group = "root";
+      mode = "0400";
+    };
+    ```
+
+## 4. Usage & Ports
+
+Once deployed (`nixos-rebuild switch ...`), the services will be available at the host's IP address:
+
+| Service | Port | Description |
+| :--- | :--- | :--- |
+| **Jellyfin** | `8096` | Media Player UI |
+| **Jellyseerr** | `5055` | Request UI (Start here!) |
+| **Sonarr** | `8989` | TV Management |
+| **Radarr** | `7878` | Movie Management |
+| **Prowlarr** | `9696` | Indexer Config |
+| **SABnzbd** | `8080` | Usenet Client |
+| **qBittorrent** | `8081` | Torrent Client (via VPN) |
+
+## 5. First-Time Configuration
+
+1.  **Prowlarr:**
+    *   Add your Indexers (Usenet/Torrents).
+    *   Connect Prowlarr to Sonarr and Radarr (Settings -> Apps).
+2.  **Jellyseerr:**
+    *   Connect to your Jellyfin server.
+    *   Connect to your Sonarr/Radarr instances.
+3.  **qBittorrent:**
+    *   **Critical:** Verify your IP. Use the "Execution Log" or a torrent IP checker to ensure it matches your VPN IP, not your home IP.
+    *   *(Note: The Gluetun container prevents traffic if the VPN is down, so this is robust by design.)*

@@ -21,7 +21,9 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       
       - name: Check Formatting
-        run: nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check .
+        run: nix develop -c nixfmt --check .
+        env:
+          NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
 
   build-nixos:
     runs-on: ubuntu-latest
@@ -40,6 +42,8 @@ jobs:
       # Full builds might be too heavy for standard GitHub Runners without caching.
       - name: Build ${{ matrix.host }} (Dry Run)
         run: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --dry-run
+        env:
+          NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
 
   build-home:
     runs-on: ubuntu-latest
@@ -53,6 +57,8 @@ jobs:
 
       - name: Build patrick@bud-lite (Dry Run)
         run: nix build .#homeConfigurations."patrick@bud-lite".activationPackage --dry-run
+        env:
+          NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
 
   check:
     runs-on: ubuntu-latest
@@ -66,3 +72,5 @@ jobs:
     
       - name: Flake Check
         run: nix flake check
+        env:
+          NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"

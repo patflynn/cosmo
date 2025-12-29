@@ -29,7 +29,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           
       - name: Run zizmor 🌈
-        run: nix develop --quiet -c zizmor . --no-online-audits --format sarif > results.sarif || true
+        run: nix run nixpkgs#zizmor -- . --no-online-audits --format sarif > results.sarif || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"

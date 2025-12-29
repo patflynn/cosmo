@@ -50,7 +50,8 @@ in
       "d /mnt/media/downloads/usenet 0775 patrick media -"
       "d /mnt/media/downloads/torrents 0775 patrick media -"
 
-      # App Config Directories      "d /var/lib/gluetun 0700 root root -" # VPN needs strict permissions? Or default.
+      # App Config Directories
+      "d /var/lib/gluetun 0700 root root -"
       "d /var/lib/sabnzbd 0775 patrick media -"
       "d /var/lib/sabnzbd/config 0775 patrick media -"
       "d /var/lib/qbittorrent 0775 patrick media -"
@@ -132,6 +133,7 @@ in
         environment = {
           VPN_SERVICE_PROVIDER = "mullvad";
           VPN_TYPE = "wireguard";
+          DNS_ADDRESS = "1.1.1.1";
 
           # Ports to forward from the VPN interface to the container network
           FIREWALL_VPN_INPUT_PORTS = "8081";

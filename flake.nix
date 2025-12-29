@@ -153,7 +153,7 @@
             zizmor = {
               enable = true;
               name = "zizmor";
-              entry = "${nixpkgs.legacyPackages.x86_64-linux.zizmor}/bin/zizmor";
+              entry = "${nixpkgs.legacyPackages.x86_64-linux.zizmor}/bin/zizmor .";
               pass_filenames = false;
             };
           };

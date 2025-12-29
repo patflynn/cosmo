@@ -121,6 +121,7 @@ in
         "radarr"
         "prowlarr"
         "overseerr"
+        "overseer"
         "sabnzbd"
         "qbittorrent"
       ];
@@ -130,19 +131,17 @@ in
     # 4. Reverse Proxy (Easy Access)
     # ---------------------------------------------------------
 
-    # Allow family to type "http://overseerr" to get to the request portal
-    # Note: Requires a Local DNS record on your router (UDM Pro) pointing "overseerr" to this host's IP.
+    # Allow family to type "http://overseerr" or "http://overseer" to get to the request portal
+    # Note: Requires a Local DNS record on your router (UDM Pro) pointing to this host's IP.
     services.caddy = {
       enable = true;
       globalConfig = ''
         auto_https off
       '';
-      virtualHosts."http://overseerr".extraConfig = ''
-        reverse_proxy localhost:5055
-      '';
-      virtualHosts."http://overseerr.local".extraConfig = ''
-        reverse_proxy localhost:5055
-      '';
+      virtualHosts."http://overseerr".extraConfig = "reverse_proxy localhost:5055";
+      virtualHosts."http://overseerr.local".extraConfig = "reverse_proxy localhost:5055";
+      virtualHosts."http://overseer".extraConfig = "reverse_proxy localhost:5055";
+      virtualHosts."http://overseer.local".extraConfig = "reverse_proxy localhost:5055";
     };
 
     # ---------------------------------------------------------

@@ -136,12 +136,14 @@ in
       enable = true;
       virtualHosts."http://overseerr" = {
         extraConfig = ''
-          reverse_proxy :5055
+          tls off
+          reverse_proxy localhost:5055
         '';
       };
       virtualHosts."http://overseerr.local" = {
         extraConfig = ''
-          reverse_proxy :5055
+          tls off
+          reverse_proxy localhost:5055
         '';
       };
     };

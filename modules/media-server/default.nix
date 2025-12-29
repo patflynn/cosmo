@@ -124,7 +124,31 @@ in
     };
 
     # ---------------------------------------------------------
-    # 4. Containerized Torrenting & Usenet (Gluetun VPN)
+    # 4. Reverse Proxy (Easy Access)
+    # ---------------------------------------------------------
+
+    # Allow family to type "http://classic-laddie" to get to Overseerr
+    services.caddy = {
+      enable = true;
+      virtualHosts."classic-laddie" = {
+        extraConfig = ''
+          reverse_proxy :5055
+        '';
+      };
+      virtualHosts."classic-laddie.local" = {
+        extraConfig = ''
+          reverse_proxy :5055
+        '';
+      };
+    };
+
+    networking.firewall.allowedTCPPorts = [
+      80
+      443
+    ];
+
+    # ---------------------------------------------------------
+    # 5. Containerized Torrenting & Usenet (Gluetun VPN)
     # ---------------------------------------------------------
 
     virtualisation.oci-containers.backend = "podman";

@@ -150,6 +150,12 @@
           hooks = {
             nixfmt-rfc-style.enable = true;
             detect-private-keys.enable = true;
+            zizmor = {
+              enable = true;
+              name = "zizmor";
+              entry = "${nixpkgs.legacyPackages.x86_64-linux.zizmor}/bin/zizmor .";
+              pass_filenames = false;
+            };
           };
         };
       };

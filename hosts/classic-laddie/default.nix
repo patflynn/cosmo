@@ -11,7 +11,25 @@
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/workstation.nix
+    ../../modules/media-server/default.nix
   ];
+
+  # ---------------------------------------------------------------------------
+  # Media Server Configuration
+  # ---------------------------------------------------------------------------
+  modules.media-server.enable = true;
+
+  # VPN Credentials for Gluetun (Mullvad)
+  # Run: agenix -e secrets/media-vpn.age
+  # Content format:
+  # WIREGUARD_PRIVATE_KEY=...
+  # WIREGUARD_ADDRESSES=...
+  age.secrets."media-vpn" = {
+    file = ../../secrets/media-vpn.age;
+    owner = "patrick"; # Needs to be readable by the user running podman (or root if system)
+    group = "podman";
+    mode = "0440";
+  };
 
   # Bootloader (Keep what matches your hardware!)
   # If your hardware-configuration.nix says you are EFI, use systemd-boot:

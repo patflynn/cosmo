@@ -121,6 +121,8 @@ in
         "radarr"
         "prowlarr"
         "overseerr"
+        "overseerr.lan"
+        "overseerr.home"
         "sabnzbd"
         "qbittorrent"
       ];
@@ -139,6 +141,8 @@ in
       '';
       virtualHosts."http://overseerr".extraConfig = "reverse_proxy localhost:5055";
       virtualHosts."http://overseerr.local".extraConfig = "reverse_proxy localhost:5055";
+      virtualHosts."http://overseerr.lan".extraConfig = "reverse_proxy localhost:5055";
+      virtualHosts."http://overseerr.home".extraConfig = "reverse_proxy localhost:5055";
     };
 
     # ---------------------------------------------------------

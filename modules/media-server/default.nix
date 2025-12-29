@@ -103,14 +103,12 @@ in
     # Open ports for containerized services (Gluetun/SABnzbd/qBittorrent)
     # Native services open their own ports, but containers need explicit host firewall rules.
     # Also open 80/443 for Caddy reverse proxy.
-    networking.firewall = {
-      allowedTCPPorts = [
-        80 # HTTP
-        443 # HTTPS
-        8080 # SABnzbd
-        8081 # qBittorrent
-      ];
-    };
+    networking.firewall.allowedTCPPorts = [
+      80
+      443
+      8080
+      8081
+    ];
 
     # Allow services to talk to each other using friendly hostnames
     # e.g., Sonarr can talk to "sabnzbd" instead of "localhost"

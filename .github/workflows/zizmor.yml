@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["**"]
 
+permissions:
+  contents: read
+  security-events: write # Required for uploading SARIF results
+
 jobs:
   zizmor:
     name: zizmor latest via PyPI
@@ -29,11 +33,14 @@ jobs:
 
       - name: Run zizmor 🌈
         run: zizmor --offline --format=sarif . > results.sarif
+      
+      - name: Install Nix
+        uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          
+      - name: Run zizmor 🌈
+        run: nix run .#zizmor -- . --no-online-audits --format github
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@6e93df3c1b954c609ccb2761345ddc9dba76b649 # v3.28.1
-        with:
-          sarif_file: results.sarif
-          category: zizmor
+          NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"

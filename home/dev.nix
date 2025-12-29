@@ -2,6 +2,7 @@
   config,
   pkgs,
   inputs,
+  lib,
   ...
 }:
 
@@ -30,6 +31,11 @@
   programs.zsh.shellAliases = {
     rebuild = "sudo nixos-rebuild switch --flake .";
   };
+
+  # Install Gemini extensions
+  home.activation.installGeminiConductor = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run ${pkgs.gemini-cli}/bin/gemini extensions install https://github.com/gemini-cli-extensions/conductor
+  '';
 
   # Git adjustments for dev if needed (e.g. signing keys)
 }

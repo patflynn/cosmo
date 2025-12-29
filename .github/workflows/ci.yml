@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: DeterminateSystems/nix-installer-action@a2bbe0274e3a0c4194390a1e445f734c597ebc37 # v16
+      - uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
       
       - name: Check Formatting
         run: nix fmt -- --fail-on-change .
@@ -26,7 +26,7 @@ jobs:
         host: [classic-laddie, makers-nix, johnny-walker]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: DeterminateSystems/nix-installer-action@a2bbe0274e3a0c4194390a1e445f734c597ebc37 # v16
+      - uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
       
       # We use --dry-run to verify the derivation can be calculated and dependencies resolved.
       # Full builds might be too heavy for standard GitHub Runners without caching.
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: DeterminateSystems/nix-installer-action@a2bbe0274e3a0c4194390a1e445f734c597ebc37 # v16
+      - uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
 
       - name: Build patrick@bud-lite (Dry Run)
         run: nix build .#homeConfigurations."patrick@bud-lite".activationPackage --dry-run
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: DeterminateSystems/nix-installer-action@a2bbe0274e3a0c4194390a1e445f734c597ebc37 # v16
+      - uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
     
       - name: Flake Check
         run: nix flake check

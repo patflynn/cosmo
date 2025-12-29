@@ -19,6 +19,9 @@ jobs:
       - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       
       - name: Check Formatting
         run: nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check .
@@ -35,6 +38,9 @@ jobs:
       - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       
       # We use --dry-run to verify the derivation can be calculated and dependencies resolved.
       # Full builds might be too heavy for standard GitHub Runners without caching.
@@ -50,6 +56,9 @@ jobs:
       - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
       - name: Build patrick@bud-lite (Dry Run)
         run: nix build .#homeConfigurations."patrick@bud-lite".activationPackage --dry-run
@@ -63,6 +72,9 @@ jobs:
       - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 # v30
         with:
           nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            accept-flake-config = true
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
     
       - name: Flake Check
         run: nix flake check

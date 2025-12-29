@@ -102,12 +102,13 @@ in
 
     # Open ports for containerized services (Gluetun/SABnzbd/qBittorrent)
     # Native services open their own ports, but containers need explicit host firewall rules.
-    networking.firewall = {
-      allowedTCPPorts = [
-        8080 # SABnzbd
-        8081 # qBittorrent
-      ];
-    };
+    # Also open 80/443 for Caddy reverse proxy.
+    networking.firewall.allowedTCPPorts = [
+      80
+      443
+      8080
+      8081
+    ];
 
     # Allow services to talk to each other using friendly hostnames
     # e.g., Sonarr can talk to "sabnzbd" instead of "localhost"
@@ -124,7 +125,28 @@ in
     };
 
     # ---------------------------------------------------------
-    # 4. Containerized Torrenting & Usenet (Gluetun VPN)
+    # 4. Reverse Proxy (Easy Access)
+    # ---------------------------------------------------------
+
+    # Allow family to type "http://overseerr" to get to the request portal
+    # Note: Requires a Local DNS record on your router (UDM Pro) pointing "overseerr" to this host's IP.
+    services.caddy = {
+      enable = true;
+      globalConfig = ''
+        auto_https off
+      '';
+      virtualHosts."overseerr".extraConfig = ''
+        tls internal
+        reverse_proxy localhost:5055
+      '';
+      virtualHosts."overseerr.local".extraConfig = ''
+        tls internal
+        reverse_proxy localhost:5055
+      '';
+    };
+
+    # ---------------------------------------------------------
+    # 5. Containerized Torrenting & Usenet (Gluetun VPN)
     # ---------------------------------------------------------
 
     virtualisation.oci-containers.backend = "podman";

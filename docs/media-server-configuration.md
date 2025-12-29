@@ -86,10 +86,11 @@ Since download clients run in containers but Sonarr/Radarr run natively, paths m
 
 ## 5. Overseerr Configuration (Request Frontend)
 
-**URL:** `http://overseerr:5055`
+**URL:** `https://overseerr`
 
-1.  **Plex:** Connect to your Plex server (`plex`, port `32400`).
-2.  **Services:**
+*   **Note on HTTPS:** Accessing via `https://overseerr` is required because modern browsers (like Chrome) often force HTTPS for local hostnames. Caddy is configured with `tls internal` to provide a self-signed certificate. You may need to click "Advanced" and "Proceed" the first time you visit.
+*   **UDM Pro:** Ensure a Local DNS record exists pointing `overseerr` to the host IP.
+*   **Plex:** Connect to your Plex server (`plex`, port `32400`).
+*   **Services:**
     *   Add **Radarr Server:** `radarr` (port `7878`). Select Quality Profile (e.g., HD-1080p) and Root Folder (`/mnt/media/movies`).
     *   Add **Sonarr Server:** `sonarr` (port `8989`). Select Quality Profile and Root Folder (`/mnt/media/tv`).
-3.  **Users:** Log in with Plex accounts. Configure permissions as desired.

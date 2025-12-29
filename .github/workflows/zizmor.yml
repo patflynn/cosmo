@@ -29,7 +29,7 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
           
       - name: Run zizmor 🌈
-        run: nix develop -c "pre-commit run zizmor --all-files --quiet" > results.sarif || true
+        run: nix develop -c "pre-commit run zizmor --all-files --quiet --output results.sarif" || true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
@@ -39,3 +39,5 @@ jobs:
         with:
           sarif_file: results.sarif
           category: zizmor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

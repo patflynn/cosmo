@@ -133,10 +133,11 @@ in
         environment = {
           VPN_SERVICE_PROVIDER = "mullvad";
           VPN_TYPE = "wireguard";
-          DNS_ADDRESS = "1.1.1.1";
+          WIREGUARD_PUBLIC_KEY = "B8UVAeNkAW4NiGHd1lpl933Drh4y7pMqpXJpH0SrGjQ=";
+          VPN_ENDPOINT_IP = "185.213.154.70";
+          VPN_ENDPOINT_PORT = "51820";
+          DNS_ADDRESS = "10.64.0.1";
           DOT = "off";
-          SERVER_COUNTRIES = "Sweden";
-          SERVER_CITIES = "Gothenburg";
 
           # Ports to forward from the VPN interface to the container network
           FIREWALL_VPN_INPUT_PORTS = "8081";

@@ -130,15 +130,16 @@ in
     # 4. Reverse Proxy (Easy Access)
     # ---------------------------------------------------------
 
-    # Allow family to type "http://classic-laddie" to get to Overseerr
+    # Allow family to type "http://overseerr" to get to the request portal
+    # Note: Requires a Local DNS record on your router (UDM Pro) pointing "overseerr" to this host's IP.
     services.caddy = {
       enable = true;
-      virtualHosts."classic-laddie" = {
+      virtualHosts."overseerr" = {
         extraConfig = ''
           reverse_proxy :5055
         '';
       };
-      virtualHosts."classic-laddie.local" = {
+      virtualHosts."overseerr.local" = {
         extraConfig = ''
           reverse_proxy :5055
         '';

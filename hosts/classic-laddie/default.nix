@@ -27,8 +27,8 @@
   age.secrets."media-vpn" = {
     file = ../../secrets/media-vpn.age;
     owner = "patrick"; # Needs to be readable by the user running podman (or root if system)
-    group = "root";
-    mode = "0400";
+    group = "podman";
+    mode = "0440";
   };
 
   # Bootloader (Keep what matches your hardware!)

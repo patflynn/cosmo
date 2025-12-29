@@ -24,7 +24,7 @@ jobs:
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       
       - name: Check Formatting
-        run: nix shell nixpkgs#nixfmt-rfc-style -c nixfmt --check .
+        run: nix develop -c nixfmt --check .
         env:
           NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
 

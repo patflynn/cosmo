@@ -137,8 +137,6 @@ in
           WIREGUARD_ENDPOINT_IP = "185.213.154.70";
           WIREGUARD_ENDPOINT_PORT = "51820";
           DNS_ADDRESS = "10.64.0.1";
-          DNS_KEEP_NAMESERVER = "on";
-          DNS_SERVER = "127.0.0.1"; # Use internal DNS but we forced plaintext address above
 
           # Ports to forward from the VPN interface to the container network
           FIREWALL_VPN_INPUT_PORTS = "8081";

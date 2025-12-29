@@ -166,7 +166,7 @@ in
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
           PUID = "1000"; # patrick
-          PGID = "100"; # users
+          PGID = "991"; # media
           TZ = "America/New_York";
           WEBUI_PORT = "8081";
         };
@@ -183,7 +183,7 @@ in
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
           PUID = "1000"; # patrick
-          PGID = "100"; # users
+          PGID = "991"; # media
           TZ = "America/New_York";
         };
         volumes = [

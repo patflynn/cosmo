@@ -158,6 +158,7 @@ in
         image = "qmcgaw/gluetun";
         capabilities = {
           NET_ADMIN = true;
+          NET_RAW = true;
         };
         environmentFiles = [ cfg.vpnSecretPath ];
         environment = {

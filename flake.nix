@@ -126,6 +126,7 @@
       };
 
       packages.x86_64-linux = {
+        zizmor = nixpkgs.legacyPackages.x86_64-linux.zizmor;
         johnny-walker-image = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };

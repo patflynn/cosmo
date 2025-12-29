@@ -134,18 +134,15 @@ in
     # Note: Requires a Local DNS record on your router (UDM Pro) pointing "overseerr" to this host's IP.
     services.caddy = {
       enable = true;
-      virtualHosts."http://overseerr" = {
-        extraConfig = ''
-          tls off
-          reverse_proxy localhost:5055
-        '';
-      };
-      virtualHosts."http://overseerr.local" = {
-        extraConfig = ''
-          tls off
-          reverse_proxy localhost:5055
-        '';
-      };
+      globalConfig = ''
+        auto_https off
+      '';
+      virtualHosts."http://overseerr".extraConfig = ''
+        reverse_proxy localhost:5055
+      '';
+      virtualHosts."http://overseerr.local".extraConfig = ''
+        reverse_proxy localhost:5055
+      '';
     };
 
     # ---------------------------------------------------------

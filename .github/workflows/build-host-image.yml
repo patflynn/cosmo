@@ -11,6 +11,9 @@ on:
         options:
           - johnny-walker
 
+permissions:
+  contents: read
+
 jobs:
   build-image:
     runs-on: ubuntu-latest

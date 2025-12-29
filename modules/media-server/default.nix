@@ -134,6 +134,7 @@ in
           VPN_SERVICE_PROVIDER = "mullvad";
           VPN_TYPE = "wireguard";
           DNS_ADDRESS = "1.1.1.1";
+          DOT = "off";
 
           # Ports to forward from the VPN interface to the container network
           FIREWALL_VPN_INPUT_PORTS = "8081";

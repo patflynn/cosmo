@@ -134,10 +134,11 @@ in
           VPN_SERVICE_PROVIDER = "mullvad";
           VPN_TYPE = "wireguard";
           WIREGUARD_PUBLIC_KEY = "B8UVAeNkAW4NiGHd1lpl933Drh4y7pMqpXJpH0SrGjQ=";
-          VPN_ENDPOINT_IP = "185.213.154.70";
-          VPN_ENDPOINT_PORT = "51820";
+          WIREGUARD_ENDPOINT_IP = "185.213.154.70";
+          WIREGUARD_ENDPOINT_PORT = "51820";
           DNS_ADDRESS = "10.64.0.1";
-          DOT = "off";
+          DNS_KEEP_NAMESERVER = "on";
+          DNS_SERVER = "127.0.0.1"; # Use internal DNS but we forced plaintext address above
 
           # Ports to forward from the VPN interface to the container network
           FIREWALL_VPN_INPUT_PORTS = "8081";

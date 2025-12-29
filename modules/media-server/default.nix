@@ -50,9 +50,13 @@ in
       "d /mnt/media/downloads/usenet 0775 patrick media -"
       "d /mnt/media/downloads/usenet/incomplete 0775 patrick media -"
       "d /mnt/media/downloads/usenet/complete 0775 patrick media -"
+      "d /mnt/media/downloads/usenet/complete/tv 0775 patrick media -"
+      "d /mnt/media/downloads/usenet/complete/movies 0775 patrick media -"
       "d /mnt/media/downloads/torrents 0775 patrick media -"
       "d /mnt/media/downloads/torrents/incomplete 0775 patrick media -"
       "d /mnt/media/downloads/torrents/complete 0775 patrick media -"
+      "d /mnt/media/downloads/torrents/complete/tv 0775 patrick media -"
+      "d /mnt/media/downloads/torrents/complete/movies 0775 patrick media -"
 
       # App Config Directories
       "d /var/lib/gluetun 0700 root root -"
@@ -162,7 +166,7 @@ in
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
           PUID = "1000"; # patrick
-          PGID = "100"; # users
+          PGID = "991"; # media
           TZ = "America/New_York";
           WEBUI_PORT = "8081";
         };
@@ -179,7 +183,7 @@ in
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
           PUID = "1000"; # patrick
-          PGID = "100"; # users
+          PGID = "991"; # media
           TZ = "America/New_York";
         };
         volumes = [

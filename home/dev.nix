@@ -34,7 +34,7 @@
 
   # Install Gemini extensions
   home.activation.installGeminiConductor = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    run ${pkgs.gemini-cli}/bin/gemini extensions install https://github.com/gemini-cli-extensions/conductor
+    run ${pkgs.gemini-cli}/bin/gemini extensions install https://github.com/gemini-cli-extensions/conductor --auto-update
   '';
 
   # Git adjustments for dev if needed (e.g. signing keys)

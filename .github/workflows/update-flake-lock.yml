@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 0 * * *' # Run daily at midnight
 
+permissions:
+  contents: read
+
 jobs:
   update-lockfile:
     runs-on: ubuntu-latest

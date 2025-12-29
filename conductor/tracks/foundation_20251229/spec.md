@@ -32,7 +32,7 @@ modules/
 │   ├── gaming      # Steam, drivers
 │   ├── virt        # Libvirt, Docker
 │   ├── hyprland    # The desktop environment
-│   └── media       # Jellyfin, etc.
+│   └── media       # Plex, *arr (Existing/Deployed)
 ```
 
 ### 2. TUI Implementation

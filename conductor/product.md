@@ -1,7 +1,7 @@
 # Product Guide: Cosmo
 
 ## Initial Concept
-**Goal:** Automate and optimize the "Cosmo" NixOS infrastructure to reduce manual setup, enhance the Hyprland developer experience (approaching "Omarchy" parity), and finalize the media server stack, with a secondary focus on basic home automation (Unifi integration).
+**Goal:** Automate and optimize the "Cosmo" NixOS infrastructure to reduce manual setup, enhance the Hyprland developer experience (approaching "Omarchy" parity), and maintain the deployed media server stack, with a secondary focus on basic home automation (Unifi integration).
 
 ## Vision
 To build a resilient, reproducible, and automated infrastructure that serves as both a high-performance development environment and a reliable home media server. The system should minimize maintenance overhead through strict automation while providing a polished, cohesive user experience on the desktop.
@@ -9,7 +9,7 @@ To build a resilient, reproducible, and automated infrastructure that serves as 
 ## Core Objectives
 1.  **Automation First:** Drastically reduce manual bootstrapping and configuration steps.
 2.  **Hyprland Polish:** Elevate the Hyprland window manager configuration to be visually consistent, minimalist, and functionally robust, matching the standards of "Omarchy."
-3.  **Media & Home Services:** Solidify the media streaming stack and establish basic access to Unifi camera feeds.
+3.  **Media & Home Services:** Ensure stability of the deployed media streaming stack and establish basic access to Unifi camera feeds.
 4.  **Developer Experience:** Optimize dotfiles and tools for a seamless coding workflow.
 5.  **Modularity & Composition:** Refactor configuration into reusable, composable modules to easily define new hosts.
 6.  **Public Bootstrap:** Ensure the repository is structured and documented such that a third party could fork and bootstrap their own system.
@@ -27,7 +27,7 @@ To build a resilient, reproducible, and automated infrastructure that serves as 
 *   **Provisioning:** minimize manual shell commands for new host setup.
 
 ### 3. Media & Home Services
-*   **Media Stack:** Finalize configuration for stability and access.
+*   **Media Stack:** Maintain existing configuration for stability and access.
 *   **Home Automation:** Restricted scope - primarily focusing on accessing Unifi camera feeds.
 
 ### 4. Architectural Improvements

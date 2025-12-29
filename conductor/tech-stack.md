@@ -34,5 +34,5 @@
 *   **WSL:** NixOS-WSL (for `makers-nix` host)
 
 ## Home Automation & Media
-*   **Media Stack:** (TBD - likely Jellyfin/Plex, Sonarr, Radarr, etc.)
+*   **Media Stack:** Deployed (Plex, *arr suite)
 *   **Cameras:** Unifi Protect (Access via browser or RTSP)

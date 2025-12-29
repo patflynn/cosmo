@@ -126,6 +126,9 @@
       };
 
       packages.x86_64-linux = {
+        # Expose zizmor here so CI can run it via 'nix run .#zizmor'
+        # to avoid registry lookups and devShell hooks.
+        zizmor = nixpkgs.legacyPackages.x86_64-linux.zizmor;
         johnny-walker-image = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };

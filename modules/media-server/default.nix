@@ -47,11 +47,10 @@ in
 
     systemd.tmpfiles.rules = [
       "d /mnt/media/downloads 0775 patrick media -"
-      "d /mnt/media/downloads/usenet 0775 sabnzbd media -"
+      "d /mnt/media/downloads/usenet 0775 patrick media -"
       "d /mnt/media/downloads/torrents 0775 patrick media -"
 
-      # App Config Directories
-      "d /var/lib/gluetun 0700 root root -" # VPN needs strict permissions? Or default.
+      # App Config Directories      "d /var/lib/gluetun 0700 root root -" # VPN needs strict permissions? Or default.
       "d /var/lib/sabnzbd 0775 patrick media -"
       "d /var/lib/sabnzbd/config 0775 patrick media -"
       "d /var/lib/qbittorrent 0775 patrick media -"

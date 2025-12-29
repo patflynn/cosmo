@@ -135,6 +135,8 @@ in
           VPN_TYPE = "wireguard";
           DNS_ADDRESS = "1.1.1.1";
           DOT = "off";
+          SERVER_COUNTRIES = "Sweden";
+          SERVER_CITIES = "Gothenburg";
 
           # Ports to forward from the VPN interface to the container network
           FIREWALL_VPN_INPUT_PORTS = "8081";

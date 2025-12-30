@@ -28,17 +28,15 @@ experimental-features = nix-command flakes
 
 ## 3. Bootstrap Home Manager
 
-Run the following command to apply the `patrick@debian` configuration directly from the GitHub repository (or your local checkout).
+Run the following command to apply the default configuration to your user. This command automatically detects your username from the environment. The `--impure` flag is required to allow Nix to access the `USER` environment variable.
 
-**From GitHub (Remote):**
 ```bash
-nix run home-manager -- switch --flake github:patflynn/cosmo#patrick@debian
+nix run --impure home-manager -- switch --flake .#default
 ```
 
-**From Local Checkout:**
-If you have cloned the repo to `~/hack/cosmo`:
+If you need to apply a specific, hardcoded profile (e.g., for CI or reproducibility), you can still do so:
+
 ```bash
-cd ~/hack/cosmo
 nix run home-manager -- switch --flake .#patrick@debian
 ```
 

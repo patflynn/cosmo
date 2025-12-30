@@ -14,9 +14,11 @@
 
   networking.hostName = "makers-nix";
 
+  cosmo.user.default = "patrick";
+
   wsl = {
     enable = true;
-    defaultUser = "patrick";
+    defaultUser = config.cosmo.user.default;
     startMenuLaunchers = true;
   };
 

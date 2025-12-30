@@ -125,7 +125,7 @@
     };
     Service = {
       Type = "simple";
-      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/patrick/bin/sunshine-resolution 3840 2160 60 && systemctl --user start hyprland-session.target'";
+      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/${config.home.username}/bin/sunshine-resolution 3840 2160 60 && systemctl --user start hyprland-session.target'";
       Restart = "on-failure";
       RestartSec = "5s";
     };

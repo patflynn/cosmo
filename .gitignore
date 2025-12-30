@@ -40,3 +40,6 @@ tmux/
 work.nix
 zsh/
 .pre-commit-config.yaml
+\n# Local flake configurations
+flake.nix.local
+flake.nix.local

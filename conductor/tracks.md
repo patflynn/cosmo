@@ -9,5 +9,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Debian Workstation Setup (Generic Roles)
+## [x] Track: Debian Workstation Setup (Generic Roles)
 *Link: [./conductor/tracks/debian_setup_20251229/](./conductor/tracks/debian_setup_20251229/)*

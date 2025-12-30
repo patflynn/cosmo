@@ -53,6 +53,9 @@ jobs:
 
   build-home:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        home: ["patrick@crostini", "patrick@debian"]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -64,8 +67,8 @@ jobs:
             accept-flake-config = true
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build patrick@bud-lite (Dry Run)
-        run: nix build .#homeConfigurations."patrick@bud-lite".activationPackage --dry-run
+      - name: Build ${{ matrix.home }} (Dry Run)
+        run: nix build .#homeConfigurations."${{ matrix.home }}".activationPackage --dry-run
         env:
           NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
 

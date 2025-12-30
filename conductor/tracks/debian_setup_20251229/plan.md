@@ -12,7 +12,7 @@
     - [x] Subtask: Update `home/crostini.nix` to import `./generic-linux.nix` instead of duplicating logic.
     - [x] Subtask: Remove any logic that is now redundant with `generic-linux.nix`.
     - [x] Subtask: Verify syntax `nix fmt`.
-- [~] Task: Conductor - User Manual Verification 'Phase 1: Module Refactoring' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Module Refactoring' (Protocol in workflow.md) [checkpoint: 8a0ffeb059d04ea1db5adff0d469058899abd198]
 
 ## Phase 2: Flake Configuration
 *Goal: Expose the generic roles in flake.nix.*

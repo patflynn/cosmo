@@ -7,7 +7,7 @@
 }:
 
 {
-  imports = [ ./dev.nix ];
+  imports = [ ./generic-linux.nix ];
 
   # Crostini Specific Configuration
   # This profile is designed for standalone Home Manager on Debian/Crostini.

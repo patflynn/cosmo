@@ -117,11 +117,14 @@
 
         };
 
-        "patrick@bud-lite" = home-manager.lib.homeManagerConfiguration {
+        "patrick@crostini" = home-manager.lib.homeManagerConfiguration {
+
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
             inherit inputs;
-            hostName = "bud-lite";
+
+            hostName = "crostini"; # Updated hostname
+
           };
           modules = [
             ./home/crostini.nix

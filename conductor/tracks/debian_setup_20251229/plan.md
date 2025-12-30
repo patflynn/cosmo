@@ -17,17 +17,17 @@
 ## Phase 2: Flake Configuration
 *Goal: Expose the generic roles in flake.nix.*
 
-- [ ] Task: Define `patrick@debian` in `flake.nix`
-    - [ ] Subtask: Add `homeConfigurations."patrick@debian"` entry.
-    - [ ] Subtask: Configure it to use `pkgs.x86_64-linux` and import `./home/generic-linux.nix`.
-- [ ] Task: Define `patrick@crostini` in `flake.nix`
-    - [ ] Subtask: Add `homeConfigurations."patrick@crostini"` entry.
-    - [ ] Subtask: Configure it to import `./home/crostini.nix`.
-    - [ ] Subtask: Ensure `bud-lite` legacy entry points to this new config or is removed.
-- [ ] Task: Verify Flake
-    - [ ] Subtask: Run `nix flake check` to ensure the new outputs are valid.
-    - [ ] Subtask: Run `nix run home-manager -- switch --flake .#patrick@debian --dry-run` (if feasible locally) or verify instantiation.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Flake Configuration' (Protocol in workflow.md)
+- [x] Task: Define `patrick@debian` in `flake.nix`
+    - [x] Subtask: Add `homeConfigurations."patrick@debian"` entry.
+    - [x] Subtask: Configure it to use `pkgs.x86_64-linux` and import `./home/generic-linux.nix`.
+- [x] Task: Define `patrick@crostini` in `flake.nix`
+    - [x] Subtask: Add `homeConfigurations."patrick@crostini"` entry.
+    - [x] Subtask: Configure it to import `./home/crostini.nix`.
+    - [x] Subtask: Ensure `bud-lite` legacy entry points to this new config or is removed.
+- [x] Task: Verify Flake
+    - [x] Subtask: Run `nix flake check` to ensure the new outputs are valid.
+    - [x] Subtask: Run `nix run home-manager -- switch --flake .#patrick@debian --dry-run` (if feasible locally) or verify instantiation.
+- [~] Task: Conductor - User Manual Verification 'Phase 2: Flake Configuration' (Protocol in workflow.md)
 
 ## Phase 3: Documentation
 *Goal: Create the Setup Guide.*

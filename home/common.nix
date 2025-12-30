@@ -21,11 +21,10 @@
 
   programs.git = {
     enable = true;
-    settings = lib.mkIf (config.home.username == "patrick") {
+    settings = {
       user = {
         name = "Patrick Flynn";
-        email =
-          if nixosConfig ? cosmo.user.email then nixosConfig.cosmo.user.email else "big.pat@gmail.com";
+        email = "big.pat@gmail.com";
       };
       advice = {
         skippedCherryPicks = false;

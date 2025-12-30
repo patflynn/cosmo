@@ -94,11 +94,22 @@
       };
 
       homeConfigurations = {
-        "patrick@bud-lite" = home-manager.lib.homeManagerConfiguration {
+        "patrick@debian" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          extraSpecialArgs = { inherit inputs; };
+          modules = [
+            ./home/linux.nix
+            {
+              home.username = "patrick";
+              home.homeDirectory = "/home/patrick";
+            }
+          ];
+        };
+
+        "patrick@crostini" = home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
             inherit inputs;
-            hostName = "bud-lite";
           };
           modules = [
             ./home/crostini.nix

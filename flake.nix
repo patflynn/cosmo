@@ -98,7 +98,7 @@
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = { inherit inputs; };
           modules = [
-            ./home/generic-linux.nix
+            ./home/linux.nix
             {
               home.username = "patrick";
               home.homeDirectory = "/home/patrick";
@@ -110,7 +110,6 @@
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = {
             inherit inputs;
-            hostName = "crostini"; # Updated hostname
           };
           modules = [
             ./home/crostini.nix

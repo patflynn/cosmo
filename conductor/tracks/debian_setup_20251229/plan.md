@@ -27,7 +27,7 @@
 - [x] Task: Verify Flake
     - [x] Subtask: Run `nix flake check` to ensure the new outputs are valid.
     - [x] Subtask: Run `nix run home-manager -- switch --flake .#patrick@debian --dry-run` (if feasible locally) or verify instantiation.
-- [~] Task: Conductor - User Manual Verification 'Phase 2: Flake Configuration' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Flake Configuration' (Protocol in workflow.md) [checkpoint: 52e759836740e3b2ad84c7584a0195ab56f227cc]
 
 ## Phase 3: Documentation
 *Goal: Create the Setup Guide.*

@@ -32,11 +32,11 @@
 ## Phase 3: Documentation
 *Goal: Create the Setup Guide.*
 
-- [ ] Task: Create `docs/debian-setup.md`
-    - [ ] Subtask: Write instructions for installing Nix (Determinate Systems installer recommended).
-    - [ ] Subtask: Write instructions for enabling Flakes.
-    - [ ] Subtask: Write instructions for running `nix run home-manager -- switch --flake github:patflynn/cosmo#patrick@debian`.
-    - [ ] Subtask: Add note about `direnv` integration (hooking into shell).
-- [ ] Task: Update `docs/bud-lite-setup.md`
-    - [ ] Subtask: Update references to point to the new `#patrick@crostini` generic role.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Documentation' (Protocol in workflow.md)
+- [x] Task: Create `docs/debian-setup.md`
+    - [x] Subtask: Write instructions for installing Nix (Determinate Systems installer recommended).
+    - [x] Subtask: Write instructions for enabling Flakes.
+    - [x] Subtask: Write instructions for running `nix run home-manager -- switch --flake github:patflynn/cosmo#patrick@debian`.
+    - [x] Subtask: Add note about `direnv` integration (hooking into shell).
+- [x] Task: Update `docs/bud-lite-setup.md`
+    - [x] Subtask: Update references to point to the new `#patrick@crostini` generic role.
+- [~] Task: Conductor - User Manual Verification 'Phase 3: Documentation' (Protocol in workflow.md)

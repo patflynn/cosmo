@@ -39,4 +39,4 @@
     - [x] Subtask: Add note about `direnv` integration (hooking into shell).
 - [x] Task: Update `docs/bud-lite-setup.md`
     - [x] Subtask: Update references to point to the new `#patrick@crostini` generic role.
-- [~] Task: Conductor - User Manual Verification 'Phase 3: Documentation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Documentation' (Protocol in workflow.md) [checkpoint: 0bba4fed52fb35837ddd89331b2767e1fabac000]

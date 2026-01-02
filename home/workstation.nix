@@ -20,7 +20,7 @@
 
     # IDEs
     android-studio
-    jetbrains.idea-ultimate
+    jetbrains.idea
 
     # Media
     mpv # Video player

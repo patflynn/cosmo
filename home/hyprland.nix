@@ -10,6 +10,14 @@
     ./hyprlock.nix
   ];
 
+  home.packages = with pkgs; [
+    grim # Screenshot tool
+    slurp # Region selector
+    swappy # Snapshot editor
+    wl-clipboard # Clipboard manager
+    wf-recorder # Screen recorder
+  ];
+
   wayland.windowManager.hyprland = {
     enable = true;
     settings = {
@@ -101,6 +109,11 @@
         "$mainMod SHIFT, 3, movetoworkspace, 3"
         "$mainMod SHIFT, 4, movetoworkspace, 4"
         "$mainMod SHIFT, 5, movetoworkspace, 5"
+
+        # Screenshots
+        ", Print, exec, grim -g \"$(slurp)\" - | wl-copy" # Region to clipboard
+        "$mainMod, Print, exec, grim -g \"$(slurp)\" - | swappy -f -" # Region to Swappy
+        "SHIFT, Print, exec, grim - | wl-copy" # Full screen to clipboard
       ];
 
       debug = {

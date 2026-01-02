@@ -107,21 +107,23 @@
 
     (pkgs.writeShellScriptBin "hypr-cheatsheet" ''
 
-      #!/usr/bin/env bash
+        #!/usr/bin/env bash
 
-      # Simple parser for Hyprland keybinds
+        # Simple parser for Hyprland keybinds
 
-      conf="$HOME/.config/hypr/hyprland.conf"
+        # Parses the generated config file
 
-      grep "^bind =" "$conf" | \
+        conf="$HOME/.config/hypr/hyprland.conf"
 
-        sed 's/bind = //' | \
+        grep "^bind =" "$conf" | \
 
-        sed 's/, /   /g' | \
+      sed 's/bind = //' | \
 
-        sed 's/,/   /g' | \
+      sed 's/, /   /g' | \
 
-        wofi --dmenu --width 1000 --height 600 -p "Keybindings"
+      sed 's/,/   /g' | \
+
+      wofi --dmenu --width 1000 --height 600 -p "Keybindings"
 
     '')
 

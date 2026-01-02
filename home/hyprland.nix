@@ -114,6 +114,11 @@
         ", Print, exec, grim -g \"$(slurp)\" - | wl-copy" # Region to clipboard
         "$mainMod, Print, exec, grim -g \"$(slurp)\" - | swappy -f -" # Region to Swappy
         "SHIFT, Print, exec, grim - | wl-copy" # Full screen to clipboard
+
+        # Screenshot Alternatives (No Print Key)
+        "$mainMod SHIFT, P, exec, grim -g \"$(slurp)\" - | wl-copy" # Region to clipboard
+        "$mainMod ALT, P, exec, grim -g \"$(slurp)\" - | swappy -f -" # Region to Swappy
+        "$mainMod CTRL, P, exec, grim - | wl-copy" # Full screen to clipboard
       ];
 
       debug = {

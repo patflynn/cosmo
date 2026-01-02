@@ -47,20 +47,18 @@
       # Convert to GIF after recording stops
       notify-send "GIF Recording" "Converting to GIF..."
 
-      # Generate palette for better quality
-      palette="/tmp/palette.png"
-      filters="fps=15,scale=flags=lanczos:320:-1:flags=lanczos"
-
-      ffmpeg -v warning -i "$MKV" -vf "$filters,palettegen" -y "$palette"
-      ffmpeg -v warning -i "$MKV" -i "$palette" -lavfi "$filters [x]; [x][1:v] paletteuse" -y "$GIF"
-
-      rm "$palette"
-      # Optional: Keep the MKV or remove it. Let's keep it for now or remove if space is concern.
-      # rm "$MKV" 
-
-      notify-send "GIF Recording" "Saved to $GIF"
-      wl-copy "$GIF"
-    '')
+            # Generate palette for better quality
+            palette="/tmp/palette.png"
+            filters="fps=15,scale=320:-1:flags=lanczos"
+            
+            ffmpeg -v warning -i "$MKV" -vf "$filters,palettegen" -y "$palette"
+            ffmpeg -v warning -i "$MKV" -i "$palette" -lavfi "$filters [x]; [x][1:v] paletteuse" -y "$GIF"
+            
+            rm "$palette"
+            rm "$MKV"
+            
+            notify-send "GIF Recording" "Saved to $GIF"
+            wl-copy "$GIF"    '')
   ];
 
   wayland.windowManager.hyprland = {

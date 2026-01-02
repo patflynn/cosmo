@@ -20,45 +20,111 @@
     libnotify # For notifications
 
     # Script to record GIF
+
     (pkgs.writeShellScriptBin "record-gif" ''
+
       #!/usr/bin/env bash
 
+
+
       # Define output
+
       DATE=$(date +%Y-%m-%d_%H-%M-%S)
+
       DIR="$HOME/Pictures/GIFs"
+
       MKV="$DIR/recording_$DATE.mkv"
+
       GIF="$DIR/recording_$DATE.gif"
+
+
 
       mkdir -p "$DIR"
 
+
+
       # Notify and Select Region
+
       notify-send "GIF Recording" "Select region to start recording..."
 
+
+
       if ! REGION=$(slurp); then
+
           notify-send "GIF Recording" "Cancelled"
+
           exit 1
+
       fi
+
+
 
       notify-send "GIF Recording" "Recording started! Press Super+Shift+S to stop."
 
+
+
       # Record to MKV (more robust than MP4 for interruption)
+
       wf-recorder -g "$REGION" -f "$MKV"
 
-            # Convert to GIF after recording stops
-            notify-send "GIF Recording" "Converting to GIF..."
-            
-            # Generate palette for better quality
-            palette="/tmp/palette.png"
-            # higher quality scale
-            filters="fps=15,scale=720:-1:flags=lanczos"
-            
-            ffmpeg -v warning -i "$MKV" -vf "$filters,palettegen" -y "$palette"
-            ffmpeg -v warning -i "$MKV" -i "$palette" -lavfi "$filters [x]; [x][1:v] paletteuse" -y "$GIF"            
-            rm "$palette"
-            rm "$MKV"
-            
-            notify-send "GIF Recording" "Saved to $GIF"
-            wl-copy "$GIF"    '')
+
+
+      # Convert to GIF after recording stops
+
+      notify-send "GIF Recording" "Converting to GIF..."
+
+
+
+      # Generate palette for better quality
+
+      palette="/tmp/palette.png"
+
+      # higher quality scale
+
+      filters="fps=15,scale=720:-1:flags=lanczos"
+
+
+
+      ffmpeg -v warning -i "$MKV" -vf "$filters,palettegen" -y "$palette"
+
+      ffmpeg -v warning -i "$MKV" -i "$palette" -lavfi "$filters [x]; [x][1:v] paletteuse" -y "$GIF"
+
+
+
+      rm "$palette"
+
+      rm "$MKV"
+
+
+
+      notify-send "GIF Recording" "Saved to $GIF"
+
+      wl-copy "$GIF"
+
+    '')
+
+    # Cheatsheet Script
+
+    (pkgs.writeShellScriptBin "hypr-cheatsheet" ''
+
+      #!/usr/bin/env bash
+
+      # Simple parser for Hyprland keybinds
+
+      conf="$HOME/.config/hypr/hyprland.conf"
+
+      grep "^bind =" "$conf" | \
+
+        sed 's/bind = //' | \
+
+        sed 's/, /   /g' | \
+
+        sed 's/,/   /g' | \
+
+        wofi --dmenu --width 1000 --height 600 -p "Keybindings"
+
+    '')
+
   ];
 
   wayland.windowManager.hyprland = {
@@ -131,6 +197,7 @@
         "$mainMod, B, exec, google-chrome-stable"
         "$mainMod, V, togglefloating,"
         "$mainMod, R, exec, wofi --show drun"
+        "$mainMod, slash, exec, hypr-cheatsheet" # Keybinds cheatsheet
         "$mainMod, P, pseudo," # pseudotile
         "$mainMod, L, exec, hyprlock" # Lock screen
 

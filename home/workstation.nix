@@ -18,6 +18,10 @@
     google-chrome
     jq # JSON processor (used by sunshine-resolution script)
 
+    # IDEs
+    android-studio
+    jetbrains.idea-ultimate
+
     # Custom script to sync resolution with Sunshine client
     (pkgs.writeShellScriptBin "sunshine-resolution" (
       builtins.readFile ./scripts/sunshine-resolution.sh

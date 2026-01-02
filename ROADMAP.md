@@ -50,3 +50,13 @@ It defines the hardware, operating system, services, and user environments for t
 - [x] Onboard NixOS VM (WSL2).
 - [ ] **Remote Workstation:** Setup a state-of-the-art GUI windowing system with high-performance remoting (e.g., Wayland/Hyprland + Sunshine/Moonlight) on `johnny-walker`.
     - [ ] **Dynamic Resolution:** Implement script/hook to automatically set host resolution to match the connecting Sunshine client.
+
+### Phase 5: Security Hardening
+- [ ] **Full Disk Encryption:**
+    - [ ] Re-provision `classic-laddie` with ZFS Native Encryption or LUKS.
+    - [ ] Enable remote unlocking via SSH (initrd) for headless reboots.
+- [ ] **YubiKey Integration:**
+    - [ ] **SSH:** Enforce FIDO2/U2F hardware-backed SSH keys for all access.
+    - [ ] **Sudo:** Require YubiKey touch for `sudo` operations on workstations.
+    - [ ] **Secrets:** Investigate migrating Age secrets to YubiKey (age-plugin-yubikey) or using PIV.
+    - [ ] **Login:** Require YubiKey for physical login (PAM).

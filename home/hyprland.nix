@@ -10,6 +10,57 @@
     ./hyprlock.nix
   ];
 
+  home.packages = with pkgs; [
+    grim # Screenshot tool
+    slurp # Region selector
+    swappy # Snapshot editor
+    wl-clipboard # Clipboard manager
+    wf-recorder # Screen recorder
+    ffmpeg # For GIF conversion
+    libnotify # For notifications
+
+    # Script to record GIF
+    (pkgs.writeShellScriptBin "record-gif" ''
+      #!/usr/bin/env bash
+
+      # Define output
+      DATE=$(date +%Y-%m-%d_%H-%M-%S)
+      DIR="$HOME/Pictures/GIFs"
+      MKV="$DIR/recording_$DATE.mkv"
+      GIF="$DIR/recording_$DATE.gif"
+
+      mkdir -p "$DIR"
+
+      # Notify and Select Region
+      notify-send "GIF Recording" "Select region to start recording..."
+
+      if ! REGION=$(slurp); then
+          notify-send "GIF Recording" "Cancelled"
+          exit 1
+      fi
+
+      notify-send "GIF Recording" "Recording started! Press Super+Shift+S to stop."
+
+      # Record to MKV (more robust than MP4 for interruption)
+      wf-recorder -g "$REGION" -f "$MKV"
+
+            # Convert to GIF after recording stops
+            notify-send "GIF Recording" "Converting to GIF..."
+            
+            # Generate palette for better quality
+            palette="/tmp/palette.png"
+            # higher quality scale
+            filters="fps=15,scale=720:-1:flags=lanczos"
+            
+            ffmpeg -v warning -i "$MKV" -vf "$filters,palettegen" -y "$palette"
+            ffmpeg -v warning -i "$MKV" -i "$palette" -lavfi "$filters [x]; [x][1:v] paletteuse" -y "$GIF"            
+            rm "$palette"
+            rm "$MKV"
+            
+            notify-send "GIF Recording" "Saved to $GIF"
+            wl-copy "$GIF"    '')
+  ];
+
   wayland.windowManager.hyprland = {
     enable = true;
     settings = {
@@ -76,6 +127,7 @@
         "$mainMod, C, killactive,"
         "$mainMod, M, exec, hyprlock" # Lock screen (safeguard against accidental exit)
         "$mainMod, E, exec, dolphin"
+        "$mainMod, Y, exec, kitty -e yazi" # Yazi file manager
         "$mainMod, B, exec, google-chrome-stable"
         "$mainMod, V, togglefloating,"
         "$mainMod, R, exec, wofi --show drun"
@@ -101,6 +153,20 @@
         "$mainMod SHIFT, 3, movetoworkspace, 3"
         "$mainMod SHIFT, 4, movetoworkspace, 4"
         "$mainMod SHIFT, 5, movetoworkspace, 5"
+
+        # Screenshots
+        ", Print, exec, grim -g \"$(slurp)\" - | wl-copy" # Region to clipboard
+        "$mainMod, Print, exec, grim -g \"$(slurp)\" - | swappy -f -" # Region to Swappy
+        "SHIFT, Print, exec, grim - | wl-copy" # Full screen to clipboard
+
+        # Screenshot Alternatives (No Print Key)
+        "$mainMod SHIFT, P, exec, grim -g \"$(slurp)\" - | wl-copy" # Region to clipboard
+        "$mainMod ALT, P, exec, grim -g \"$(slurp)\" - | swappy -f -" # Region to Swappy
+        "$mainMod CTRL, P, exec, grim - | wl-copy" # Full screen to clipboard
+
+        # Screen Recording
+        "$mainMod SHIFT, G, exec, record-gif" # Record GIF (Region)
+        "$mainMod SHIFT, S, exec, pkill --signal SIGINT wf-recorder" # Stop Recording
       ];
 
       debug = {

@@ -22,6 +22,12 @@
     android-studio
     jetbrains.idea-ultimate
 
+    # Media
+    mpv # Video player
+
+    # File Managers
+    yazi # Terminal file manager
+
     # Custom script to sync resolution with Sunshine client
     (pkgs.writeShellScriptBin "sunshine-resolution" (
       builtins.readFile ./scripts/sunshine-resolution.sh
@@ -56,6 +62,18 @@
     settings = {
       font_size = 12;
       window_padding_width = 4;
+    };
+  };
+
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "video/mp4" = "mpv.desktop";
+      "video/x-matroska" = "mpv.desktop";
+      "video/webm" = "mpv.desktop";
+      "video/quicktime" = "mpv.desktop";
+      "image/gif" = "mpv.desktop";
+      "inode/directory" = "org.kde.dolphin.desktop";
     };
   };
 

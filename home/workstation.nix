@@ -62,6 +62,18 @@
     };
   };
 
+  xdg.mimeApps = {
+    enable = true;
+    defaultApplications = {
+      "video/mp4" = "mpv.desktop";
+      "video/x-matroska" = "mpv.desktop";
+      "video/webm" = "mpv.desktop";
+      "video/quicktime" = "mpv.desktop";
+      "image/gif" = "mpv.desktop";
+      "inode/directory" = "org.kde.dolphin.desktop";
+    };
+  };
+
   home.pointerCursor = {
     gtk.enable = true;
     # x11.enable = true;

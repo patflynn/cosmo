@@ -44,16 +44,16 @@
       # Record to MKV (more robust than MP4 for interruption)
       wf-recorder -g "$REGION" -f "$MKV"
 
-      # Convert to GIF after recording stops
-      notify-send "GIF Recording" "Converting to GIF..."
-
+            # Convert to GIF after recording stops
+            notify-send "GIF Recording" "Converting to GIF..."
+            
             # Generate palette for better quality
             palette="/tmp/palette.png"
-            filters="fps=15,scale=320:-1:flags=lanczos"
+            # higher quality scale
+            filters="fps=15,scale=720:-1:flags=lanczos"
             
             ffmpeg -v warning -i "$MKV" -vf "$filters,palettegen" -y "$palette"
-            ffmpeg -v warning -i "$MKV" -i "$palette" -lavfi "$filters [x]; [x][1:v] paletteuse" -y "$GIF"
-            
+            ffmpeg -v warning -i "$MKV" -i "$palette" -lavfi "$filters [x]; [x][1:v] paletteuse" -y "$GIF"            
             rm "$palette"
             rm "$MKV"
             

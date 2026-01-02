@@ -22,6 +22,9 @@
     android-studio
     jetbrains.idea-ultimate
 
+    # Media
+    mpv # Video player
+
     # Custom script to sync resolution with Sunshine client
     (pkgs.writeShellScriptBin "sunshine-resolution" (
       builtins.readFile ./scripts/sunshine-resolution.sh

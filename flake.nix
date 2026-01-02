@@ -51,6 +51,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "backup";
               home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.users.patrick = import ./home/workstation.nix;
             }
@@ -69,6 +70,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "backup";
               home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.users.patrick = import ./home/wsl.nix;
             }
@@ -86,6 +88,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.backupFileExtension = "backup";
               home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.users.patrick = import ./home/workstation.nix;
             }

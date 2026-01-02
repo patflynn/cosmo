@@ -127,6 +127,7 @@
         "$mainMod, C, killactive,"
         "$mainMod, M, exec, hyprlock" # Lock screen (safeguard against accidental exit)
         "$mainMod, E, exec, dolphin"
+        "$mainMod, Y, exec, kitty -e yazi" # Yazi file manager
         "$mainMod, B, exec, google-chrome-stable"
         "$mainMod, V, togglefloating,"
         "$mainMod, R, exec, wofi --show drun"

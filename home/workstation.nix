@@ -25,6 +25,9 @@
     # Media
     mpv # Video player
 
+    # File Managers
+    yazi # Terminal file manager
+
     # Custom script to sync resolution with Sunshine client
     (pkgs.writeShellScriptBin "sunshine-resolution" (
       builtins.readFile ./scripts/sunshine-resolution.sh

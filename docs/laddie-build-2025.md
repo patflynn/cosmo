@@ -62,6 +62,10 @@ zfs snapshot rpool/root@blank
 zfs create rpool/nix
 zfs create rpool/home
 
+# Swap (16GB for large builds like CUDA/Android Studio)
+zfs create -V 16G -o compression=off -o sync=always -o primarycache=none rpool/swap
+mkswap -f /dev/zvol/rpool/swap
+
 # Storage Datasets
 zfs create tank/media
 zfs create tank/personal

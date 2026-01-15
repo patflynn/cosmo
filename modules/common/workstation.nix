@@ -60,12 +60,12 @@
         }
         {
           name = "Steam Big Picture";
-          detach-cmd = "${pkgs.util-linux}/bin/runuser -l patrick -c 'steam -shutdown'";
+          detach-cmd = "${pkgs.util-linux}/bin/runuser -l ${config.cosmo.user.default} -c 'steam -shutdown'";
           image-path = "steam.png";
           prep-cmd = [
             {
-              do = "${pkgs.util-linux}/bin/runuser -l patrick -c 'steam -bigpicture'";
-              undo = "${pkgs.util-linux}/bin/runuser -l patrick -c 'steam -shutdown'";
+              do = "${pkgs.util-linux}/bin/runuser -l ${config.cosmo.user.default} -c 'steam -bigpicture'";
+              undo = "${pkgs.util-linux}/bin/runuser -l ${config.cosmo.user.default} -c 'steam -shutdown'";
             }
           ];
         }
@@ -98,7 +98,7 @@
     wants = [ "hyprland-session.target" ];
     environment = {
       WAYLAND_DISPLAY = "wayland-1";
-      XDG_RUNTIME_DIR = "/run/user/1000";
+      XDG_RUNTIME_DIR = "/run/user/1000"; # FIXME: Assumes default user UID is 1000
       LD_LIBRARY_PATH = "/run/opengl-driver/lib";
     };
   };

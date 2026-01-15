@@ -1,4 +1,10 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  osConfig ? { },
+  ...
+}:
 
 {
   # Shell & Tools
@@ -18,7 +24,7 @@
     settings = {
       user = {
         name = "Patrick Flynn";
-        email = "big.pat@gmail.com";
+        email = osConfig.cosmo.user.email or "big.pat@gmail.com";
       };
       advice = {
         skippedCherryPicks = false;

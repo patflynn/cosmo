@@ -59,92 +59,68 @@
 
       nixosConfigurations = {
         # Hostname: classic-laddie
-        classic-laddie =
-          let
-            system = "x86_64-linux";
-            config = nixpkgs.lib.nixosSystem {
-              inherit system;
-              specialArgs = { inherit inputs; };
-              modules = [ ./hosts/classic-laddie/default.nix ];
-            };
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit system;
-            specialArgs = { inherit inputs; };
-            modules = [
-              ./hosts/classic-laddie/default.nix
-              agenix.nixosModules.default
-              home-manager.nixosModules.home-manager
+        classic-laddie = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/classic-laddie/default.nix
+            agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
+            (
+              { config, ... }:
               {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.extraSpecialArgs = {
-                  inherit inputs;
-                  nixosConfig = config.config;
-                };
-                home-manager.users.patrick = import ./home/workstation.nix;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = import ./home/workstation.nix;
               }
-            ];
-          };
+            )
+          ];
+        };
 
         # Hostname: makers-nix
-        makers-nix =
-          let
-            system = "x86_64-linux";
-            config = nixpkgs.lib.nixosSystem {
-              inherit system;
-              specialArgs = { inherit inputs; };
-              modules = [ ./hosts/makers-nix/default.nix ];
-            };
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit system;
-            specialArgs = { inherit inputs; };
-            modules = [
-              ./hosts/makers-nix/default.nix
-              inputs.nixos-wsl.nixosModules.wsl
-              agenix.nixosModules.default
-              home-manager.nixosModules.home-manager
+        makers-nix = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/makers-nix/default.nix
+            inputs.nixos-wsl.nixosModules.wsl
+            agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
+            (
+              { config, ... }:
               {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.extraSpecialArgs = {
-                  inherit inputs;
-                  nixosConfig = config.config;
-                };
-                home-manager.users.patrick = import ./home/wsl.nix;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = import ./home/wsl.nix;
               }
-            ];
-          };
+            )
+          ];
+        };
 
         # Hostname: johnny-walker
-        johnny-walker =
-          let
-            system = "x86_64-linux";
-            config = nixpkgs.lib.nixosSystem {
-              inherit system;
-              specialArgs = { inherit inputs; };
-              modules = [ ./hosts/johnny-walker/default.nix ];
-            };
-          in
-          nixpkgs.lib.nixosSystem {
-            inherit system;
-            specialArgs = { inherit inputs; };
-            modules = [
-              ./hosts/johnny-walker/default.nix
-              agenix.nixosModules.default
-              home-manager.nixosModules.home-manager
+        johnny-walker = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/johnny-walker/default.nix
+            agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
+            (
+              { config, ... }:
               {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.extraSpecialArgs = {
-                  inherit inputs;
-                  nixosConfig = config.config;
-                };
-                home-manager.users.patrick = import ./home/workstation.nix;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = import ./home/workstation.nix;
               }
-            ];
-          };
+            )
+          ];
+        };
       };
 
       homeConfigurations = {
@@ -179,12 +155,16 @@
             ./hosts/johnny-walker/default.nix
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/workstation.nix;
-            }
+            (
+              { config, ... }:
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = import ./home/workstation.nix;
+              }
+            )
           ];
           format = "qcow";
         };
@@ -194,7 +174,7 @@
         pre-commit-check = pre-commit-hooks.lib.x86_64-linux.run {
           src = ./.;
           hooks = {
-            nixfmt-rfc-style.enable = true;
+            nixfmt.enable = true;
             detect-private-keys.enable = true;
             zizmor = {
               enable = true;

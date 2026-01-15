@@ -2,7 +2,7 @@
   config,
   pkgs,
   lib,
-  nixosConfig ? { },
+  osConfig ? { },
   ...
 }:
 
@@ -24,7 +24,7 @@
     settings = {
       user = {
         name = "Patrick Flynn";
-        email = "big.pat@gmail.com";
+        email = osConfig.cosmo.user.email or "big.pat@gmail.com";
       };
       advice = {
         skippedCherryPicks = false;
@@ -52,7 +52,7 @@
         sweep = "!git checkout main && git pull && git branch --merged main | grep -v 'main$' | xargs -r git branch -d";
 
         # List all aliases (The meta-alias)
-        alias = "!git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /";
+        alias = "!git config --get-regexp ^alias\\. | sed -e s/^alias\\.// -e s/\\ /\\ =\\ /";
       };
     };
   };

@@ -66,7 +66,10 @@
   boot.supportedFilesystems = [ "zfs" ];
 
   # Remote Access (Roadmap Phase 1)
-  services.tailscale.enable = true;
+  services.tailscale = {
+    enable = true;
+    useRoutingFeatures = "server";
+  };
 
   # Set your time zone
   time.timeZone = "America/New_York";

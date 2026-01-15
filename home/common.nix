@@ -1,4 +1,10 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  nixosConfig ? { },
+  ...
+}:
 
 {
   # Shell & Tools
@@ -15,10 +21,11 @@
 
   programs.git = {
     enable = true;
-    settings = {
+    settings = lib.mkIf (config.home.username == "patrick") {
       user = {
         name = "Patrick Flynn";
-        email = "big.pat@gmail.com";
+        email =
+          if nixosConfig ? cosmo.user.email then nixosConfig.cosmo.user.email else "big.pat@gmail.com";
       };
       advice = {
         skippedCherryPicks = false;
@@ -46,7 +53,7 @@
         sweep = "!git checkout main && git pull && git branch --merged main | grep -v 'main$' | xargs -r git branch -d";
 
         # List all aliases (The meta-alias)
-        alias = "!git config --get-regexp ^alias\\. | sed -e s/^alias\\.// -e s/\\ /\\ =\\ /";
+        alias = "!git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /";
       };
     };
   };

@@ -36,91 +36,135 @@
       pre-commit-hooks,
       ...
     }@inputs:
+    let
+      mkHome =
+        {
+          username,
+          profile,
+        }:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          extraSpecialArgs = { inherit inputs; };
+          modules = [
+            profile
+            {
+              home.username = username;
+              home.homeDirectory = "/home/${username}";
+            }
+          ];
+        };
+    in
     {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
 
       nixosConfigurations = {
         # Hostname: classic-laddie
-        classic-laddie = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            ./hosts/classic-laddie/default.nix
-            agenix.nixosModules.default
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "backup";
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/workstation.nix;
-            }
-          ];
-        };
+        classic-laddie =
+          let
+            system = "x86_64-linux";
+            config = nixpkgs.lib.nixosSystem {
+              inherit system;
+              specialArgs = { inherit inputs; };
+              modules = [ ./hosts/classic-laddie/default.nix ];
+            };
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            specialArgs = { inherit inputs; };
+            modules = [
+              ./hosts/classic-laddie/default.nix
+              agenix.nixosModules.default
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.extraSpecialArgs = {
+                  inherit inputs;
+                  nixosConfig = config.config;
+                };
+                home-manager.users.patrick = import ./home/workstation.nix;
+              }
+            ];
+          };
 
         # Hostname: makers-nix
-        makers-nix = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            ./hosts/makers-nix/default.nix
-            inputs.nixos-wsl.nixosModules.wsl
-            agenix.nixosModules.default
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "backup";
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/wsl.nix;
-            }
-          ];
-        };
+        makers-nix =
+          let
+            system = "x86_64-linux";
+            config = nixpkgs.lib.nixosSystem {
+              inherit system;
+              specialArgs = { inherit inputs; };
+              modules = [ ./hosts/makers-nix/default.nix ];
+            };
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            specialArgs = { inherit inputs; };
+            modules = [
+              ./hosts/makers-nix/default.nix
+              inputs.nixos-wsl.nixosModules.wsl
+              agenix.nixosModules.default
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.extraSpecialArgs = {
+                  inherit inputs;
+                  nixosConfig = config.config;
+                };
+                home-manager.users.patrick = import ./home/wsl.nix;
+              }
+            ];
+          };
 
         # Hostname: johnny-walker
-        johnny-walker = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            ./hosts/johnny-walker/default.nix
-            agenix.nixosModules.default
-            home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "backup";
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/workstation.nix;
-            }
-          ];
-        };
+        johnny-walker =
+          let
+            system = "x86_64-linux";
+            config = nixpkgs.lib.nixosSystem {
+              inherit system;
+              specialArgs = { inherit inputs; };
+              modules = [ ./hosts/johnny-walker/default.nix ];
+            };
+          in
+          nixpkgs.lib.nixosSystem {
+            inherit system;
+            specialArgs = { inherit inputs; };
+            modules = [
+              ./hosts/johnny-walker/default.nix
+              agenix.nixosModules.default
+              home-manager.nixosModules.home-manager
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.extraSpecialArgs = {
+                  inherit inputs;
+                  nixosConfig = config.config;
+                };
+                home-manager.users.patrick = import ./home/workstation.nix;
+              }
+            ];
+          };
       };
 
       homeConfigurations = {
-        "patrick@debian" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = { inherit inputs; };
-          modules = [
-            ./home/linux.nix
-            {
-              home.username = "patrick";
-              home.homeDirectory = "/home/patrick";
-            }
-          ];
+        "patrick@debian" = mkHome {
+          username = "patrick";
+          profile = ./home/linux.nix;
+        };
+        "patrick@crostini" = mkHome {
+          username = "patrick";
+          profile = ./home/crostini.nix;
         };
 
-        "patrick@crostini" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = {
-            inherit inputs;
-          };
-          modules = [
-            ./home/crostini.nix
-            {
-              home.username = "patrick";
-              home.homeDirectory = "/home/patrick";
-            }
-          ];
+        # Default configuration for the current user
+        default = mkHome {
+          username =
+            let
+              user = builtins.getEnv "USER";
+            in
+            if user == "" then "patrick" else user;
+          profile = ./home/linux.nix;
         };
       };
 

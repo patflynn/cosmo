@@ -11,7 +11,7 @@ in
   # cause that's how I roll! (for now)
   users.mutableUsers = false;
 
-  users.users.patrick = {
+  users.users.${config.cosmo.user.default} = {
     isNormalUser = true;
     shell = pkgs.zsh;
     # Enabled systemd user instance to persist (fixes WSL2 update error)

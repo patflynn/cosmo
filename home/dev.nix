@@ -23,6 +23,7 @@
     # CLIs
     github-cli # GitHub CLI (gh)
     gemini-cli # Gemini CLI
+    jujutsu # Modern VCS (jj)
 
     # Age tools
     inputs.agenix.packages."${pkgs.stdenv.hostPlatform.system}".default

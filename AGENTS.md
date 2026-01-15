@@ -34,7 +34,22 @@ The project follows a **Host-Centric** and **Layered** architecture.
 - **Pull Requests**: All changes must be submitted via a Pull Request (PR) from a feature or fix branch.
 - **Branch Naming**: Use descriptive branch names (e.g., `feat/add-monitoring`, `fix/typo-in-readme`).
 
-### 3. Common Tasks
+### 3. Version Control Strategy (Jujutsu / jj)
+We prefer **Jujutsu (jj)** for local development, especially for managing stacked changes.
+
+**Key Commands:**
+- **Status/Log**: `jj st` (see working copy), `jj log` (graph view).
+- **Commit**: `jj commit -m "feat(scope): message"` (creates a new change on top).
+- **Edit**: `jj edit <change_id>` (switch to a specific commit to modify it).
+- **Squash/Amend**: `jj squash` (move changes from working copy into parent commit).
+- **Push**: `jj git push` (pushes the current stack to the git remote).
+
+**Workflow for Agents:**
+1.  When starting a task, assume you are in a `jj` repo (backed by git).
+2.  Use standard git commands (`git checkout -b ...`) for compatibility if `jj` is not available or if specifically asked.
+3.  However, when managing complex, dependent features (e.g., Feature A depends on Feature B), prefer `jj`'s stacked commit model over Git's manual rebasing.
+
+### 4. Common Tasks
 
 #### Rebuild System
 Apply changes to the current system:

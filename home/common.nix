@@ -76,7 +76,7 @@
       emacs = "emacs -nw";
 
       # System Maintenance
-      update = "sudo nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo";
+      update = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo; else home-manager switch --no-write-lock-file --refresh --flake github:patflynn/cosmo; fi";
     };
 
     history = {

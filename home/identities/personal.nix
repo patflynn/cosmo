@@ -1,5 +1,9 @@
-{ ... }:
+{ pkgs, ... }:
 {
+  home.packages = with pkgs; [
+    gemini-cli
+  ];
+
   programs.git = {
     settings = {
       user = {

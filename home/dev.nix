@@ -22,7 +22,6 @@
 
     # CLIs
     github-cli # GitHub CLI (gh)
-    gemini-cli # Gemini CLI
     jujutsu # Modern VCS (jj)
 
     # Age tools
@@ -35,8 +34,18 @@
 
   # Install Gemini extensions
   home.activation.installGeminiConductor = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    if ! ${pkgs.gemini-cli}/bin/gemini extensions list | grep -q "conductor"; then
-      run ${pkgs.gemini-cli}/bin/gemini extensions install https://github.com/gemini-cli-extensions/conductor --consent --auto-update
+    # Find the gemini binary. Preference: Home Manager profile, then system PATH.
+    GEMINI_BIN=""
+    if [ -x "${config.home.path}/bin/gemini" ]; then
+      GEMINI_BIN="${config.home.path}/bin/gemini"
+    elif command -v gemini >/dev/null; then
+      GEMINI_BIN=$(command -v gemini)
+    fi
+
+    if [ -n "$GEMINI_BIN" ]; then
+      if ! "$GEMINI_BIN" extensions list | grep -q "conductor"; then
+        run "$GEMINI_BIN" extensions install https://github.com/gemini-cli-extensions/conductor --consent --auto-update
+      fi
     fi
   '';
 

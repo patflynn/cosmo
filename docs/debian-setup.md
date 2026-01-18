@@ -28,16 +28,23 @@ experimental-features = nix-command flakes
 
 ## 3. Bootstrap Home Manager
 
-Run the following command to apply the default configuration to your user. This command automatically detects your username from the environment. The `--impure` flag is required to allow Nix to access the `USER` environment variable.
+Run one of the following commands to apply the configuration. These targets are "pure" and fully reproducible.
 
+**For Personal Use:**
 ```bash
-nix run --impure home-manager -- switch --flake .#default
+nix run home-manager -- switch --flake github:patflynn/cosmo#personal
 ```
 
-If you need to apply a specific, hardcoded profile (e.g., for CI or reproducibility), you can still do so:
+**For Work Use:**
+```bash
+nix run home-manager -- switch --flake github:patflynn/cosmo#work
+```
+
+**Dynamic Fallback (Impure):**
+If you want to auto-detect your username (maps to `linux.nix` base), you can use the default target. Note that `--impure` is required here to read the `USER` environment variable.
 
 ```bash
-nix run home-manager -- switch --flake .#patrick@debian
+nix run --impure home-manager -- switch --flake github:patflynn/cosmo#default
 ```
 
 ## 4. Direnv Integration

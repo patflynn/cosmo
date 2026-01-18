@@ -42,6 +42,7 @@
           username,
           identity,
           baseModule,
+          homeDirectory ? "/home/${username}",
         }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
@@ -51,7 +52,7 @@
             identity
             {
               home.username = username;
-              home.homeDirectory = "/home/${username}";
+              home.homeDirectory = homeDirectory;
             }
           ];
         };
@@ -153,6 +154,7 @@
           username = "paflynn";
           identity = ./home/identities/work.nix;
           baseModule = ./home/linux.nix;
+          homeDirectory = "/usr/local/google/home/paflynn";
         };
 
         # 3. Personal Crostini

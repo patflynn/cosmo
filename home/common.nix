@@ -1,4 +1,10 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  osConfig ? { },
+  ...
+}:
 
 {
   # Shell & Tools
@@ -16,10 +22,6 @@
   programs.git = {
     enable = true;
     settings = {
-      user = {
-        name = "Patrick Flynn";
-        email = "big.pat@gmail.com";
-      };
       advice = {
         skippedCherryPicks = false;
       };

@@ -28,18 +28,23 @@ experimental-features = nix-command flakes
 
 ## 3. Bootstrap Home Manager
 
-Run the following command to apply the `patrick@debian` configuration directly from the GitHub repository (or your local checkout).
+Run one of the following commands to apply the configuration. These targets are "pure" and fully reproducible.
 
-**From GitHub (Remote):**
+**For Personal Use:**
 ```bash
-nix run home-manager -- switch --flake github:patflynn/cosmo#patrick@debian
+nix run home-manager -- switch --flake github:patflynn/cosmo#personal
 ```
 
-**From Local Checkout:**
-If you have cloned the repo to `~/hack/cosmo`:
+**For Work Use:**
 ```bash
-cd ~/hack/cosmo
-nix run home-manager -- switch --flake .#patrick@debian
+nix run home-manager -- switch --flake github:patflynn/cosmo#work
+```
+
+**Dynamic Fallback (Impure):**
+If you want to auto-detect your username (maps to `linux.nix` base), you can use the default target. Note that `--impure` is required here to read the `USER` environment variable.
+
+```bash
+nix run --impure home-manager -- switch --flake github:patflynn/cosmo#default
 ```
 
 ## 4. Direnv Integration

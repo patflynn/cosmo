@@ -37,7 +37,7 @@ in
 
     # Host `classic-laddie` defines the `media` group and basic mount points.
 
-    users.users.patrick.extraGroups = [
+    users.users.${config.cosmo.user.default}.extraGroups = [
       "media"
       "podman"
     ];
@@ -46,24 +46,24 @@ in
     users.users.plex.extraGroups = [ "media" ];
 
     systemd.tmpfiles.rules = [
-      "d /mnt/media/downloads 0775 patrick media -"
-      "d /mnt/media/downloads/usenet 0775 patrick media -"
-      "d /mnt/media/downloads/usenet/incomplete 0775 patrick media -"
-      "d /mnt/media/downloads/usenet/complete 0775 patrick media -"
-      "d /mnt/media/downloads/usenet/complete/tv 0775 patrick media -"
-      "d /mnt/media/downloads/usenet/complete/movies 0775 patrick media -"
-      "d /mnt/media/downloads/torrents 0775 patrick media -"
-      "d /mnt/media/downloads/torrents/incomplete 0775 patrick media -"
-      "d /mnt/media/downloads/torrents/complete 0775 patrick media -"
-      "d /mnt/media/downloads/torrents/complete/tv 0775 patrick media -"
-      "d /mnt/media/downloads/torrents/complete/movies 0775 patrick media -"
+      "d /mnt/media/downloads 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/usenet 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/usenet/incomplete 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/usenet/complete 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/usenet/complete/tv 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/usenet/complete/movies 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/torrents 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/torrents/incomplete 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/torrents/complete 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/torrents/complete/tv 0775 ${config.cosmo.user.default} media -"
+      "d /mnt/media/downloads/torrents/complete/movies 0775 ${config.cosmo.user.default} media -"
 
       # App Config Directories
       "d /var/lib/gluetun 0700 root root -"
-      "d /var/lib/sabnzbd 0775 patrick media -"
-      "d /var/lib/sabnzbd/config 0775 patrick media -"
-      "d /var/lib/qbittorrent 0775 patrick media -"
-      "d /var/lib/qbittorrent/config 0775 patrick media -"
+      "d /var/lib/sabnzbd 0775 ${config.cosmo.user.default} media -"
+      "d /var/lib/sabnzbd/config 0775 ${config.cosmo.user.default} media -"
+      "d /var/lib/qbittorrent 0775 ${config.cosmo.user.default} media -"
+      "d /var/lib/qbittorrent/config 0775 ${config.cosmo.user.default} media -"
     ];
 
     # ---------------------------------------------------------
@@ -188,7 +188,7 @@ in
         dependsOn = [ "gluetun" ];
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
-          PUID = "1000"; # patrick
+          PUID = "1000"; # ${config.cosmo.user.default}
           PGID = "991"; # media
           TZ = "America/New_York";
           WEBUI_PORT = "8081";
@@ -205,7 +205,7 @@ in
         dependsOn = [ "gluetun" ];
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
-          PUID = "1000"; # patrick
+          PUID = "1000"; # ${config.cosmo.user.default}
           PGID = "991"; # media
           TZ = "America/New_York";
         };

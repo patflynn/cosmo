@@ -39,7 +39,7 @@
       ++ lib.optional config.cosmo.gemini.enable pkgs.gemini-cli;
 
     programs.zsh.shellAliases = {
-      rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else home-manager switch --flake .; fi";
+      rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";
     };
 
     # Install Gemini extensions

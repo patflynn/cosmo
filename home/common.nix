@@ -22,10 +22,6 @@
   programs.git = {
     enable = true;
     settings = {
-      user = {
-        name = "Patrick Flynn";
-        email = osConfig.cosmo.user.email or "big.pat@gmail.com";
-      };
       advice = {
         skippedCherryPicks = false;
       };

@@ -40,13 +40,15 @@
       mkHome =
         {
           username,
-          profile,
+          identity,
+          baseModule,
         }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           extraSpecialArgs = { inherit inputs; };
           modules = [
-            profile
+            baseModule
+            identity
             {
               home.username = username;
               home.homeDirectory = "/home/${username}";
@@ -73,7 +75,12 @@
                 home-manager.useUserPackages = true;
                 home-manager.backupFileExtension = "backup";
                 home-manager.extraSpecialArgs = { inherit inputs; };
-                home-manager.users.${config.cosmo.user.default} = import ./home/workstation.nix;
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/workstation.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
               }
             )
           ];
@@ -95,7 +102,12 @@
                 home-manager.useUserPackages = true;
                 home-manager.backupFileExtension = "backup";
                 home-manager.extraSpecialArgs = { inherit inputs; };
-                home-manager.users.${config.cosmo.user.default} = import ./home/wsl.nix;
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/wsl.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
               }
             )
           ];
@@ -116,7 +128,12 @@
                 home-manager.useUserPackages = true;
                 home-manager.backupFileExtension = "backup";
                 home-manager.extraSpecialArgs = { inherit inputs; };
-                home-manager.users.${config.cosmo.user.default} = import ./home/workstation.nix;
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/workstation.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
               }
             )
           ];
@@ -124,23 +141,25 @@
       };
 
       homeConfigurations = {
-        "patrick@debian" = mkHome {
+        # 1. Personal Debian (The classic)
+        "personal" = mkHome {
           username = "patrick";
-          profile = ./home/linux.nix;
-        };
-        "patrick@crostini" = mkHome {
-          username = "patrick";
-          profile = ./home/crostini.nix;
+          identity = ./home/identities/personal.nix;
+          baseModule = ./home/linux.nix;
         };
 
-        # Default configuration for the current user
-        default = mkHome {
-          username =
-            let
-              user = builtins.getEnv "USER";
-            in
-            if user == "" then "patrick" else user;
-          profile = ./home/linux.nix;
+        # 2. Work Debian (The new pure target)
+        "work" = mkHome {
+          username = "work_user";
+          identity = ./home/identities/work.nix;
+          baseModule = ./home/linux.nix;
+        };
+
+        # 3. Personal Crostini
+        "crostini" = mkHome {
+          username = "patrick";
+          identity = ./home/identities/personal.nix;
+          baseModule = ./home/crostini.nix;
         };
       };
 
@@ -162,7 +181,12 @@
                 home-manager.useUserPackages = true;
                 home-manager.backupFileExtension = "backup";
                 home-manager.extraSpecialArgs = { inherit inputs; };
-                home-manager.users.${config.cosmo.user.default} = import ./home/workstation.nix;
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/workstation.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
               }
             )
           ];

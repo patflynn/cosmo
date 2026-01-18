@@ -88,11 +88,6 @@
       # Add $HOME/bin to PATH
       export PATH="$HOME/bin:$PATH"
 
-      # Source corporate configuration if it exists (e.g. from Piper/CitC)
-      if [ -f "$HOME/.corp.zsh" ]; then
-        source "$HOME/.corp.zsh"
-      fi
-
       # Ergonomics
       setopt AUTO_CD              # cd by typing directory name
       setopt EXTENDED_HISTORY     # record timestamp of command in HISTFILE

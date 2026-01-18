@@ -46,6 +46,7 @@
   ];
 
   cosmo.user.default = "patrick";
+  cosmo.user.email = "big.pat@gmail.com";
 
   # AUTO-LOGIN: Specific to this machine's role as a headless game console
   services.displayManager.autoLogin = {

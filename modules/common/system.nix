@@ -7,13 +7,11 @@
 {
   options.cosmo.user.default = lib.mkOption {
     type = lib.types.str;
-    default = "patrick";
     description = "The default user for the system.";
   };
 
   options.cosmo.user.email = lib.mkOption {
     type = lib.types.str;
-    default = "big.pat@gmail.com";
     description = "The default email for the system user.";
   };
 

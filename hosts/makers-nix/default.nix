@@ -15,6 +15,7 @@
   networking.hostName = "makers-nix";
 
   cosmo.user.default = "patrick";
+  cosmo.user.email = "big.pat@gmail.com";
 
   wsl = {
     enable = true;

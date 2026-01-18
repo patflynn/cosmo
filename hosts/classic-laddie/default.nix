@@ -15,6 +15,7 @@
   ];
 
   cosmo.user.default = "patrick";
+  cosmo.user.email = "big.pat@gmail.com";
 
   # ---------------------------------------------------------------------------
   # Media Server Configuration

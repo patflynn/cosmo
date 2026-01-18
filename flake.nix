@@ -150,7 +150,7 @@
         };
 
         # 2. Work Debian (The new pure target)
-        "work" = mkHome {
+        "paflynn@bushmills" = mkHome {
           username = "paflynn";
           identity = ./home/identities/work.nix;
           baseModule = ./home/linux.nix;

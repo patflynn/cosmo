@@ -1,5 +1,7 @@
 { ... }:
 {
+  cosmo.gemini.enable = false;
+
   programs.git = {
     settings = {
       user = {

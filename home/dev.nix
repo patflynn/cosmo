@@ -30,6 +30,7 @@
         gcc
 
         # CLIs
+        claude-code # Anthropic's CLI
         github-cli # GitHub CLI (gh)
         jujutsu # Modern VCS (jj)
 

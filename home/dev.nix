@@ -28,6 +28,7 @@
         # Build Tools
         gnumake
         gcc
+        openssl
 
         # CLIs
         github-cli # GitHub CLI (gh)

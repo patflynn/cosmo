@@ -28,6 +28,7 @@
         # Build Tools
         gnumake
         gcc
+        openssl
 
         # CLIs
         claude-code # Anthropic's CLI

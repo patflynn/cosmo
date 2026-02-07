@@ -26,9 +26,9 @@
   # WIREGUARD_ADDRESSES=...
   age.secrets."media-vpn" = {
     file = ../../secrets/media-vpn.age;
-    owner = "patrick"; # Needs to be readable by the user running podman (or root if system)
-    group = "podman";
-    mode = "0440";
+    owner = "root"; # Container service runs as root, no need for wider permissions
+    group = "root";
+    mode = "0400";
   };
 
   # Bootloader (Keep what matches your hardware!)
@@ -88,7 +88,6 @@
     enable = true;
     qemu = {
       package = pkgs.qemu_kvm;
-      runAsRoot = true; # Ensures access to all devices (optional but safer for nvidia)
       swtpm.enable = true;
 
       # Whitelist NVIDIA devices in the cgroup configuration
@@ -112,12 +111,18 @@
   # Enable SSH so you can access the server
   services.openssh = {
     enable = true;
-    settings.PasswordAuthentication = false;
-    settings.PermitRootLogin = "no";
+    settings = {
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+      MaxAuthTries = 3;
+      X11Forwarding = false;
+      AllowAgentForwarding = false;
+      PermitTunnel = false;
+    };
   };
 
   # Define the media group for the service stack
-  users.groups.media = { };
+  users.groups.media.gid = 991; # Explicit GID for stable container references
 
   # Ensure the patrick group is explicitly defined to avoid resolution errors
   users.groups.family = { };

@@ -13,6 +13,7 @@ in
 
   users.users.patrick = {
     isNormalUser = true;
+    uid = 1000; # Explicit UID for stable references across config
     shell = pkgs.zsh;
     # Enabled systemd user instance to persist (fixes WSL2 update error)
     linger = true;

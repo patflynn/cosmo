@@ -23,8 +23,14 @@
   # Not really used but needed for host authentication for age
   services.openssh = {
     enable = true;
-    settings.PasswordAuthentication = false;
-    settings.PermitRootLogin = "no";
+    settings = {
+      PasswordAuthentication = false;
+      PermitRootLogin = "no";
+      MaxAuthTries = 3;
+      X11Forwarding = false;
+      AllowAgentForwarding = false;
+      PermitTunnel = false;
+    };
   };
 
   system.stateVersion = "25.11";

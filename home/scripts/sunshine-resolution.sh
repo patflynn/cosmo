@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # This script sets the Hyprland resolution to match the Sunshine client.
 # It also ensures a headless monitor exists if no other monitor is active.
@@ -26,11 +27,11 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     USER_RUNTIME_DIR="/run/user/$(id -u)/hypr"
     SIG=""
     if [ -d "$USER_RUNTIME_DIR" ]; then
-        SIG=$(ls -t "$USER_RUNTIME_DIR" | grep -v "\.lock" | head -n 1)
+        SIG=$(find "$USER_RUNTIME_DIR" -maxdepth 1 -type d ! -name "*.lock" ! -path "$USER_RUNTIME_DIR" -printf '%T@ %f\n' 2>/dev/null | sort -rn | head -n1 | cut -d' ' -f2- || true)
     fi
-    
+
     if [ -z "$SIG" ] && [ -d "/tmp/hypr" ]; then
-        SIG=$(ls -t /tmp/hypr/ | grep -v "\.lock" | head -n 1)
+        SIG=$(find /tmp/hypr -maxdepth 1 -type d ! -name "*.lock" ! -path "/tmp/hypr" -printf '%T@ %f\n' 2>/dev/null | sort -rn | head -n1 | cut -d' ' -f2- || true)
     fi
 
     if [ -n "$SIG" ]; then
@@ -84,9 +85,13 @@ hyprctl dispatch moveworkspacetomonitor 1 "$MONITOR" >> "$LOG_FILE" 2>&1
 hyprctl dispatch workspace 1 >> "$LOG_FILE" 2>&1
 
 echo "Ensuring graphical-session.target is started..." >> "$LOG_FILE"
-systemctl --user start graphical-session.target >> "$LOG_FILE" 2>&1
+if ! systemctl --user start graphical-session.target >> "$LOG_FILE" 2>&1; then
+    echo "WARNING: Failed to start graphical-session.target" >> "$LOG_FILE"
+fi
 
 echo "Attempting to start Sunshine..." >> "$LOG_FILE"
-systemctl --user start sunshine >> "$LOG_FILE" 2>&1
+if ! systemctl --user start sunshine >> "$LOG_FILE" 2>&1; then
+    echo "WARNING: Failed to start sunshine" >> "$LOG_FILE"
+fi
 
 echo "--- Finished sunshine-resolution at $(date) ---" >> "$LOG_FILE"

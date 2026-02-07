@@ -35,7 +35,7 @@ sudo systemctl restart nix-daemon
 Apply the configuration from the flake:
 
 ```bash
-nix run home-manager/master -- switch --flake github:patflynn/cosmo#patrick@crostini
+nix run home-manager/master -- switch --flake github:patflynn/cosmo#crostini
 ```
 
 ### 4. Set Default Shell
@@ -59,5 +59,5 @@ Log out and log back in for this to take effect.
 To update the configuration later:
 
 ```bash
-home-manager switch --flake github:patflynn/cosmo#patrick@crostini
+home-manager switch --flake github:patflynn/cosmo#crostini
 ```

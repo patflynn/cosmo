@@ -1,4 +1,10 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  osConfig ? { },
+  ...
+}:
 
 {
   # Shell & Tools
@@ -16,10 +22,6 @@
   programs.git = {
     enable = true;
     settings = {
-      user = {
-        name = "Patrick Flynn";
-        email = "big.pat@gmail.com";
-      };
       advice = {
         skippedCherryPicks = false;
       };
@@ -74,7 +76,7 @@
       emacs = "emacs -nw";
 
       # System Maintenance
-      update = "sudo nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo";
+      update = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo; else home-manager switch --no-write-lock-file --refresh --flake github:patflynn/cosmo; fi";
     };
 
     history = {

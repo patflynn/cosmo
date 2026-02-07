@@ -36,6 +36,30 @@
       pre-commit-hooks,
       ...
     }@inputs:
+    let
+      mkHome =
+        {
+          username,
+          identity,
+          baseModule,
+          homeDirectory ? "/home/${username}",
+        }:
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            config.allowUnfree = true;
+          };
+          extraSpecialArgs = { inherit inputs; };
+          modules = [
+            baseModule
+            identity
+            {
+              home.username = username;
+              home.homeDirectory = homeDirectory;
+            }
+          ];
+        };
+    in
     {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
 
@@ -48,13 +72,21 @@
             ./hosts/classic-laddie/default.nix
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "backup";
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/workstation.nix;
-            }
+            (
+              { config, ... }:
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/workstation.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
+              }
+            )
           ];
         };
 
@@ -67,13 +99,21 @@
             inputs.nixos-wsl.nixosModules.wsl
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "backup";
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/wsl.nix;
-            }
+            (
+              { config, ... }:
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/wsl.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
+              }
+            )
           ];
         };
 
@@ -85,42 +125,46 @@
             ./hosts/johnny-walker/default.nix
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.backupFileExtension = "backup";
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/workstation.nix;
-            }
+            (
+              { config, ... }:
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/workstation.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
+              }
+            )
           ];
         };
       };
 
       homeConfigurations = {
-        "patrick@debian" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = { inherit inputs; };
-          modules = [
-            ./home/linux.nix
-            {
-              home.username = "patrick";
-              home.homeDirectory = "/home/patrick";
-            }
-          ];
+        # 1. Personal Debian (The classic)
+        "personal" = mkHome {
+          username = "patrick";
+          identity = ./home/identities/personal.nix;
+          baseModule = ./home/linux.nix;
         };
 
-        "patrick@crostini" = home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = {
-            inherit inputs;
-          };
-          modules = [
-            ./home/crostini.nix
-            {
-              home.username = "patrick";
-              home.homeDirectory = "/home/patrick";
-            }
-          ];
+        # 2. Work Debian (The new pure target)
+        "paflynn@bushmills" = mkHome {
+          username = "paflynn";
+          identity = ./home/identities/work.nix;
+          baseModule = ./home/linux.nix;
+          homeDirectory = "/usr/local/google/home/paflynn";
+        };
+
+        # 3. Personal Crostini
+        "crostini" = mkHome {
+          username = "patrick";
+          identity = ./home/identities/personal.nix;
+          baseModule = ./home/crostini.nix;
         };
       };
 
@@ -135,12 +179,21 @@
             ./hosts/johnny-walker/default.nix
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
-            {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.extraSpecialArgs = { inherit inputs; };
-              home-manager.users.patrick = import ./home/workstation.nix;
-            }
+            (
+              { config, ... }:
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/workstation.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
+              }
+            )
           ];
           format = "qcow";
         };
@@ -150,7 +203,7 @@
         pre-commit-check = pre-commit-hooks.lib.x86_64-linux.run {
           src = ./.;
           hooks = {
-            nixfmt-rfc-style.enable = true;
+            nixfmt.enable = true;
             detect-private-keys.enable = true;
             zizmor = {
               enable = true;

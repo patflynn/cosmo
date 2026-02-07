@@ -45,10 +45,13 @@
     "flakes"
   ];
 
+  cosmo.user.default = "patrick";
+  cosmo.user.email = "big.pat@gmail.com";
+
   # AUTO-LOGIN: Specific to this machine's role as a headless game console
   services.displayManager.autoLogin = {
     enable = true;
-    user = "patrick";
+    user = config.cosmo.user.default;
   };
 
   system.stateVersion = "25.11";

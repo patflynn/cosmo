@@ -11,7 +11,7 @@ in
   # cause that's how I roll! (for now)
   users.mutableUsers = false;
 
-  users.users.patrick = {
+  users.users.${config.cosmo.user.default} = {
     isNormalUser = true;
     uid = 1000; # Explicit UID for stable references across config
     shell = pkgs.zsh;

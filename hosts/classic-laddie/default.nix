@@ -14,6 +14,9 @@
     ../../modules/media-server/default.nix
   ];
 
+  cosmo.user.default = "patrick";
+  cosmo.user.email = "big.pat@gmail.com";
+
   # ---------------------------------------------------------------------------
   # Media Server Configuration
   # ---------------------------------------------------------------------------
@@ -26,9 +29,9 @@
   # WIREGUARD_ADDRESSES=...
   age.secrets."media-vpn" = {
     file = ../../secrets/media-vpn.age;
-    owner = "root"; # Container service runs as root, no need for wider permissions
-    group = "root";
-    mode = "0400";
+    owner = config.cosmo.user.default; # Needs to be readable by the user running podman (or root if system)
+    group = "podman";
+    mode = "0440";
   };
 
   # Bootloader (Keep what matches your hardware!)
@@ -69,6 +72,7 @@
   services.tailscale = {
     enable = true;
     useRoutingFeatures = "server";
+    extraUpFlags = [ "--advertise-exit-node" ];
   };
 
   # Set your time zone
@@ -77,7 +81,7 @@
   # AUTO-LOGIN: Facilitates headless streaming via Sunshine
   services.displayManager.autoLogin = {
     enable = true;
-    user = "patrick";
+    user = config.cosmo.user.default;
   };
 
   # Enable hardware acceleration for Sunshine
@@ -139,15 +143,15 @@
 
   systemd.tmpfiles.rules = [
     # Type Path             Mode User    Group   Age Argument
-    "d /mnt/media/movies    0775 patrick media   -   -"
-    "d /mnt/media/tv        0775 patrick media   -   -"
-    "d /mnt/media/music     0775 patrick media   -   -"
-    "d /mnt/personal/photos 0750 patrick family -   -"
-    "d /mnt/personal/videos 0750 patrick family -   -"
+    "d /mnt/media/movies    0775 ${config.cosmo.user.default} media   -   -"
+    "d /mnt/media/tv        0775 ${config.cosmo.user.default} media   -   -"
+    "d /mnt/media/music     0775 ${config.cosmo.user.default} media   -   -"
+    "d /mnt/personal/photos 0750 ${config.cosmo.user.default} family -   -"
+    "d /mnt/personal/videos 0750 ${config.cosmo.user.default} family -   -"
   ];
 
   # Host-specific user configuration
-  users.users.patrick.extraGroups = [
+  users.users.${config.cosmo.user.default}.extraGroups = [
     "libvirtd"
     "family"
     "media"

@@ -17,23 +17,11 @@
   cosmo.user.email = "big.pat@gmail.com";
 
   # ---------------------------------------------------------------------------
-  # Bootloader - GRUB for dual-boot with Windows
+  # Bootloader - systemd-boot
   # ---------------------------------------------------------------------------
-  boot.loader.grub = {
-    enable = true;
-    device = "nodev"; # UEFI mode
-    efiSupport = true;
-    useOSProber = true; # Detect Windows Boot Manager
-  };
+  # Windows is on Disk 0, NixOS on Disk 1 - use UEFI boot menu (F11/F12) to switch
+  boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # Enable os-prober to find Windows
-  boot.loader.grub.extraEntries = ''
-    # Fallback Windows entry if os-prober fails
-    # menuentry "Windows 11" {
-    #   chainloader (hd0,gpt1)/EFI/Microsoft/Boot/bootmgfw.efi
-    # }
-  '';
 
   # ---------------------------------------------------------------------------
   # Filesystem - Btrfs with LUKS encryption

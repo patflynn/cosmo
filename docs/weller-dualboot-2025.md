@@ -32,7 +32,7 @@ Disk 0 (Samsung 970 - 932GB):
 └── Recovery partitions
 
 Disk 1 (Seagate FireCuda - 1.86TB):
-├── EFI System Partition (1GB) - GRUB bootloader
+├── EFI System Partition (1GB) - systemd-boot
 └── LUKS encrypted partition (~1.85TB)
     └── Btrfs with subvolumes:
         ├── @root     (NixOS /)
@@ -46,7 +46,7 @@ Disk 1 (Seagate FireCuda - 1.86TB):
 - Both drives are NVMe (no performance difference)
 - Full disk encryption for NixOS
 - Windows keeps its current disk unchanged
-- GRUB on Disk 1 can chainload Windows from Disk 0
+- Use UEFI boot menu (F11/F12) to switch between OSes
 
 ## 3. Use Cases
 
@@ -79,30 +79,30 @@ ssh classic-laddie "sudo zfs create tank/personal/weller-backup"
 rsync -avhP --info=progress2 /mnt/d/ classic-laddie:/tank/personal/weller-backup/
 ```
 
-### 4.2 Create NixOS Installation USB
+### 4.2 PXE Boot Setup
+
+Using classic-laddie as PXE server (see PR #229):
 
 ```bash
-# Download NixOS minimal ISO
-wget https://channels.nixos.org/nixos-unstable/latest-nixos-minimal-x86_64-linux.iso
-
-# Write to USB (replace sdX with your USB device)
-sudo dd if=latest-nixos-minimal-x86_64-linux.iso of=/dev/sdX bs=4M status=progress
+# On classic-laddie: download netboot.xyz
+sudo curl -L https://boot.netboot.xyz/ipxe/netboot.xyz.efi -o /srv/tftp/netboot.xyz.efi
 ```
 
-### 4.3 Note Windows Boot Manager Location
-
-The Windows Boot Manager lives on Disk 0's EFI partition. We'll configure GRUB to chainload it.
+Configure UDM Pro:
+1. Settings → Networks → Default → Advanced → Network Boot
+2. Server: `192.168.1.28` (classic-laddie)
+3. Filename: `netboot.xyz.efi`
 
 ---
 
 ## 5. Installation Steps
 
-### 5.1 Boot NixOS Installer
+### 5.1 Boot NixOS Installer via PXE
 
-1. Insert USB and boot the machine
-2. Enter BIOS (F2/Del) and set USB as first boot device
-3. Boot into NixOS installer
-4. Connect to network (ethernet recommended)
+1. Boot the machine and press F11/F12 for boot menu
+2. Select "UEFI: Network Boot" or similar
+3. netboot.xyz will load → select Linux Network Installs → NixOS
+4. Connect to network (should already be connected via PXE)
 
 ### 5.2 Partition Disk 1 (Seagate)
 
@@ -189,18 +189,6 @@ cp /mnt/etc/nixos/hardware-configuration.nix /mnt/etc/nixos/cosmo/hosts/weller/
 nixos-install --no-write-lock-file --flake /mnt/etc/nixos/cosmo#weller
 ```
 
-### 5.7 Configure GRUB for Dual-Boot
-
-After first boot into NixOS, GRUB should auto-detect Windows. If not:
-
-```bash
-# Find Windows EFI partition UUID
-sudo blkid | grep -i windows
-
-# Regenerate GRUB config
-sudo nixos-rebuild switch
-```
-
 ---
 
 ## 6. Post-Installation
@@ -223,9 +211,9 @@ sudo tailscale up
 
 ### 6.3 Verify Dual-Boot
 
-1. Reboot and verify GRUB menu shows both NixOS and Windows
-2. Boot into Windows and confirm it still works
-3. Boot into NixOS and confirm everything works
+1. Reboot - NixOS should boot via systemd-boot
+2. Use UEFI boot menu (F11/F12) to boot Windows and confirm it works
+3. Optionally set default boot order in BIOS
 
 ---
 
@@ -236,7 +224,7 @@ The following files are in the cosmo repo:
 ### 7.1 `hosts/weller/default.nix`
 
 Configuration includes:
-- GRUB bootloader with os-prober for Windows detection
+- systemd-boot bootloader
 - LUKS encryption setup
 - Btrfs mount options
 - NVIDIA driver configuration
@@ -258,11 +246,11 @@ Host SSH key will be added after first boot.
 
 ## 8. Boot Selection
 
-**Default behavior:** GRUB will show a menu on boot with:
-- NixOS (weller) - default, 5 second timeout
-- Windows Boot Manager (makers-mark)
+**Default behavior:** Each disk has its own bootloader:
+- Disk 0: Windows Boot Manager (makers-mark)
+- Disk 1: systemd-boot (weller)
 
-To change default or timeout, modify GRUB settings in the NixOS configuration.
+**To switch OSes:** Use UEFI boot menu (F11/F12) or set boot order in BIOS.
 
 ---
 
@@ -276,20 +264,13 @@ To change default or timeout, modify GRUB settings in the NixOS configuration.
 
 ## 10. Troubleshooting
 
-### Windows not detected by GRUB
-```bash
-# Ensure os-prober is enabled and can see Windows EFI
-sudo os-prober
-# Should output something like:
-# /dev/nvme0n1p1@/EFI/Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows:efi
-
-# Rebuild NixOS to regenerate GRUB config
-sudo nixos-rebuild switch
-```
-
 ### Can't boot Windows after NixOS install
-1. Enter BIOS and change boot order to prioritize Disk 0
-2. Or use BIOS boot menu (F11/F12) to select Windows Boot Manager
+1. Use UEFI boot menu (F11/F12) to select Windows Boot Manager
+2. Or enter BIOS and change boot order to prioritize Disk 0
+
+### Can't boot NixOS
+1. Use UEFI boot menu (F11/F12) to select the Seagate drive
+2. Or enter BIOS and change boot order to prioritize Disk 1
 
 ### LUKS password prompt not appearing
 Ensure `boot.initrd.luks.devices` is correctly configured in hardware-configuration.nix.

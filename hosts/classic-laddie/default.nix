@@ -112,6 +112,25 @@
   environment.systemPackages = with pkgs; [ virt-manager ];
 
   security.sudo.wheelNeedsPassword = true;
+
+  # ---------------------------------------------------------------------------
+  # PXE Boot Server (TFTP)
+  # ---------------------------------------------------------------------------
+  # Serves netboot.xyz for network installations
+  # Router config: Settings -> Networks -> Network Boot -> Server: 192.168.1.28, Filename: netboot.xyz.efi
+  systemd.services.tftpd = {
+    description = "TFTP Server for PXE Boot";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.atftp}/bin/atftpd --daemon --no-fork --logfile /var/log/atftpd.log /srv/tftp";
+      Restart = "on-failure";
+    };
+  };
+
+  # Open TFTP port
+  networking.firewall.allowedUDPPorts = [ 69 ];
+
   # Enable SSH so you can access the server
   services.openssh = {
     enable = true;
@@ -148,6 +167,8 @@
     "d /mnt/media/music     0775 ${config.cosmo.user.default} media   -   -"
     "d /mnt/personal/photos 0750 ${config.cosmo.user.default} family -   -"
     "d /mnt/personal/videos 0750 ${config.cosmo.user.default} family -   -"
+    # PXE Boot directory
+    "d /srv/tftp            0755 root    root    -   -"
   ];
 
   # Host-specific user configuration

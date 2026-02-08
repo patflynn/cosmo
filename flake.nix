@@ -24,6 +24,11 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -123,6 +128,34 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/johnny-walker/default.nix
+            agenix.nixosModules.default
+            home-manager.nixosModules.home-manager
+            (
+              { config, ... }:
+              {
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.backupFileExtension = "backup";
+                home-manager.extraSpecialArgs = { inherit inputs; };
+                home-manager.users.${config.cosmo.user.default} = {
+                  imports = [
+                    ./home/workstation.nix
+                    ./home/identities/personal.nix
+                  ];
+                };
+              }
+            )
+          ];
+        };
+
+        # Hostname: weller (dual-boot Windows 11 + NixOS workstation)
+        weller = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/weller/default.nix
+            ./hosts/weller/disk-config.nix
+            inputs.disko.nixosModules.disko
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             (

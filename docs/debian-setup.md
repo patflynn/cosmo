@@ -1,6 +1,14 @@
 # Debian Workstation Setup Guide
 
-This guide describes how to bootstrap a generic Debian-based environment (e.g., a standard VM, a cloud instance, or a physical machine) using the `patrick@debian` Home Manager configuration.
+This guide describes how to bootstrap a generic Debian-based environment (e.g., a standard VM, a cloud instance, or a physical machine) using the Home Manager configurations from this flake.
+
+## Available Profiles
+
+| Profile | Username | Use Case |
+|---------|----------|----------|
+| `personal` | patrick | Personal Debian/Ubuntu workstations |
+| `paflynn@bushmills` | paflynn | Work environment (custom home directory) |
+| `crostini` | patrick | ChromeOS Crostini containers |
 
 ## Prerequisites
 
@@ -28,7 +36,7 @@ experimental-features = nix-command flakes
 
 ## 3. Bootstrap Home Manager
 
-Run one of the following commands to apply the configuration. These targets are "pure" and fully reproducible.
+Run one of the following commands to apply the configuration. These targets are pure and fully reproducible.
 
 **For Personal Use:**
 ```bash
@@ -37,14 +45,12 @@ nix run home-manager -- switch --flake github:patflynn/cosmo#personal
 
 **For Work Use:**
 ```bash
-nix run home-manager -- switch --flake github:patflynn/cosmo#work
+nix run home-manager -- switch --flake 'github:patflynn/cosmo#paflynn@bushmills'
 ```
 
-**Dynamic Fallback (Impure):**
-If you want to auto-detect your username (maps to `linux.nix` base), you can use the default target. Note that `--impure` is required here to read the `USER` environment variable.
-
+**For Crostini (ChromeOS):**
 ```bash
-nix run --impure home-manager -- switch --flake github:patflynn/cosmo#default
+nix run home-manager -- switch --flake github:patflynn/cosmo#crostini
 ```
 
 ## 4. Direnv Integration

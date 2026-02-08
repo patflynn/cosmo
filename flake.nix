@@ -24,6 +24,11 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -149,6 +154,8 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./hosts/weller/default.nix
+            ./hosts/weller/disk-config.nix
+            inputs.disko.nixosModules.disko
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
             (

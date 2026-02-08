@@ -1,13 +1,15 @@
 {
   config,
+  lib,
   pkgs,
+  modulesPath,
   inputs,
   ...
 }:
 
 {
   imports = [
-    ./hardware-configuration.nix
+    (modulesPath + "/installer/scan/not-detected.nix")
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/workstation.nix
@@ -17,6 +19,20 @@
   cosmo.user.email = "big.pat@gmail.com";
 
   # ---------------------------------------------------------------------------
+  # Hardware (normally in hardware-configuration.nix, but disko handles mounts)
+  # ---------------------------------------------------------------------------
+  boot.initrd.availableKernelModules = [
+    "nvme"
+    "xhci_pci"
+    "ahci"
+    "usbhid"
+    "sd_mod"
+  ];
+  boot.kernelModules = [ "kvm-amd" ];
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+
+  # ---------------------------------------------------------------------------
   # Bootloader - systemd-boot
   # ---------------------------------------------------------------------------
   # Windows is on Disk 0, NixOS on Disk 1 - use UEFI boot menu (F11/F12) to switch
@@ -24,17 +40,12 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # ---------------------------------------------------------------------------
-  # Filesystem - Btrfs with LUKS encryption
+  # Filesystem - Btrfs with LUKS encryption (managed by disko)
   # ---------------------------------------------------------------------------
   boot.supportedFilesystems = [
     "btrfs"
     "ntfs"
   ];
-
-  # LUKS encryption - device name will be set in hardware-configuration.nix
-  # boot.initrd.luks.devices."cryptroot".device = "/dev/disk/by-uuid/XXXXXXXX";
-
-  # Btrfs mount options are defined in hardware-configuration.nix
 
   # ---------------------------------------------------------------------------
   # Networking

@@ -104,89 +104,48 @@ Configure UDM Pro:
 3. netboot.xyz will load → select Linux Network Installs → NixOS
 4. Connect to network (should already be connected via PXE)
 
-### 5.2 Partition Disk 1 (Seagate)
+### 5.2 Verify Target Disk
 
 ```bash
-# Identify disks
-lsblk
-# Disk 1 should be /dev/nvme1n1 (the 2TB Seagate)
+# List disks and find the Seagate by-id
+ls -la /dev/disk/by-id/ | grep -i seagate
 
-# Wipe existing partitions
-wipefs -a /dev/nvme1n1
+# Should show something like:
+# nvme-Seagate_FireCuda_510_SSD_ZP2000GM30001_0024_CF01_4800_43D3
 
-# Create GPT partition table
-parted /dev/nvme1n1 -- mklabel gpt
-
-# Create EFI partition (1GB)
-parted /dev/nvme1n1 -- mkpart ESP fat32 1MB 1024MB
-parted /dev/nvme1n1 -- set 1 esp on
-
-# Create LUKS partition (rest of disk)
-parted /dev/nvme1n1 -- mkpart primary 1024MB 100%
-
-# Format EFI partition
-mkfs.vfat -F32 -n NIXBOOT /dev/nvme1n1p1
+# Verify this matches the disk-config.nix device path
 ```
 
-### 5.3 Setup LUKS Encryption
+### 5.3 Partition, Encrypt, and Format with Disko
 
 ```bash
-# Create encrypted container
-cryptsetup luksFormat --type luks2 /dev/nvme1n1p2
-
-# Open the encrypted container
-cryptsetup open /dev/nvme1n1p2 cryptroot
-```
-
-### 5.4 Create Btrfs Filesystem with Subvolumes
-
-```bash
-# Create Btrfs filesystem
-mkfs.btrfs -L nixos /dev/mapper/cryptroot
-
-# Mount and create subvolumes
-mount /dev/mapper/cryptroot /mnt
-btrfs subvolume create /mnt/@root
-btrfs subvolume create /mnt/@home
-btrfs subvolume create /mnt/@nix
-btrfs subvolume create /mnt/@swap
-umount /mnt
-
-# Mount subvolumes with compression
-mount -o subvol=@root,compress=zstd,noatime /dev/mapper/cryptroot /mnt
-mkdir -p /mnt/{home,nix,swap,boot}
-mount -o subvol=@home,compress=zstd,noatime /dev/mapper/cryptroot /mnt/home
-mount -o subvol=@nix,compress=zstd,noatime /dev/mapper/cryptroot /mnt/nix
-mount -o subvol=@swap,noatime /dev/mapper/cryptroot /mnt/swap
-mount /dev/nvme1n1p1 /mnt/boot
-
-# Create swapfile (16GB)
-btrfs filesystem mkswapfile --size 16g /mnt/swap/swapfile
-swapon /mnt/swap/swapfile
-```
-
-### 5.5 Generate Hardware Configuration
-
-```bash
-nixos-generate-config --root /mnt
-```
-
-This creates `/mnt/etc/nixos/hardware-configuration.nix` which we'll copy to the repo.
-
-### 5.6 Install NixOS
-
-```bash
-# Install git and clone the repo
-nix-shell -p git
-
 # Clone cosmo repo
-git clone https://github.com/patflynn/cosmo /mnt/etc/nixos/cosmo
+nix-shell -p git
+git clone https://github.com/patflynn/cosmo /tmp/cosmo
+cd /tmp/cosmo
 
-# Copy generated hardware config to repo
-cp /mnt/etc/nixos/hardware-configuration.nix /mnt/etc/nixos/cosmo/hosts/weller/
+# Run disko to partition, encrypt, and mount
+# This will prompt for the LUKS encryption password
+sudo nix --experimental-features "nix-command flakes" \
+  run github:nix-community/disko -- \
+  --mode disko ./hosts/weller/disk-config.nix
+```
 
-# Install NixOS
-nixos-install --no-write-lock-file --flake /mnt/etc/nixos/cosmo#weller
+Disko will:
+- Create GPT partition table
+- Create 1GB EFI partition
+- Create LUKS2 encrypted partition (prompts for password)
+- Format with Btrfs and create subvolumes (@root, @home, @nix, @swap)
+- Mount everything to /mnt
+- Create 16GB swapfile
+
+### 5.4 Install NixOS
+
+```bash
+# Install NixOS from the flake
+nixos-install --no-write-lock-file --flake /tmp/cosmo#weller
+
+# Set root password when prompted (or skip if using SSH keys only)
 ```
 
 ---
@@ -225,18 +184,22 @@ The following files are in the cosmo repo:
 
 Configuration includes:
 - systemd-boot bootloader
-- LUKS encryption setup
-- Btrfs mount options
+- Hardware settings (kernel modules, AMD microcode)
 - NVIDIA driver configuration
 - Workstation profile (Hyprland, Steam, Sunshine)
 
-### 7.2 `hosts/weller/hardware-configuration.nix`
+### 7.2 `hosts/weller/disk-config.nix`
 
-Placeholder - regenerate during installation with actual UUIDs.
+Disko declarative disk configuration:
+- 1GB EFI partition
+- LUKS2 encrypted root with Btrfs
+- Subvolumes: @root, @home, @nix, @swap
+- 16GB swapfile
 
 ### 7.3 `flake.nix`
 
-`weller` added to nixosConfigurations.
+- `weller` added to nixosConfigurations
+- `disko` input added for declarative partitioning
 
 ### 7.4 `secrets/keys.nix`
 

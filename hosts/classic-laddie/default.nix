@@ -29,9 +29,9 @@
   # WIREGUARD_ADDRESSES=...
   age.secrets."media-vpn" = {
     file = ../../secrets/media-vpn.age;
-    owner = "root"; # Container service runs as root, no need for wider permissions
-    group = "root";
-    mode = "0400";
+    owner = config.cosmo.user.default; # Needs to be readable by the user running podman (or root if system)
+    group = "podman";
+    mode = "0440";
   };
 
   # Bootloader (Keep what matches your hardware!)

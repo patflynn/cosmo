@@ -188,8 +188,8 @@ in
         dependsOn = [ "gluetun" ];
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
-          PUID = toString config.users.users.patrick.uid;
-          PGID = toString config.users.groups.media.gid;
+          PUID = "1000"; # ${config.cosmo.user.default}
+          PGID = "991"; # media
           TZ = "America/New_York";
           WEBUI_PORT = "8081";
         };
@@ -205,8 +205,8 @@ in
         dependsOn = [ "gluetun" ];
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
-          PUID = toString config.users.users.patrick.uid;
-          PGID = toString config.users.groups.media.gid;
+          PUID = "1000"; # ${config.cosmo.user.default}
+          PGID = "991"; # media
           TZ = "America/New_York";
         };
         volumes = [

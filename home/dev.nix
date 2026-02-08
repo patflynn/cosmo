@@ -43,22 +43,5 @@
     programs.zsh.shellAliases = {
       rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";
     };
-
-    # Install Gemini extensions
-    home.activation.installGeminiConductor = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      # Find the gemini binary. Preference: Home Manager profile, then system PATH.
-      GEMINI_BIN=""
-      if [ -x "${config.home.path}/bin/gemini" ]; then
-        GEMINI_BIN="${config.home.path}/bin/gemini"
-      elif command -v gemini >/dev/null; then
-        GEMINI_BIN=$(command -v gemini)
-      fi
-
-      if [ -n "$GEMINI_BIN" ]; then
-        if ! "$GEMINI_BIN" extensions list | grep -q "conductor"; then
-          run "$GEMINI_BIN" extensions install https://github.com/gemini-cli-extensions/conductor --consent --auto-update
-        fi
-      fi
-    '';
   };
 }

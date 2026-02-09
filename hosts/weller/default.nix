@@ -102,7 +102,7 @@
   };
 
   # Enable CUDA support for Sunshine
-  services.sunshine.package = pkgs.sunshine.override { cudaSupport = true; };
+  # services.sunshine.package = pkgs.sunshine.override { cudaSupport = true; };
 
   # ---------------------------------------------------------------------------
   # Gaming

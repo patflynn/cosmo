@@ -9,7 +9,7 @@ in
   age.secrets.user-password.file = ../../secrets/user-password.age;
 
   # cause that's how I roll! (for now)
-  users.mutableUsers = false;
+  users.mutableUsers = true;
 
   users.users.${config.cosmo.user.default} = {
     isNormalUser = true;

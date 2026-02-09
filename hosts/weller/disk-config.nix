@@ -9,7 +9,7 @@
 {
   disko.devices = {
     disk.main = {
-      device = "/dev/disk/by-id/nvme-Seagate_FireCuda_510_SSD_ZP2000GM30001_0024_CF01_4800_43D3";
+      device = "/dev/disk/by-id/nvme-Seagate_FireCuda_510_SSD_ZP2000GM30001_7QE00F0P";
       type = "disk";
       content = {
         type = "gpt";
@@ -41,6 +41,7 @@
                 extraArgs = [
                   "-L"
                   "nixos"
+                  "--nodiscard"
                 ];
                 subvolumes = {
                   "@root" = {

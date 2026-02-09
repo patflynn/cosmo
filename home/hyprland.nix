@@ -79,16 +79,9 @@
     enable = true;
     settings = {
       # --- Monitors ---
-      # For headless/streaming, we often want a fixed resolution.
+      # Auto-detect monitors with preferred resolution
       # Format: name, resolution, position, scale
       monitor = [
-        "HDMI-A-1, disable"
-        "HDMI-A-2, disable"
-        "HDMI-A-3, disable"
-        "HDMI-A-4, disable"
-        "DP-1, disable"
-        "DP-2, disable"
-        "DP-3, disable"
         ", preferred, auto, 1"
       ];
 
@@ -129,10 +122,6 @@
       cursor = {
         no_hardware_cursors = true;
       };
-
-      exec-once = [
-        "hyprlock"
-      ];
 
       # --- Keybindings ---
       "$mainMod" = "SUPER";
@@ -196,22 +185,6 @@
       BindsTo = [ "graphical-session.target" ];
       Wants = [ "graphical-session.target" ];
       After = [ "graphical-session.target" ];
-    };
-  };
-
-  systemd.user.services.hyprland-autostart = {
-    Unit = {
-      Description = "Hyprland Autostart (Monitor & Session Target)";
-      After = [ "dbus.service" ];
-    };
-    Service = {
-      Type = "simple";
-      ExecStart = "${pkgs.bash}/bin/bash -c '/etc/profiles/per-user/${config.home.username}/bin/sunshine-resolution 3840 2160 60 && systemctl --user start hyprland-session.target'";
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
-    Install = {
-      WantedBy = [ "default.target" ];
     };
   };
 }

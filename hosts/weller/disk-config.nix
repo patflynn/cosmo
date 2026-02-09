@@ -41,6 +41,7 @@
                 extraArgs = [
                   "-L"
                   "nixos"
+                  "--nodiscard"
                 ];
                 subvolumes = {
                   "@root" = {

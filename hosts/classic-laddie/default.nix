@@ -11,11 +11,17 @@
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/workstation.nix
+    ../../modules/common/remoting.nix
     ../../modules/media-server/default.nix
   ];
 
   cosmo.user.default = "patrick";
   cosmo.user.email = "big.pat@gmail.com";
+
+  # ---------------------------------------------------------------------------
+  # Remote Desktop Streaming (Sunshine/Moonlight)
+  # ---------------------------------------------------------------------------
+  modules.remoting.enable = true;
 
   # ---------------------------------------------------------------------------
   # Media Server Configuration

@@ -87,6 +87,7 @@
                 home-manager.users.${config.cosmo.user.default} = {
                   imports = [
                     ./home/workstation.nix
+                    ./home/remoting.nix
                     ./home/identities/personal.nix
                   ];
                 };

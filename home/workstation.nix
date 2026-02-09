@@ -16,7 +16,6 @@
     kdePackages.dolphin # File manager
     bibata-cursors
     google-chrome
-    jq # JSON processor (used by sunshine-resolution script)
 
     # IDEs
     android-studio
@@ -27,11 +26,6 @@
 
     # File Managers
     yazi # Terminal file manager
-
-    # Custom script to sync resolution with Sunshine client
-    (pkgs.writeShellScriptBin "sunshine-resolution" (
-      builtins.readFile ./scripts/sunshine-resolution.sh
-    ))
   ];
 
   # --- Theming ---

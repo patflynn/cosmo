@@ -1,5 +1,88 @@
 { pkgs, ... }:
 
+let
+  waybar-weather = pkgs.writeShellScriptBin "waybar-weather" ''
+        set -euo pipefail
+
+        json=$(${pkgs.curl}/bin/curl -sf --max-time 10 "wttr.in/?format=j1" 2>/dev/null) || {
+          echo '{"text": "󰖐 --", "tooltip": "Weather unavailable"}'
+          exit 0
+        }
+
+        # Extract current conditions
+        code=$(echo "$json" | ${pkgs.jq}/bin/jq -r '.current_condition[0].weatherCode')
+        temp=$(echo "$json" | ${pkgs.jq}/bin/jq -r '.current_condition[0].temp_C')
+        feels=$(echo "$json" | ${pkgs.jq}/bin/jq -r '.current_condition[0].FeelsLikeC')
+        desc=$(echo "$json" | ${pkgs.jq}/bin/jq -r '.current_condition[0].weatherDesc[0].value')
+        humidity=$(echo "$json" | ${pkgs.jq}/bin/jq -r '.current_condition[0].humidity')
+
+        # Map weather code to icon
+        get_icon() {
+          case "$1" in
+            113) echo "󰖙" ;;
+            116) echo "󰖕" ;;
+            119|122) echo "󰖐" ;;
+            143|248|260) echo "󰖑" ;;
+            176|263|266|293|296|299|302|305|308|353|356|359) echo "󰖗" ;;
+            179|182|185|227|230|323|326|329|332|335|338|368|371|374|377) echo "󰖘" ;;
+            200|386|389|392|395) echo "󰖓" ;;
+            *) echo "󰖐" ;;
+          esac
+        }
+
+        icon=$(get_icon "$code")
+
+        # Scan today's hourly forecast for upcoming precipitation
+        current_hour=$(date +%H)
+        forecast=""
+        upcoming=$(echo "$json" | ${pkgs.jq}/bin/jq -r --argjson h "$current_hour" '
+          [.weather[0].hourly[] |
+            select((.time | rtrimstr("00") | tonumber / 100) > $h) |
+            .weatherCode | tonumber
+          ] | .[]
+        ' 2>/dev/null) || upcoming=""
+
+        for fc in $upcoming; do
+          case "$fc" in
+            200|386|389|392|395)
+              forecast="Storms expected later"
+              forecast_icon="󰖓"
+              break ;;
+            179|182|185|227|230|323|326|329|332|335|338|368|371|374|377)
+              if [ -z "$forecast" ]; then
+                forecast="Snow expected later"
+                forecast_icon="󰖘"
+              fi ;;
+            176|263|266|293|296|299|302|305|308|353|356|359)
+              if [ -z "$forecast" ]; then
+                forecast="Rain expected later"
+                forecast_icon="󰖗"
+              fi ;;
+          esac
+        done
+
+        # Build display text
+        text="$icon $temp°C"
+        if [ -n "$forecast" ]; then
+          text="$text → $forecast_icon"
+        fi
+
+        # Build tooltip
+        tooltip="$desc
+    Feels like ''${feels}°C
+    Humidity: ''${humidity}%"
+        if [ -n "$forecast" ]; then
+          tooltip="$tooltip
+
+    $forecast"
+        fi
+
+        ${pkgs.jq}/bin/jq -nc \
+          --arg text "$text" \
+          --arg tooltip "$tooltip" \
+          '{"text": $text, "tooltip": $tooltip}'
+  '';
+in
 {
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
@@ -7,6 +90,7 @@
     bluetuith
     pulseaudio
     pulsemixer
+    jq
   ];
 
   # Remap bluetuith help key — kitty's keyboard protocol reports '?' without
@@ -30,6 +114,7 @@
         modules-left = [
           "hyprland/workspaces"
           "clock"
+          "custom/weather"
         ];
         modules-center = [ ];
         modules-right = [
@@ -76,6 +161,12 @@
               today = "<span color='#cba6f7'><b><u>{}</u></b></span>";
             };
           };
+        };
+
+        "custom/weather" = {
+          exec = "${waybar-weather}/bin/waybar-weather";
+          return-type = "json";
+          interval = 600;
         };
 
         mpris = {
@@ -210,6 +301,7 @@
       #network,
       #bluetooth,
       #custom-gpu,
+      #custom-weather,
       #tray {
         background-color: alpha(@base, 0.85);
         border: 2px solid @surface0;
@@ -258,6 +350,10 @@
       /* --- Module Accent Colors --- */
       #clock {
         color: @lavender;
+      }
+
+      #custom-weather {
+        color: @sky;
       }
 
       #mpris {

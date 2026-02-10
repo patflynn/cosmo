@@ -7,14 +7,6 @@
     blueman
   ];
 
-  # Mask blueman tray applet — waybar's bluetooth module handles status
-  # and clicking it opens blueman-manager directly.
-  xdg.configFile."systemd/user/blueman-applet.service".text = ''
-    [Unit]
-    Description=Blueman applet (masked)
-    ConditionPathExists=/nonexistent
-  '';
-
   programs.waybar = {
     enable = true;
     systemd.enable = true;

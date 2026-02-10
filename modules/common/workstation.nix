@@ -7,6 +7,18 @@
     xwayland.enable = true; # Required for Steam/X11 apps
   };
 
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-hyprland
+      xdg-desktop-portal-gtk
+    ];
+    config.common.default = [
+      "hyprland"
+      "gtk"
+    ];
+  };
+
   # Enable the Display Manager (SDDM) generically
   services.displayManager.sddm = {
     enable = true;

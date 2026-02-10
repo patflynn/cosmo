@@ -8,6 +8,7 @@
 {
   imports = [
     ./hyprlock.nix
+    ./hyprpaper.nix
   ];
 
   home.packages = with pkgs; [

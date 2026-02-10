@@ -163,6 +163,12 @@
         "$mainMod, up, Focus up, movefocus, u"
         "$mainMod, down, Focus down, movefocus, d"
 
+        # Move window
+        "$mainMod SHIFT, left, Move window left, movewindow, l"
+        "$mainMod SHIFT, right, Move window right, movewindow, r"
+        "$mainMod SHIFT, up, Move window up, movewindow, u"
+        "$mainMod SHIFT, down, Move window down, movewindow, d"
+
         # Workspaces
         "$mainMod, 1, Workspace 1, workspace, 1"
         "$mainMod, 2, Workspace 2, workspace, 2"

@@ -20,14 +20,22 @@
         modules-center = [ "clock" ];
         modules-right = [
           "mpris"
-          "temperature"
-          "cpu"
+          "group/cpu"
+          "custom/gpu"
           "memory"
           "disk"
           "network"
           "bluetooth"
           "tray"
         ];
+
+        "group/cpu" = {
+          orientation = "horizontal";
+          modules = [
+            "cpu"
+            "temperature"
+          ];
+        };
 
         "hyprland/workspaces" = {
           format = "{id}";
@@ -68,14 +76,24 @@
         };
 
         temperature = {
-          format = " {temperatureC}°C";
+          format = "{temperatureC}°C";
           critical-threshold = 80;
-          format-critical = " {temperatureC}°C";
+          format-critical = "{temperatureC}°C";
+          hwmon-path-abs = "/sys/devices/pci0000:00/0000:00:18.3";
+          input-filename = "temp1_input";
         };
 
         cpu = {
           format = " {usage}%";
           interval = 2;
+          on-click = "kitty btop";
+        };
+
+        "custom/gpu" = {
+          exec = ''nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader,nounits 2>/dev/null | awk -F', ' '{printf "{\"text\": \"󰢮 %s%% %s°C\", \"tooltip\": \"RTX 4090\\nUsage: %s%%\\nTemp: %s°C\"}", $1, $2, $1, $2}' '';
+          return-type = "json";
+          interval = 5;
+          on-click = "kitty btop";
         };
 
         memory = {
@@ -160,12 +178,12 @@
       #workspaces,
       #clock,
       #mpris,
-      #temperature,
       #cpu,
       #memory,
       #disk,
       #network,
       #bluetooth,
+      #custom-gpu,
       #tray {
         background-color: alpha(@base, 0.85);
         border: 2px solid @surface0;
@@ -173,6 +191,24 @@
         padding: 0 12px;
         margin: 2px 3px;
         color: @text;
+      }
+
+      /* --- CPU Group (usage + temp in one pill) --- */
+      #cpu-group {
+        background-color: alpha(@base, 0.85);
+        border: 2px solid @surface0;
+        border-radius: 12px;
+        padding: 0 4px;
+        margin: 2px 3px;
+      }
+
+      #cpu-group #cpu,
+      #cpu-group #temperature {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0 4px;
+        margin: 0;
       }
 
       /* --- Workspaces --- */
@@ -213,6 +249,10 @@
 
       #cpu {
         color: @sky;
+      }
+
+      #custom-gpu {
+        color: @flamingo;
       }
 
       #memory {

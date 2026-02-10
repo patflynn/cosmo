@@ -4,10 +4,20 @@
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
     playerctl
+    bluetuith
   ];
+
+  # Remap bluetuith help key — kitty's keyboard protocol reports '?' without
+  # the Shift modifier, which tcell doesn't match against Shift+'?'.
+  xdg.configFile."bluetuith/bluetuith.conf".text = builtins.toJSON {
+    keybindings = {
+      Help = "?";
+    };
+  };
 
   programs.waybar = {
     enable = true;
+    systemd.enable = true;
     settings = {
       mainBar = {
         layer = "top";
@@ -15,18 +25,29 @@
         margin-top = 5;
         margin-left = 10;
         margin-right = 10;
-        modules-left = [ "hyprland/workspaces" ];
-        modules-center = [ "clock" ];
+        modules-left = [
+          "hyprland/workspaces"
+          "clock"
+        ];
+        modules-center = [ ];
         modules-right = [
           "mpris"
-          "temperature"
-          "cpu"
+          "group/cpu-info"
+          "custom/gpu"
           "memory"
           "disk"
           "network"
           "bluetooth"
           "tray"
         ];
+
+        "group/cpu-info" = {
+          orientation = "horizontal";
+          modules = [
+            "cpu"
+            "temperature"
+          ];
+        };
 
         "hyprland/workspaces" = {
           format = "{id}";
@@ -58,34 +79,44 @@
           format = "{player_icon} {title} — {artist}";
           format-paused = "{status_icon} <i>{title} — {artist}</i>";
           title-len = 30;
+          format-stopped = "󰝚";
           player-icons = {
-            default = "♫";
+            default = "󰝚";
           };
           status-icons = {
-            paused = "";
+            paused = "󰏤";
           };
         };
 
         temperature = {
-          format = " {temperatureC}°C";
+          format = "{temperatureC}°C";
           critical-threshold = 80;
-          format-critical = " {temperatureC}°C";
+          format-critical = "{temperatureC}°C";
+          hwmon-path = "/sys/class/hwmon/hwmon2/temp1_input";
         };
 
         cpu = {
-          format = " {usage}%";
+          format = "󰻠 {usage}%";
           interval = 2;
+          on-click = "kitty btop";
+        };
+
+        "custom/gpu" = {
+          exec = ''nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader,nounits 2>/dev/null | awk -F', ' '{printf "{\"text\": \"󰢮 %s%% %s°C\", \"tooltip\": \"RTX 4090\\nUsage: %s%%\\nTemp: %s°C\"}", $1, $2, $1, $2}' '';
+          return-type = "json";
+          interval = 5;
+          on-click = "kitty btop";
         };
 
         memory = {
-          format = " {percentage}%";
-          format-alt = " {used:0.1f}/{total:0.1f} GB";
+          format = "󰍛 {percentage}%";
+          format-alt = "󰍛 {used:0.1f}/{total:0.1f} GB";
           tooltip-format = "RAM: {used:0.1f}/{total:0.1f} GB\nSwap: {swapUsed:0.1f}/{swapTotal:0.1f} GB";
         };
 
         disk = {
-          format = " {percentage_used}%";
-          format-alt = " {used}/{total}";
+          format = "󰋊 {percentage_used}%";
+          format-alt = "󰋊 {used}/{total}";
           path = "/";
         };
 
@@ -104,6 +135,7 @@
           format-off = "󰂲";
           tooltip-format-connected = "{device_enumerate}";
           tooltip-format-enumerate-connected-battery = "{device_alias}: {device_battery_percentage}%";
+          on-click = "kitty bluetuith";
         };
 
         tray = {
@@ -159,12 +191,11 @@
       #workspaces,
       #clock,
       #mpris,
-      #temperature,
-      #cpu,
       #memory,
       #disk,
       #network,
       #bluetooth,
+      #custom-gpu,
       #tray {
         background-color: alpha(@base, 0.85);
         border: 2px solid @surface0;
@@ -172,6 +203,24 @@
         padding: 0 12px;
         margin: 2px 3px;
         color: @text;
+      }
+
+      /* --- CPU Group (usage + temp in one pill) --- */
+      #cpu-info {
+        background-color: alpha(@base, 0.85);
+        border: 2px solid @surface0;
+        border-radius: 12px;
+        padding: 0 4px;
+        margin: 2px 3px;
+      }
+
+      #cpu-info #cpu,
+      #cpu-info #temperature {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0 4px;
+        margin: 0;
       }
 
       /* --- Workspaces --- */
@@ -212,6 +261,10 @@
 
       #cpu {
         color: @sky;
+      }
+
+      #custom-gpu {
+        color: @flamingo;
       }
 
       #memory {

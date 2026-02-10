@@ -79,8 +79,7 @@
           format = "{temperatureC}°C";
           critical-threshold = 80;
           format-critical = "{temperatureC}°C";
-          hwmon-path-abs = "/sys/devices/pci0000:00/0000:00:18.3";
-          input-filename = "temp1_input";
+          hwmon-path = "/sys/class/hwmon/hwmon2/temp1_input";
         };
 
         cpu = {

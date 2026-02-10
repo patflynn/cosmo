@@ -139,8 +139,7 @@
 
       # --- Layer Rules ---
       layerrule = [
-        "blur, waybar"
-        "ignorezero, waybar"
+        "blur on, ignore_alpha 1, match:namespace waybar"
       ];
 
       # --- Keybindings ---

@@ -4,6 +4,7 @@
   home.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
     playerctl
+    blueman
   ];
 
   programs.waybar = {
@@ -125,6 +126,7 @@
           format-off = "󰂲";
           tooltip-format-connected = "{device_enumerate}";
           tooltip-format-enumerate-connected-battery = "{device_alias}: {device_battery_percentage}%";
+          on-click = "blueman-manager";
         };
 
         tray = {

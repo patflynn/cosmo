@@ -5,6 +5,8 @@
     nerd-fonts.jetbrains-mono
     playerctl
     bluetuith
+    pulseaudio
+    pulsemixer
   ];
 
   # Remap bluetuith help key — kitty's keyboard protocol reports '?' without
@@ -37,6 +39,7 @@
           "memory"
           "disk"
           "network"
+          "pulseaudio"
           "bluetooth"
           "tray"
         ];
@@ -127,6 +130,16 @@
           tooltip-format = "{ifname}: {ipaddr}\n⬆ {bandwidthUpBits} ⬇ {bandwidthDownBits}";
         };
 
+        pulseaudio = {
+          format = "󰕾 {volume}%";
+          format-muted = "󰖁 muted";
+          format-bluetooth = "󰋋 {volume}%";
+          format-bluetooth-muted = "󰖁 {device_alias}";
+          tooltip-format = "{desc}\n{volume}%";
+          scroll-step = 5;
+          on-click = "kitty pulsemixer";
+        };
+
         bluetooth = {
           format = "󰂯";
           format-connected = "󰂱 {device_alias}";
@@ -191,6 +204,7 @@
       #workspaces,
       #clock,
       #mpris,
+      #pulseaudio,
       #memory,
       #disk,
       #network,
@@ -277,6 +291,14 @@
 
       #network {
         color: @teal;
+      }
+
+      #pulseaudio {
+        color: @mauve;
+      }
+
+      #pulseaudio.muted {
+        color: @subtext0;
       }
 
       #network.disconnected {

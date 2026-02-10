@@ -67,8 +67,8 @@
       # Simple parser for Hyprland keybinds
       # Parses the generated config file
       conf="$HOME/.config/hypr/hyprland.conf"
-      grep "^bind =" "$conf" | \
-      sed 's/bind = //' | \
+      grep "^bind=" "$conf" | \
+      sed 's/bind=//' | \
       sed 's/, /   /g' | \
       sed 's/,/   /g' | \
       wofi --dmenu --width 1000 --height 600 -p "Keybindings"

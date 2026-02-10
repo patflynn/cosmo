@@ -16,8 +16,11 @@
         margin-top = 5;
         margin-left = 10;
         margin-right = 10;
-        modules-left = [ "hyprland/workspaces" ];
-        modules-center = [ "clock" ];
+        modules-left = [
+          "hyprland/workspaces"
+          "clock"
+        ];
+        modules-center = [ ];
         modules-right = [
           "mpris"
           "group/cpu-info"

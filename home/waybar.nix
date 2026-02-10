@@ -127,7 +127,7 @@
           format-off = "󰂲";
           tooltip-format-connected = "{device_enumerate}";
           tooltip-format-enumerate-connected-battery = "{device_alias}: {device_battery_percentage}%";
-          on-click = "kitty bluetuith";
+          on-click = "kitty -o 'keyboard_protocol=none' bluetuith";
         };
 
         tray = {

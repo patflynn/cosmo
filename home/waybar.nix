@@ -20,7 +20,7 @@
         modules-center = [ "clock" ];
         modules-right = [
           "mpris"
-          "group/cpu"
+          "group/cpu-info"
           "custom/gpu"
           "memory"
           "disk"
@@ -29,7 +29,7 @@
           "tray"
         ];
 
-        "group/cpu" = {
+        "group/cpu-info" = {
           orientation = "horizontal";
           modules = [
             "cpu"
@@ -178,7 +178,6 @@
       #workspaces,
       #clock,
       #mpris,
-      #cpu,
       #memory,
       #disk,
       #network,
@@ -194,7 +193,7 @@
       }
 
       /* --- CPU Group (usage + temp in one pill) --- */
-      #cpu-group {
+      #cpu-info {
         background-color: alpha(@base, 0.85);
         border: 2px solid @surface0;
         border-radius: 12px;
@@ -202,8 +201,8 @@
         margin: 2px 3px;
       }
 
-      #cpu-group #cpu,
-      #cpu-group #temperature {
+      #cpu-info #cpu,
+      #cpu-info #temperature {
         background: transparent;
         border: none;
         border-radius: 0;

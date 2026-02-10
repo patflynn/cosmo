@@ -17,6 +17,7 @@
     wl-clipboard # Clipboard manager
     wf-recorder # Screen recorder
     ffmpeg # For GIF conversion
+    jq # JSON processor
     libnotify # For notifications
 
     # Script to record GIF
@@ -64,14 +65,23 @@
     # Cheatsheet Script
     (pkgs.writeShellScriptBin "hypr-cheatsheet" ''
       #!/usr/bin/env bash
-      # Simple parser for Hyprland keybinds
-      # Parses the generated config file
-      conf="$HOME/.config/hypr/hyprland.conf"
-      grep "^bind=" "$conf" | \
-      sed 's/bind=//' | \
-      sed 's/, /   /g' | \
-      sed 's/,/   /g' | \
-      wofi --dmenu --width 1000 --height 600 -p "Keybindings"
+      # Parse keybindings from hyprctl using structured JSON
+      hyprctl binds -j | jq -r '
+        .[]
+        | select(.has_description and .description != "")
+        | (
+            (if .modmask == 0 then ""
+             else [
+               (if (.modmask % 128) >= 64 then "Super" else empty end),
+               (if (.modmask % 2) >= 1 then "Shift" else empty end),
+               (if (.modmask % 8) >= 4 then "Ctrl" else empty end),
+               (if (.modmask % 16) >= 8 then "Alt" else empty end)
+             ] | join(" + ")
+             end)
+          ) as $mods
+        | (if $mods == "" then .key else $mods + " + " + .key end)
+          + " — " + .description
+      ' | wofi --dmenu --width 1000 --height 600 -p "Keybindings"
     '')
   ];
 
@@ -127,52 +137,52 @@
 
       # --- Keybindings ---
       "$mainMod" = "SUPER";
-      bind = [
-        "$mainMod, Q, exec, kitty"
-        "$mainMod, C, killactive,"
-        "$mainMod, M, exec, hyprlock" # Lock screen (safeguard against accidental exit)
-        "$mainMod, E, exec, dolphin"
-        "$mainMod, Y, exec, kitty -e yazi" # Yazi file manager
-        "$mainMod, B, exec, google-chrome-stable"
-        "$mainMod, V, togglefloating,"
-        "$mainMod, R, exec, wofi --show drun"
-        "$mainMod, slash, exec, hypr-cheatsheet" # Keybinds cheatsheet
-        "$mainMod, P, pseudo," # pseudotile
-        "$mainMod, L, exec, hyprlock" # Lock screen
+      bindd = [
+        "$mainMod, Q, Open terminal, exec, kitty"
+        "$mainMod, C, Close window, killactive,"
+        "$mainMod, M, Lock screen, exec, hyprlock"
+        "$mainMod, E, File manager, exec, dolphin"
+        "$mainMod, Y, Terminal file manager, exec, kitty -e yazi"
+        "$mainMod, B, Open browser, exec, google-chrome-stable"
+        "$mainMod, V, Toggle floating, togglefloating,"
+        "$mainMod, R, App launcher, exec, wofi --show drun"
+        "$mainMod, slash, Keybindings cheatsheet, exec, hypr-cheatsheet"
+        "$mainMod, P, Pseudotile, pseudo,"
+        "$mainMod, L, Lock screen, exec, hyprlock"
 
-        # Move focus with mainMod + arrow keys
-        "$mainMod, left, movefocus, l"
-        "$mainMod, right, movefocus, r"
-        "$mainMod, up, movefocus, u"
-        "$mainMod, down, movefocus, d"
+        # Focus
+        "$mainMod, left, Focus left, movefocus, l"
+        "$mainMod, right, Focus right, movefocus, r"
+        "$mainMod, up, Focus up, movefocus, u"
+        "$mainMod, down, Focus down, movefocus, d"
 
-        # Switch workspaces with mainMod + [0-9]
-        "$mainMod, 1, workspace, 1"
-        "$mainMod, 2, workspace, 2"
-        "$mainMod, 3, workspace, 3"
-        "$mainMod, 4, workspace, 4"
-        "$mainMod, 5, workspace, 5"
+        # Workspaces
+        "$mainMod, 1, Workspace 1, workspace, 1"
+        "$mainMod, 2, Workspace 2, workspace, 2"
+        "$mainMod, 3, Workspace 3, workspace, 3"
+        "$mainMod, 4, Workspace 4, workspace, 4"
+        "$mainMod, 5, Workspace 5, workspace, 5"
 
-        # Move active window to a workspace with mainMod + SHIFT + [0-9]
-        "$mainMod SHIFT, 1, movetoworkspace, 1"
-        "$mainMod SHIFT, 2, movetoworkspace, 2"
-        "$mainMod SHIFT, 3, movetoworkspace, 3"
-        "$mainMod SHIFT, 4, movetoworkspace, 4"
-        "$mainMod SHIFT, 5, movetoworkspace, 5"
+        # Move to workspace
+        "$mainMod SHIFT, 1, Move to workspace 1, movetoworkspace, 1"
+        "$mainMod SHIFT, 2, Move to workspace 2, movetoworkspace, 2"
+        "$mainMod SHIFT, 3, Move to workspace 3, movetoworkspace, 3"
+        "$mainMod SHIFT, 4, Move to workspace 4, movetoworkspace, 4"
+        "$mainMod SHIFT, 5, Move to workspace 5, movetoworkspace, 5"
 
         # Screenshots
-        ", Print, exec, grim -g \"$(slurp)\" - | wl-copy" # Region to clipboard
-        "$mainMod, Print, exec, grim -g \"$(slurp)\" - | swappy -f -" # Region to Swappy
-        "SHIFT, Print, exec, grim - | wl-copy" # Full screen to clipboard
+        ", Print, Screenshot region to clipboard, exec, grim -g \"$(slurp)\" - | wl-copy"
+        "$mainMod, Print, Screenshot region to editor, exec, grim -g \"$(slurp)\" - | swappy -f -"
+        "SHIFT, Print, Screenshot fullscreen, exec, grim - | wl-copy"
 
-        # Screenshot Alternatives (No Print Key)
-        "$mainMod SHIFT, P, exec, grim -g \"$(slurp)\" - | wl-copy" # Region to clipboard
-        "$mainMod ALT, P, exec, grim -g \"$(slurp)\" - | swappy -f -" # Region to Swappy
-        "$mainMod CTRL, P, exec, grim - | wl-copy" # Full screen to clipboard
+        # Screenshot alternatives (no Print key)
+        "$mainMod SHIFT, P, Screenshot region to clipboard, exec, grim -g \"$(slurp)\" - | wl-copy"
+        "$mainMod ALT, P, Screenshot region to editor, exec, grim -g \"$(slurp)\" - | swappy -f -"
+        "$mainMod CTRL, P, Screenshot fullscreen, exec, grim - | wl-copy"
 
-        # Screen Recording
-        "$mainMod SHIFT, G, exec, record-gif" # Record GIF (Region)
-        "$mainMod SHIFT, S, exec, pkill --signal SIGINT wf-recorder" # Stop Recording
+        # Screen recording
+        "$mainMod SHIFT, G, Record GIF, exec, record-gif"
+        "$mainMod SHIFT, S, Stop recording, exec, pkill --signal SIGINT wf-recorder"
       ];
 
       debug = {

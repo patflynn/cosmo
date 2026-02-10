@@ -30,6 +30,9 @@
         gcc
         openssl
 
+        # IDEs
+        antigravity
+
         # CLIs
         claude-code # Anthropic's CLI
         github-cli # GitHub CLI (gh)

@@ -9,6 +9,7 @@
   imports = [
     ./hyprlock.nix
     ./hyprpaper.nix
+    ./waybar.nix
   ];
 
   home.packages = with pkgs; [
@@ -135,6 +136,12 @@
       cursor = {
         no_hardware_cursors = true;
       };
+
+      # --- Layer Rules ---
+      layerrule = [
+        "blur, waybar"
+        "ignorezero, waybar"
+      ];
 
       # --- Keybindings ---
       "$mainMod" = "SUPER";

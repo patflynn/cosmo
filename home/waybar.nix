@@ -71,11 +71,12 @@
           format = "{player_icon} {title} — {artist}";
           format-paused = "{status_icon} <i>{title} — {artist}</i>";
           title-len = 30;
+          format-stopped = "󰝚";
           player-icons = {
-            default = "♫";
+            default = "󰝚";
           };
           status-icons = {
-            paused = "";
+            paused = "󰏤";
           };
         };
 

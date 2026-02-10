@@ -6,7 +6,7 @@
     playerctl
     bluetuith
     pulseaudio
-    pavucontrol
+    pulsemixer
   ];
 
   # Remap bluetuith help key — kitty's keyboard protocol reports '?' without
@@ -137,7 +137,7 @@
           format-bluetooth-muted = "󰖁 {device_alias}";
           tooltip-format = "{desc}\n{volume}%";
           scroll-step = 5;
-          on-click = "pavucontrol";
+          on-click = "kitty pulsemixer";
         };
 
         bluetooth = {

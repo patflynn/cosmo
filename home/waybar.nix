@@ -87,7 +87,7 @@
         };
 
         cpu = {
-          format = " {usage}%";
+          format = "󰻠 {usage}%";
           interval = 2;
           on-click = "kitty btop";
         };
@@ -100,14 +100,14 @@
         };
 
         memory = {
-          format = " {percentage}%";
-          format-alt = " {used:0.1f}/{total:0.1f} GB";
+          format = "󰍛 {percentage}%";
+          format-alt = "󰍛 {used:0.1f}/{total:0.1f} GB";
           tooltip-format = "RAM: {used:0.1f}/{total:0.1f} GB\nSwap: {swapUsed:0.1f}/{swapTotal:0.1f} GB";
         };
 
         disk = {
-          format = " {percentage_used}%";
-          format-alt = " {used}/{total}";
+          format = "󰋊 {percentage_used}%";
+          format-alt = "󰋊 {used}/{total}";
           path = "/";
         };
 

@@ -7,6 +7,14 @@
     bluetuith
   ];
 
+  # Remap bluetuith help key — kitty's keyboard protocol reports '?' without
+  # the Shift modifier, which tcell doesn't match against Shift+'?'.
+  xdg.configFile."bluetuith/bluetuith.conf".text = builtins.toJSON {
+    keybindings = {
+      Help = "?";
+    };
+  };
+
   programs.waybar = {
     enable = true;
     systemd.enable = true;
@@ -127,7 +135,7 @@
           format-off = "󰂲";
           tooltip-format-connected = "{device_enumerate}";
           tooltip-format-enumerate-connected-battery = "{device_alias}: {device_battery_percentage}%";
-          on-click = "kitty -o 'keyboard_protocol=none' bluetuith";
+          on-click = "kitty bluetuith";
         };
 
         tray = {

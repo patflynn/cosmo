@@ -16,6 +16,7 @@
     kdePackages.dolphin # File manager
     bibata-cursors
     google-chrome
+    xdg-desktop-portal-gtk # Portal backend for URL opening, file chooser, etc.
 
     # IDEs
     android-studio
@@ -56,6 +57,7 @@
     settings = {
       font_size = 12;
       window_padding_width = 4;
+      open_url_with = "xdg-open";
     };
   };
 
@@ -68,6 +70,9 @@
       "video/quicktime" = "mpv.desktop";
       "image/gif" = "mpv.desktop";
       "inode/directory" = "org.kde.dolphin.desktop";
+      "x-scheme-handler/http" = "google-chrome.desktop";
+      "x-scheme-handler/https" = "google-chrome.desktop";
+      "text/html" = "google-chrome.desktop";
     };
   };
 

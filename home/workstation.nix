@@ -71,6 +71,10 @@
     };
   };
 
+  dconf.settings."org/freedesktop/appearance" = {
+    color-scheme = 1; # 1 = prefer dark
+  };
+
   home.pointerCursor = {
     gtk.enable = true;
     # x11.enable = true;

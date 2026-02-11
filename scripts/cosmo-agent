@@ -5,8 +5,6 @@ set -euo pipefail
 # Creates isolated git worktrees, launches autonomous claude sessions in tmux panes,
 # and tracks agent state for status checking and cleanup.
 
-STATE_DIR="${HOME}/.local/state/cosmo-agent/agents"
-LOG_DIR="${HOME}/.local/state/cosmo-agent/logs"
 WORKTREE_BASE="/tmp/cosmo-agent"
 DEFAULT_BUDGET="5.00"
 
@@ -22,9 +20,6 @@ require_tmux() {
   [ -n "${TMUX:-}" ] || die "cosmo-agent must be run inside a tmux session"
 }
 
-ensure_dirs() {
-  mkdir -p "$STATE_DIR" "$LOG_DIR"
-}
 
 gen_id() {
   local ts rand
@@ -36,6 +31,26 @@ gen_id() {
 repo_root() {
   git rev-parse --show-toplevel 2>/dev/null || die "not inside a git repository"
 }
+
+git_dir() {
+  git rev-parse --git-dir 2>/dev/null || die "not inside a git repository"
+}
+
+# Run data lives in .git/cosmo-agent/ — local to this clone, invisible to the working tree
+_state_dir=""
+_log_dir=""
+init_dirs() {
+  if [ -z "$_state_dir" ]; then
+    local gd
+    gd=$(git_dir)
+    _state_dir="${gd}/cosmo-agent/runs"
+    _log_dir="${gd}/cosmo-agent/logs"
+  fi
+  mkdir -p "$_state_dir" "$_log_dir"
+}
+
+state_dir() { init_dirs; echo "$_state_dir"; }
+log_dir()   { init_dirs; echo "$_log_dir"; }
 
 # ── Stream Formatter ─────────────────────────────────────────────────────────
 
@@ -125,8 +140,8 @@ _format_stream() {
 # with cost, duration, and PR URL.
 _finalize_run() {
   local id="$1"
-  local state_file="${STATE_DIR}/${id}.json"
-  local log_file="${LOG_DIR}/${id}.jsonl"
+  local state_file="$(state_dir)/${id}.json"
+  local log_file="$(log_dir)/${id}.jsonl"
 
   [ -f "$state_file" ] || return 0
   [ -f "$log_file" ] || return 0
@@ -225,7 +240,7 @@ cmd_launch() {
   require_cmd gh
   require_cmd jq
   require_tmux
-  ensure_dirs
+  init_dirs
 
   local id root worktree branch
   id=$(gen_id)
@@ -247,7 +262,7 @@ cmd_launch() {
   local sys_prompt
   sys_prompt=$(agent_system_prompt "$id" "$issue")
 
-  local log_file="${LOG_DIR}/${id}.jsonl"
+  local log_file="$(log_dir)/${id}.jsonl"
 
   # Build the claude command with streaming JSON output
   local claude_cmd
@@ -296,22 +311,25 @@ cmd_launch() {
       budget: $budget,
       log_file: $log_file,
       created_at: $created_at
-    }' > "${STATE_DIR}/${id}.json"
+    }' > "$(state_dir)/${id}.json"
 
   echo "  pane:     ${pane_id}"
   echo "  budget:   \$${budget}"
   echo "  log:      ${log_file}"
-  echo "  state:    ${STATE_DIR}/${id}.json"
+  echo "  state:    $(state_dir)/${id}.json"
   echo ""
   echo "Agent ${id} is running. Use 'cosmo-agent status' to check progress."
 }
 
 cmd_status() {
   require_cmd jq
-  ensure_dirs
+  init_dirs
+
+  local sd
+  sd=$(state_dir)
 
   local has_agents=false
-  for f in "${STATE_DIR}"/*.json; do
+  for f in "${sd}"/*.json; do
     [ -f "$f" ] && has_agents=true && break
   done
   if [ "$has_agents" = false ]; then
@@ -322,7 +340,7 @@ cmd_status() {
   printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "RUN ID" "STATUS" "COST" "ISSUE" "PR" "PROMPT"
   printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "------" "------" "----" "-----" "--" "------"
 
-  for f in "${STATE_DIR}"/*.json; do
+  for f in "${sd}"/*.json; do
     [ -f "$f" ] || continue
 
     local id prompt issue pane_id budget status pr_url cost_usd
@@ -374,7 +392,7 @@ cmd_logs() {
   [ -n "$id" ] || die "usage: cosmo-agent logs <agent-id> [--live | --raw | --replay]"
 
   require_cmd jq
-  local state_file="${STATE_DIR}/${id}.json"
+  local state_file="$(state_dir)/${id}.json"
   [ -f "$state_file" ] || die "no agent found with id: ${id}"
 
   local log_file
@@ -412,18 +430,21 @@ cmd_cleanup() {
 
   require_cmd jq
   require_cmd git
-  ensure_dirs
+  init_dirs
+
+  local sd
+  sd=$(state_dir)
 
   if [ "$target" = "--all" ]; then
     local has_agents=false
-    for f in "${STATE_DIR}"/*.json; do
+    for f in "${sd}"/*.json; do
       [ -f "$f" ] && has_agents=true && break
     done
     if [ "$has_agents" = false ]; then
       echo "No agents to clean up."
       return 0
     fi
-    for f in "${STATE_DIR}"/*.json; do
+    for f in "${sd}"/*.json; do
       [ -f "$f" ] || continue
       local agent_id
       agent_id=$(jq -r '.id' "$f")
@@ -436,7 +457,7 @@ cmd_cleanup() {
 
 cleanup_agent() {
   local id="$1"
-  local state_file="${STATE_DIR}/${id}.json"
+  local state_file="$(state_dir)/${id}.json"
   [ -f "$state_file" ] || die "no agent found with id: ${id}"
 
   local pane_id worktree branch

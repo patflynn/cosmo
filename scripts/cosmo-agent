@@ -6,6 +6,7 @@ set -euo pipefail
 # and tracks agent state for status checking and cleanup.
 
 STATE_DIR="${HOME}/.local/state/cosmo-agent/agents"
+LOG_DIR="${HOME}/.local/state/cosmo-agent/logs"
 WORKTREE_BASE="/tmp/cosmo-agent"
 DEFAULT_BUDGET="5.00"
 
@@ -21,8 +22,8 @@ require_tmux() {
   [ -n "${TMUX:-}" ] || die "cosmo-agent must be run inside a tmux session"
 }
 
-ensure_state_dir() {
-  mkdir -p "$STATE_DIR"
+ensure_dirs() {
+  mkdir -p "$STATE_DIR" "$LOG_DIR"
 }
 
 gen_id() {
@@ -34,6 +35,88 @@ gen_id() {
 
 repo_root() {
   git rev-parse --show-toplevel 2>/dev/null || die "not inside a git repository"
+}
+
+# ── Stream Formatter ─────────────────────────────────────────────────────────
+
+# Reads stream-json from stdin and prints human-readable progress to stdout.
+# Each JSON line is parsed to show tool calls, results, and text output.
+_format_stream() {
+  local line type subtype
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null) || continue
+
+    case "$type" in
+      system)
+        subtype=$(echo "$line" | jq -r '.subtype // empty')
+        if [ "$subtype" = "init" ]; then
+          local model
+          model=$(echo "$line" | jq -r '.model // "unknown"')
+          echo "── session started (model: ${model}) ──"
+        fi
+        ;;
+      assistant)
+        # Parse content blocks from the assistant message
+        local num_blocks
+        num_blocks=$(echo "$line" | jq '.message.content | length' 2>/dev/null) || continue
+        for ((i=0; i<num_blocks; i++)); do
+          local block_type
+          block_type=$(echo "$line" | jq -r ".message.content[$i].type")
+          case "$block_type" in
+            text)
+              local text
+              text=$(echo "$line" | jq -r ".message.content[$i].text")
+              echo "$text"
+              ;;
+            tool_use)
+              local tool_name tool_input_summary
+              tool_name=$(echo "$line" | jq -r ".message.content[$i].name")
+              # Show a compact summary of what the tool is doing
+              case "$tool_name" in
+                Read)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.file_path // empty")
+                  echo "▶ Read ${tool_input_summary}"
+                  ;;
+                Edit)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.file_path // empty")
+                  echo "▶ Edit ${tool_input_summary}"
+                  ;;
+                Write)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.file_path // empty")
+                  echo "▶ Write ${tool_input_summary}"
+                  ;;
+                Bash)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.command // empty" | head -1)
+                  echo "▶ Bash: ${tool_input_summary}"
+                  ;;
+                Glob)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.pattern // empty")
+                  echo "▶ Glob ${tool_input_summary}"
+                  ;;
+                Grep)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.pattern // empty")
+                  echo "▶ Grep ${tool_input_summary}"
+                  ;;
+                *)
+                  echo "▶ ${tool_name}"
+                  ;;
+              esac
+              ;;
+          esac
+        done
+        ;;
+      result)
+        local cost duration
+        cost=$(echo "$line" | jq -r '.total_cost_usd // 0')
+        duration=$(echo "$line" | jq -r '.duration_ms // 0')
+        local duration_s
+        duration_s=$(awk "BEGIN {printf \"%.1f\", ${duration}/1000}")
+        echo ""
+        echo "── done (${duration_s}s, \$${cost}) ──"
+        ;;
+    esac
+  done
 }
 
 # ── System Prompt ────────────────────────────────────────────────────────────
@@ -98,7 +181,7 @@ cmd_launch() {
   require_cmd gh
   require_cmd jq
   require_tmux
-  ensure_state_dir
+  ensure_dirs
 
   local id root worktree branch
   id=$(gen_id)
@@ -120,16 +203,19 @@ cmd_launch() {
   local sys_prompt
   sys_prompt=$(agent_system_prompt "$issue")
 
-  # Build the claude command that runs inside the pane
+  local log_file="${LOG_DIR}/${id}.jsonl"
+
+  # Build the claude command with streaming JSON output
   local claude_cmd
-  claude_cmd="claude -p --dangerously-skip-permissions"
+  claude_cmd="claude -p --dangerously-skip-permissions --verbose"
+  claude_cmd+=" --output-format stream-json"
   claude_cmd+=" --max-budget-usd ${budget}"
   claude_cmd+=" --append-system-prompt $(printf '%q' "$sys_prompt")"
   claude_cmd+=" $(printf '%q' "$prompt")"
 
-  # Wrap so the pane stays open after claude exits
+  # Wrap: run claude, pipe through tee (for log) and formatter (for display)
   local pane_cmd
-  pane_cmd="cd $(printf '%q' "$worktree") && ${claude_cmd}; echo ''; echo \"Agent ${id} exited (status: \$?). Press Enter to close.\"; read"
+  pane_cmd="cd $(printf '%q' "$worktree") && ${claude_cmd} | tee $(printf '%q' "$log_file") | $(printf '%q' "$(repo_root)/scripts/cosmo-agent") _format-stream; echo ''; echo \"Agent ${id} exited (status: \${PIPESTATUS[0]}). Press Enter to close.\"; read"
 
   # Launch in a new tmux pane (no focus switch)
   local pane_id
@@ -152,6 +238,7 @@ cmd_launch() {
     --arg worktree "$worktree" \
     --arg tmux_pane "$pane_id" \
     --arg budget "$budget" \
+    --arg log_file "$log_file" \
     --arg created_at "$created_at" \
     '{
       id: $id,
@@ -161,11 +248,13 @@ cmd_launch() {
       worktree: $worktree,
       tmux_pane: $tmux_pane,
       budget: $budget,
+      log_file: $log_file,
       created_at: $created_at
     }' > "${STATE_DIR}/${id}.json"
 
   echo "  pane:     ${pane_id}"
   echo "  budget:   \$${budget}"
+  echo "  log:      ${log_file}"
   echo "  state:    ${STATE_DIR}/${id}.json"
   echo ""
   echo "Agent ${id} is running. Use 'cosmo-agent status' to check progress."
@@ -173,7 +262,7 @@ cmd_launch() {
 
 cmd_status() {
   require_cmd jq
-  ensure_state_dir
+  ensure_dirs
 
   local has_agents=false
   for f in "${STATE_DIR}"/*.json; do
@@ -219,22 +308,40 @@ cmd_status() {
 }
 
 cmd_logs() {
-  local id="${1:-}"
-  [ -n "$id" ] || die "usage: cosmo-agent logs <agent-id>"
+  local id="${1:-}" mode="${2:---live}"
+  [ -n "$id" ] || die "usage: cosmo-agent logs <agent-id> [--live | --raw | --replay]"
 
   require_cmd jq
   local state_file="${STATE_DIR}/${id}.json"
   [ -f "$state_file" ] || die "no agent found with id: ${id}"
 
-  local pane_id
-  pane_id=$(jq -r '.tmux_pane' "$state_file")
+  local log_file
+  log_file=$(jq -r '.log_file // empty' "$state_file")
 
-  if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
-    tmux capture-pane -t "$pane_id" -p -S -500
-  else
-    echo "Pane ${pane_id} is no longer alive. No logs available."
-    echo "(Tmux pane output is only available while the pane exists.)"
-  fi
+  case "$mode" in
+    --raw)
+      # Dump the raw JSONL log
+      [ -n "$log_file" ] && [ -f "$log_file" ] || die "no log file for agent ${id}"
+      cat "$log_file"
+      ;;
+    --replay)
+      # Re-format the saved log through the stream formatter
+      [ -n "$log_file" ] && [ -f "$log_file" ] || die "no log file for agent ${id}"
+      _format_stream < "$log_file"
+      ;;
+    --live|*)
+      # Show live tmux pane if available, otherwise replay from log
+      local pane_id
+      pane_id=$(jq -r '.tmux_pane' "$state_file")
+      if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+        tmux capture-pane -t "$pane_id" -p -S -500
+      elif [ -n "$log_file" ] && [ -f "$log_file" ]; then
+        _format_stream < "$log_file"
+      else
+        echo "No live pane or log file available for agent ${id}."
+      fi
+      ;;
+  esac
 }
 
 cmd_cleanup() {
@@ -243,7 +350,7 @@ cmd_cleanup() {
 
   require_cmd jq
   require_cmd git
-  ensure_state_dir
+  ensure_dirs
 
   if [ "$target" = "--all" ]; then
     local has_agents=false
@@ -330,7 +437,13 @@ Commands:
 
   status    Show all agents and their current state (running/exited/pr-created).
 
-  logs      Capture and display the tmux pane output for an agent.
+  logs      Show agent output. Displays live tmux pane if running,
+            or replays from saved log if finished.
+
+            Options:
+              --live     Show live pane or replay from log (default)
+              --replay   Re-format the saved JSON log
+              --raw      Dump the raw JSONL log file
 
   cleanup   Remove an agent's worktree, tmux pane, and state file.
             Use --all to clean up all agents.
@@ -358,6 +471,7 @@ main() {
     logs)    cmd_logs "$@" ;;
     cleanup) cmd_cleanup "$@" ;;
     help|--help|-h) cmd_help ;;
+    _format-stream) _format_stream ;;
     *)       die "unknown command: ${cmd}. Run 'cosmo-agent help' for usage." ;;
   esac
 }

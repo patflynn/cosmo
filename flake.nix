@@ -250,9 +250,16 @@
         };
       };
 
-      devShells.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.mkShell {
-        inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
-        buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages;
-      };
+      devShells.x86_64-linux.default =
+        let
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          klaus = pkgs.writeShellScriptBin "klaus" ''
+            exec "$(git rev-parse --show-toplevel)/scripts/cosmo-agent" "$@"
+          '';
+        in
+        pkgs.mkShell {
+          inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
+          buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages ++ [ klaus ];
+        };
     };
 }

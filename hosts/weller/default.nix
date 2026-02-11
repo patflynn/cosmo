@@ -39,6 +39,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Seagate FireCuda 510 firmware crashes with APST power saving (#263)
+  boot.kernelParams = [ "nvme_core.default_ps_max_latency_us=0" ];
+
   # ---------------------------------------------------------------------------
   # Filesystem - Btrfs with LUKS encryption (managed by disko)
   # ---------------------------------------------------------------------------

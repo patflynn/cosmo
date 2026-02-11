@@ -1,0 +1,631 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# cosmo-agent — Multi-agent orchestration for Claude Code
+# Creates isolated git worktrees, launches autonomous claude sessions in tmux panes,
+# and tracks agent state for status checking and cleanup.
+
+WORKTREE_BASE="/tmp/cosmo-agent"
+DEFAULT_BUDGET="5.00"
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+die() { echo "error: $*" >&2; exit 1; }
+
+require_cmd() {
+  command -v "$1" &>/dev/null || die "'$1' is required but not found in PATH"
+}
+
+require_tmux() {
+  [ -n "${TMUX:-}" ] || die "cosmo-agent must be run inside a tmux session"
+}
+
+
+gen_id() {
+  local ts rand
+  ts=$(date +%Y%m%d-%H%M)
+  rand=$(head -c 2 /dev/urandom | xxd -p)
+  echo "${ts}-${rand}"
+}
+
+repo_root() {
+  git rev-parse --show-toplevel 2>/dev/null || die "not inside a git repository"
+}
+
+DATA_BRANCH="cosmo-agent/data"
+
+git_dir() {
+  # Use --git-common-dir so this works from agent worktrees too
+  local d
+  d=$(git rev-parse --git-common-dir 2>/dev/null) || die "not inside a git repository"
+  # Ensure absolute path (--git-common-dir returns relative in main worktree)
+  (cd "$d" && pwd)
+}
+
+# Local cache in .git/cosmo-agent/ for active runs; synced to orphan branch on completion
+_state_dir=""
+_log_dir=""
+init_dirs() {
+  if [ -z "$_state_dir" ]; then
+    local gd
+    gd=$(git_dir)
+    _state_dir="${gd}/cosmo-agent/runs"
+    _log_dir="${gd}/cosmo-agent/logs"
+  fi
+  mkdir -p "$_state_dir" "$_log_dir"
+}
+
+state_dir() { init_dirs; echo "$_state_dir"; }
+log_dir()   { init_dirs; echo "$_log_dir"; }
+
+# ── Stream Formatter ─────────────────────────────────────────────────────────
+
+# Reads stream-json from stdin and prints human-readable progress to stdout.
+# Each JSON line is parsed to show tool calls, results, and text output.
+_format_stream() {
+  local line type subtype
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null) || continue
+
+    case "$type" in
+      system)
+        subtype=$(echo "$line" | jq -r '.subtype // empty')
+        if [ "$subtype" = "init" ]; then
+          local model
+          model=$(echo "$line" | jq -r '.model // "unknown"')
+          echo "── session started (model: ${model}) ──"
+        fi
+        ;;
+      assistant)
+        # Parse content blocks from the assistant message
+        local num_blocks
+        num_blocks=$(echo "$line" | jq '.message.content | length' 2>/dev/null) || continue
+        for ((i=0; i<num_blocks; i++)); do
+          local block_type
+          block_type=$(echo "$line" | jq -r ".message.content[$i].type")
+          case "$block_type" in
+            text)
+              local text
+              text=$(echo "$line" | jq -r ".message.content[$i].text")
+              echo "$text"
+              ;;
+            tool_use)
+              local tool_name tool_input_summary
+              tool_name=$(echo "$line" | jq -r ".message.content[$i].name")
+              # Show a compact summary of what the tool is doing
+              case "$tool_name" in
+                Read)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.file_path // empty")
+                  echo "▶ Read ${tool_input_summary}"
+                  ;;
+                Edit)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.file_path // empty")
+                  echo "▶ Edit ${tool_input_summary}"
+                  ;;
+                Write)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.file_path // empty")
+                  echo "▶ Write ${tool_input_summary}"
+                  ;;
+                Bash)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.command // empty" | head -1)
+                  echo "▶ Bash: ${tool_input_summary}"
+                  ;;
+                Glob)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.pattern // empty")
+                  echo "▶ Glob ${tool_input_summary}"
+                  ;;
+                Grep)
+                  tool_input_summary=$(echo "$line" | jq -r ".message.content[$i].input.pattern // empty")
+                  echo "▶ Grep ${tool_input_summary}"
+                  ;;
+                *)
+                  echo "▶ ${tool_name}"
+                  ;;
+              esac
+              ;;
+          esac
+        done
+        ;;
+      result)
+        local cost duration
+        cost=$(echo "$line" | jq -r '.total_cost_usd // 0')
+        duration=$(echo "$line" | jq -r '.duration_ms // 0')
+        local duration_s
+        duration_s=$(awk "BEGIN {printf \"%.1f\", ${duration}/1000}")
+        echo ""
+        echo "── done (${duration_s}s, \$${cost}) ──"
+        ;;
+    esac
+  done
+}
+
+# ── Post-Run Finalizer ───────────────────────────────────────────────────────
+
+# Parses the JSONL log after a run completes and updates the state file
+# with cost, duration, and PR URL.
+_finalize_run() {
+  local id="$1"
+  local state_file="$(state_dir)/${id}.json"
+  local log_file="$(log_dir)/${id}.jsonl"
+
+  [ -f "$state_file" ] || return 0
+  [ -f "$log_file" ] || return 0
+
+  # Extract cost and duration from the result event
+  local cost duration
+  cost=$(jq -r 'select(.type == "result") | .total_cost_usd // empty' "$log_file" 2>/dev/null | tail -1)
+  duration=$(jq -r 'select(.type == "result") | .duration_ms // empty' "$log_file" 2>/dev/null | tail -1)
+
+  # Look for PR URL in the log — search assistant text for github PR URLs
+  local pr_url
+  pr_url=$(jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "text") | .text' "$log_file" 2>/dev/null \
+    | grep -oP 'https://github\.com/[^\s)]+/pull/[0-9]+' | tail -1 || echo "")
+
+  # If not found in text, try checking gh for a PR on this branch
+  if [ -z "$pr_url" ]; then
+    local branch
+    branch=$(jq -r '.branch' "$state_file")
+    pr_url=$(gh pr list --head "$branch" --json url --jq '.[0].url' 2>/dev/null || echo "")
+  fi
+
+  # Update state file
+  local tmp
+  tmp=$(mktemp)
+  jq \
+    --arg cost "${cost:-}" \
+    --arg duration "${duration:-}" \
+    --arg pr_url "${pr_url:-}" \
+    '. + {
+      cost_usd: (if $cost == "" then null else ($cost | tonumber) end),
+      duration_ms: (if $duration == "" then null else ($duration | tonumber) end),
+      pr_url: (if $pr_url == "" then null else $pr_url end)
+    }' "$state_file" > "$tmp" && mv "$tmp" "$state_file"
+
+  # Sync to the persistent data branch
+  _sync_to_data_branch "$id"
+}
+
+# ── Data Branch Sync ─────────────────────────────────────────────────────────
+
+# Ensures the orphan data branch exists. Creates it with an empty initial commit
+# if it doesn't. Uses git plumbing so nothing in the working tree is touched.
+_ensure_data_branch() {
+  local root
+  root=$(repo_root)
+  if ! git -C "$root" rev-parse --verify "$DATA_BRANCH" &>/dev/null; then
+    local empty_tree init_commit
+    empty_tree=$(git -C "$root" hash-object -t tree /dev/null)
+    init_commit=$(echo "Initialize cosmo-agent run data" | git -C "$root" commit-tree "$empty_tree")
+    git -C "$root" update-ref "refs/heads/${DATA_BRANCH}" "$init_commit"
+  fi
+}
+
+# Commits a run's state file and JSONL log to the orphan data branch, then pushes.
+# Uses a temporary index so the working tree and current branch are untouched.
+_sync_to_data_branch() {
+  local id="$1"
+  local state_file="$(state_dir)/${id}.json"
+  local log_file="$(log_dir)/${id}.jsonl"
+  local root
+  root=$(repo_root)
+
+  _ensure_data_branch
+
+  local parent_commit tmp_index
+  parent_commit=$(git -C "$root" rev-parse "$DATA_BRANCH")
+  tmp_index=$(mktemp)
+
+  # Read current tree into a temporary index
+  GIT_INDEX_FILE="$tmp_index" git -C "$root" read-tree "$DATA_BRANCH"
+
+  # Add run state file
+  if [ -f "$state_file" ]; then
+    local blob
+    blob=$(git -C "$root" hash-object -w "$state_file")
+    GIT_INDEX_FILE="$tmp_index" git -C "$root" update-index --add --cacheinfo "100644,${blob},runs/${id}.json"
+  fi
+
+  # Add log file
+  if [ -f "$log_file" ]; then
+    local blob
+    blob=$(git -C "$root" hash-object -w "$log_file")
+    GIT_INDEX_FILE="$tmp_index" git -C "$root" update-index --add --cacheinfo "100644,${blob},logs/${id}.jsonl"
+  fi
+
+  # Write tree, create commit, update ref
+  local new_tree new_commit
+  new_tree=$(GIT_INDEX_FILE="$tmp_index" git -C "$root" write-tree)
+  new_commit=$(echo "Run ${id}" | git -C "$root" commit-tree "$new_tree" -p "$parent_commit")
+  git -C "$root" update-ref "refs/heads/${DATA_BRANCH}" "$new_commit"
+
+  rm -f "$tmp_index"
+
+  # Push the data branch
+  git -C "$root" push origin "$DATA_BRANCH" --quiet 2>/dev/null || true
+}
+
+# ── System Prompt ────────────────────────────────────────────────────────────
+
+agent_system_prompt() {
+  local id="$1" issue="${2:-}"
+  local issue_line=""
+  if [ -n "$issue" ]; then
+    issue_line="
+- Reference 'Fixes #${issue}' in the PR body so GitHub auto-closes the issue."
+  fi
+
+  cat <<SYSPROMPT
+You are an autonomous agent working on the 'cosmo' NixOS/Home Manager flake repository.
+
+## Repo Structure
+- flake.nix: Entry point defining nixosConfigurations and homeConfigurations
+- hosts/: Host-specific NixOS configs (classic-laddie, johnny-walker, makers-nix, weller)
+- home/: Home Manager modules (common.nix, workstation.nix, linux.nix, hyprland.nix, waybar.nix, etc.)
+- modules/: Reusable NixOS modules
+- secrets/: Agenix-managed encrypted secrets
+
+## Workflow
+1. Make your changes in this worktree.
+2. Run 'git add' on any new files (required for nix flake to see them).
+3. Run 'nix flake check' to validate.
+4. Create a focused git commit. Do NOT include 'Co-Authored-By' lines mentioning Claude or Anthropic. Do NOT mention AI in commit messages.
+5. Push your branch: git push -u origin HEAD
+6. Create a PR. Include the following footer at the bottom of the PR body (after your summary and test plan):
+   Run: ${id}${issue_line}
+
+## Conventions
+- Nix language, 2-space indentation
+- Functional, declarative style
+- Never commit directly to main — always use a PR branch
+SYSPROMPT
+}
+
+# ── Subcommands ──────────────────────────────────────────────────────────────
+
+cmd_launch() {
+  local prompt="" issue="" budget="$DEFAULT_BUDGET"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --issue)   issue="$2"; shift 2 ;;
+      --budget)  budget="$2"; shift 2 ;;
+      -*)        die "unknown option: $1" ;;
+      *)
+        if [ -z "$prompt" ]; then
+          prompt="$1"; shift
+        else
+          die "unexpected argument: $1"
+        fi
+        ;;
+    esac
+  done
+
+  [ -n "$prompt" ] || die "usage: cosmo-agent launch \"<prompt>\" [--issue N] [--budget N]"
+
+  require_cmd claude
+  require_cmd git
+  require_cmd gh
+  require_cmd jq
+  require_tmux
+  init_dirs
+
+  local id root worktree branch
+  id=$(gen_id)
+  root=$(repo_root)
+  branch="agent/${id}"
+  worktree="${WORKTREE_BASE}/${id}"
+
+  echo "Launching agent ${id}..."
+
+  # Fetch latest main
+  git -C "$root" fetch origin main --quiet
+
+  # Create worktree on a new branch based on origin/main
+  git -C "$root" worktree add "$worktree" -b "$branch" origin/main --quiet
+  echo "  worktree: ${worktree}"
+  echo "  branch:   ${branch}"
+
+  # Build the system prompt
+  local sys_prompt
+  sys_prompt=$(agent_system_prompt "$id" "$issue")
+
+  local log_file="$(log_dir)/${id}.jsonl"
+
+  # Build the claude command with streaming JSON output
+  local claude_cmd
+  claude_cmd="claude -p --dangerously-skip-permissions --verbose"
+  claude_cmd+=" --output-format stream-json"
+  claude_cmd+=" --max-budget-usd ${budget}"
+  claude_cmd+=" --append-system-prompt $(printf '%q' "$sys_prompt")"
+  claude_cmd+=" $(printf '%q' "$prompt")"
+
+  # Wrap: run claude, pipe through tee (for log) and formatter (for display), then finalize
+  local script_path
+  script_path="$(repo_root)/scripts/cosmo-agent"
+  local pane_cmd
+  pane_cmd="cd $(printf '%q' "$worktree") && ${claude_cmd} | tee $(printf '%q' "$log_file") | $(printf '%q' "$script_path") _format-stream; $(printf '%q' "$script_path") _finalize $(printf '%q' "$id"); echo ''; echo \"Run ${id} exited (status: \${PIPESTATUS[0]}). Press Enter to close.\"; read"
+
+  # Launch in a new tmux pane (no focus switch)
+  local pane_id
+  pane_id=$(tmux split-window -v -d -P -F '#{pane_id}' "$pane_cmd")
+
+  # Title the pane for identification
+  tmux select-pane -t "$pane_id" -T "agent:${id}"
+
+  # Rebalance layout
+  tmux select-layout even-vertical 2>/dev/null || true
+
+  # Write state file
+  local created_at
+  created_at=$(date -Iseconds)
+  jq -n \
+    --arg id "$id" \
+    --arg prompt "$prompt" \
+    --arg issue "$issue" \
+    --arg branch "$branch" \
+    --arg worktree "$worktree" \
+    --arg tmux_pane "$pane_id" \
+    --arg budget "$budget" \
+    --arg log_file "$log_file" \
+    --arg created_at "$created_at" \
+    '{
+      id: $id,
+      prompt: $prompt,
+      issue: (if $issue == "" then null else $issue end),
+      branch: $branch,
+      worktree: $worktree,
+      tmux_pane: $tmux_pane,
+      budget: $budget,
+      log_file: $log_file,
+      created_at: $created_at
+    }' > "$(state_dir)/${id}.json"
+
+  echo "  pane:     ${pane_id}"
+  echo "  budget:   \$${budget}"
+  echo "  log:      ${log_file}"
+  echo "  state:    $(state_dir)/${id}.json"
+  echo ""
+  echo "Agent ${id} is running. Use 'cosmo-agent status' to check progress."
+}
+
+cmd_status() {
+  require_cmd jq
+  init_dirs
+
+  local sd
+  sd=$(state_dir)
+
+  local has_agents=false
+  for f in "${sd}"/*.json; do
+    [ -f "$f" ] && has_agents=true && break
+  done
+  if [ "$has_agents" = false ]; then
+    echo "No agents found."
+    return 0
+  fi
+
+  printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "RUN ID" "STATUS" "COST" "ISSUE" "PR" "PROMPT"
+  printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "------" "------" "----" "-----" "--" "------"
+
+  for f in "${sd}"/*.json; do
+    [ -f "$f" ] || continue
+
+    local id prompt issue pane_id budget status pr_url cost_usd
+    id=$(jq -r '.id' "$f")
+    prompt=$(jq -r '.prompt' "$f")
+    issue=$(jq -r '.issue // "-"' "$f")
+    pane_id=$(jq -r '.tmux_pane' "$f")
+    budget=$(jq -r '.budget' "$f")
+    branch=$(jq -r '.branch' "$f")
+    pr_url=$(jq -r '.pr_url // "-"' "$f")
+    cost_usd=$(jq -r '.cost_usd // empty' "$f")
+
+    # Format cost: show actual if available, otherwise show budget
+    local cost_display
+    if [ -n "$cost_usd" ] && [ "$cost_usd" != "null" ]; then
+      cost_display=$(awk "BEGIN {printf \"\\$%.2f\", ${cost_usd}}")
+    else
+      cost_display="<\$${budget}"
+    fi
+
+    # Format PR: show short form
+    local pr_display="-"
+    if [ "$pr_url" != "-" ] && [ "$pr_url" != "null" ] && [ -n "$pr_url" ]; then
+      pr_display=$(echo "$pr_url" | grep -oP '#\K[0-9]+$' || echo "$pr_url")
+      pr_display="#${pr_display}"
+    fi
+
+    # Determine live status
+    if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+      status="running"
+    else
+      if [ "$pr_display" != "-" ]; then
+        status="pr-created"
+      else
+        status="exited"
+      fi
+    fi
+
+    # Truncate prompt for display
+    local display_prompt="${prompt:0:40}"
+    [ ${#prompt} -gt 40 ] && display_prompt="${display_prompt}..."
+
+    printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "$id" "$status" "$cost_display" "$issue" "$pr_display" "$display_prompt"
+  done
+}
+
+cmd_logs() {
+  local id="${1:-}" mode="${2:---live}"
+  [ -n "$id" ] || die "usage: cosmo-agent logs <agent-id> [--live | --raw | --replay]"
+
+  require_cmd jq
+  local state_file="$(state_dir)/${id}.json"
+  [ -f "$state_file" ] || die "no agent found with id: ${id}"
+
+  local log_file
+  log_file=$(jq -r '.log_file // empty' "$state_file")
+
+  case "$mode" in
+    --raw)
+      # Dump the raw JSONL log
+      [ -n "$log_file" ] && [ -f "$log_file" ] || die "no log file for agent ${id}"
+      cat "$log_file"
+      ;;
+    --replay)
+      # Re-format the saved log through the stream formatter
+      [ -n "$log_file" ] && [ -f "$log_file" ] || die "no log file for agent ${id}"
+      _format_stream < "$log_file"
+      ;;
+    --live|*)
+      # Show live tmux pane if available, otherwise replay from log
+      local pane_id
+      pane_id=$(jq -r '.tmux_pane' "$state_file")
+      if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+        tmux capture-pane -t "$pane_id" -p -S -500
+      elif [ -n "$log_file" ] && [ -f "$log_file" ]; then
+        _format_stream < "$log_file"
+      else
+        echo "No live pane or log file available for agent ${id}."
+      fi
+      ;;
+  esac
+}
+
+cmd_cleanup() {
+  local target="${1:-}"
+  [ -n "$target" ] || die "usage: cosmo-agent cleanup <agent-id> | --all"
+
+  require_cmd jq
+  require_cmd git
+  init_dirs
+
+  local sd
+  sd=$(state_dir)
+
+  if [ "$target" = "--all" ]; then
+    local has_agents=false
+    for f in "${sd}"/*.json; do
+      [ -f "$f" ] && has_agents=true && break
+    done
+    if [ "$has_agents" = false ]; then
+      echo "No agents to clean up."
+      return 0
+    fi
+    for f in "${sd}"/*.json; do
+      [ -f "$f" ] || continue
+      local agent_id
+      agent_id=$(jq -r '.id' "$f")
+      cleanup_agent "$agent_id"
+    done
+  else
+    cleanup_agent "$target"
+  fi
+}
+
+cleanup_agent() {
+  local id="$1"
+  local state_file="$(state_dir)/${id}.json"
+  [ -f "$state_file" ] || die "no agent found with id: ${id}"
+
+  local pane_id worktree branch
+  pane_id=$(jq -r '.tmux_pane' "$state_file")
+  worktree=$(jq -r '.worktree' "$state_file")
+  branch=$(jq -r '.branch' "$state_file")
+
+  echo "Cleaning up agent ${id}..."
+
+  # 1. Kill tmux pane if still alive
+  if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+    tmux kill-pane -t "$pane_id" 2>/dev/null || true
+    echo "  killed tmux pane"
+  fi
+
+  # 2. Remove worktree
+  if [ -d "$worktree" ]; then
+    git worktree remove --force "$worktree" 2>/dev/null || true
+    echo "  removed worktree"
+  fi
+
+  # 3. Delete branches if PR was merged
+  local pr_state
+  pr_state=$(gh pr list --head "$branch" --json state --jq '.[0].state' 2>/dev/null || echo "")
+  if [ "$pr_state" = "MERGED" ]; then
+    git branch -D "$branch" 2>/dev/null || true
+    git push origin --delete "$branch" 2>/dev/null || true
+    echo "  deleted merged branch"
+  elif [ -z "$pr_state" ] || [ "$pr_state" = "null" ]; then
+    # No PR exists — clean up local branch, leave remote if it was pushed
+    git branch -D "$branch" 2>/dev/null || true
+    echo "  deleted local branch"
+  fi
+
+  # 4. Remove state file
+  rm -f "$state_file"
+  echo "  removed state file"
+  echo "  done."
+}
+
+cmd_help() {
+  cat <<'HELP'
+cosmo-agent — Multi-agent orchestration for Claude Code
+
+Usage:
+  cosmo-agent launch "<prompt>" [--issue N] [--budget N]
+  cosmo-agent status
+  cosmo-agent logs <agent-id>
+  cosmo-agent cleanup <agent-id>
+  cosmo-agent cleanup --all
+  cosmo-agent help
+
+Commands:
+  launch    Create a git worktree and launch an autonomous claude session
+            in a new tmux pane. Requires tmux.
+
+            Options:
+              --issue N    GitHub issue number to reference in the PR
+              --budget N   Max spend in USD (default: 5.00)
+
+  status    Show all agents and their current state (running/exited/pr-created).
+
+  logs      Show agent output. Displays live tmux pane if running,
+            or replays from saved log if finished.
+
+            Options:
+              --live     Show live pane or replay from log (default)
+              --replay   Re-format the saved JSON log
+              --raw      Dump the raw JSONL log file
+
+  cleanup   Remove an agent's worktree, tmux pane, and state file.
+            Use --all to clean up all agents.
+
+  help      Show this help message.
+
+Examples:
+  cosmo-agent launch "Add bluetooth config to weller" --issue 42 --budget 3
+  cosmo-agent launch "Fix waybar clock format" --budget 2
+  cosmo-agent status
+  cosmo-agent logs 20260210-1430-a3f2
+  cosmo-agent cleanup --all
+HELP
+}
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+
+  case "$cmd" in
+    launch)  cmd_launch "$@" ;;
+    status)  cmd_status "$@" ;;
+    logs)    cmd_logs "$@" ;;
+    cleanup) cmd_cleanup "$@" ;;
+    help|--help|-h) cmd_help ;;
+    _format-stream) _format_stream ;;
+    _finalize) _finalize_run "$@" ;;
+    *)       die "unknown command: ${cmd}. Run 'cosmo-agent help' for usage." ;;
+  esac
+}
+
+main "$@"

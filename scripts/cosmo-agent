@@ -187,6 +187,45 @@ _finalize_run() {
   _sync_to_data_branch "$id"
 }
 
+# ── Log Sensitivity Check ────────────────────────────────────────────────────
+
+# Scans a JSONL log for common sensitive data patterns.
+# Returns 0 if clean, 1 if potentially sensitive data is found.
+# Matched categories are printed to stdout.
+_check_log_sensitivity() {
+  local log_file="$1"
+  local found=()
+
+  # Private IPv4 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x)
+  if grep -qP '(?<![0-9])(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(?:1[6-9]|2[0-9]|3[01])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3})(?![0-9])' "$log_file"; then
+    found+=("private IP addresses")
+  fi
+
+  # SSH private key markers
+  if grep -qP 'OPENSSH PRIVATE KEY|RSA PRIVATE KEY|EC PRIVATE KEY|DSA PRIVATE KEY' "$log_file"; then
+    found+=("SSH private key material")
+  fi
+
+  # Common secret/credential patterns
+  if grep -qiP '(?:password|token|secret|api_key|apikey|api-key)\s*[=:]' "$log_file"; then
+    found+=("credential patterns (password/token/secret/api_key)")
+  fi
+
+  # Decrypted .age secret contents (agenix outputs)
+  if grep -qP '\.age\b.*:\s*\S' "$log_file"; then
+    found+=(".age secret file references")
+  fi
+
+  if [ ${#found[@]} -eq 0 ]; then
+    return 0
+  fi
+
+  for category in "${found[@]}"; do
+    echo "  - ${category}"
+  done
+  return 1
+}
+
 # ── Data Branch Sync ─────────────────────────────────────────────────────────
 
 # Ensures the orphan data branch exists. Creates it with an empty initial commit
@@ -204,14 +243,28 @@ _ensure_data_ref() {
 
 # Commits a run's state file and JSONL log to the data ref, then pushes.
 # Uses a temporary index so the working tree and current branch are untouched.
+# Pass --force as $2 to bypass the sensitivity check for the log file.
 _sync_to_data_branch() {
   local id="$1"
+  local force="${2:-}"
   local state_file="$(state_dir)/${id}.json"
   local log_file="$(log_dir)/${id}.jsonl"
   local root
   root=$(repo_root)
 
   _ensure_data_ref
+
+  # Check log for sensitive data (unless --force)
+  local skip_log=false
+  local sensitivity_output=""
+  if [ -f "$log_file" ] && [ "$force" != "--force" ]; then
+    sensitivity_output=$(_check_log_sensitivity "$log_file" 2>&1) || {
+      skip_log=true
+      echo "⚠ Skipping log push for ${id}: potentially sensitive data detected"
+      echo "$sensitivity_output"
+      echo "  Log preserved locally at: ${log_file}. Use 'cosmo-agent push-log ${id}' to push manually."
+    }
+  fi
 
   local parent_commit tmp_index
   parent_commit=$(git -C "$root" rev-parse "$DATA_REF")
@@ -220,15 +273,15 @@ _sync_to_data_branch() {
   # Read current tree into a temporary index
   GIT_INDEX_FILE="$tmp_index" git -C "$root" read-tree "$DATA_REF"
 
-  # Add run state file
+  # Add run state file (always safe — metadata only)
   if [ -f "$state_file" ]; then
     local blob
     blob=$(git -C "$root" hash-object -w "$state_file")
     GIT_INDEX_FILE="$tmp_index" git -C "$root" update-index --add --cacheinfo "100644,${blob},runs/${id}.json"
   fi
 
-  # Add log file
-  if [ -f "$log_file" ]; then
+  # Add log file (only if sensitivity check passed or forced)
+  if [ -f "$log_file" ] && [ "$skip_log" = false ]; then
     local blob
     blob=$(git -C "$root" hash-object -w "$log_file")
     GIT_INDEX_FILE="$tmp_index" git -C "$root" update-index --add --cacheinfo "100644,${blob},logs/${id}.jsonl"
@@ -636,6 +689,25 @@ cleanup_agent() {
   echo "  done."
 }
 
+cmd_push_log() {
+  local id="${1:-}"
+  [ -n "$id" ] || die "usage: cosmo-agent push-log <agent-id>"
+
+  require_cmd jq
+  require_cmd git
+  init_dirs
+
+  local state_file="$(state_dir)/${id}.json"
+  [ -f "$state_file" ] || die "no agent found with id: ${id}"
+
+  local log_file="$(log_dir)/${id}.jsonl"
+  [ -f "$log_file" ] || die "no log file for agent ${id}"
+
+  echo "Force-pushing log for ${id} (bypassing sensitivity check)..."
+  _sync_to_data_branch "$id" --force
+  echo "Done."
+}
+
 cmd_help() {
   cat <<'HELP'
 cosmo-agent — Multi-agent orchestration for Claude Code
@@ -647,6 +719,7 @@ Usage:
   cosmo-agent logs <agent-id>
   cosmo-agent cleanup <agent-id>
   cosmo-agent cleanup --all
+  cosmo-agent push-log <agent-id>
   cosmo-agent help
 
 Commands:
@@ -674,6 +747,9 @@ Commands:
   cleanup   Remove a run's worktree, tmux pane, and state file.
             Use --all to clean up all runs.
 
+  push-log  Force-push a previously skipped log to the data branch.
+            Use after reviewing a sensitivity warning and deciding it's safe.
+
   help      Show this help message.
 
 Examples:
@@ -683,6 +759,7 @@ Examples:
   cosmo-agent status
   cosmo-agent logs 20260210-1430-a3f2
   cosmo-agent cleanup --all
+  cosmo-agent push-log 20260210-1430-a3f2
 HELP
 }
 
@@ -697,7 +774,8 @@ main() {
     session) cmd_session "$@" ;;
     status)  cmd_status "$@" ;;
     logs)    cmd_logs "$@" ;;
-    cleanup) cmd_cleanup "$@" ;;
+    cleanup)  cmd_cleanup "$@" ;;
+    push-log) cmd_push_log "$@" ;;
     help|--help|-h) cmd_help ;;
     _format-stream) _format_stream ;;
     _finalize) _finalize_run "$@" ;;

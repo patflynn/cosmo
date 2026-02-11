@@ -83,8 +83,8 @@ When the run finishes, the finalizer:
 
 1. Parses the JSONL log for cost, duration, and PR URL
 2. Updates the local state file
-3. Commits both files to the `cosmo-agent/data` orphan branch using git plumbing (temporary index, no working tree impact)
-4. Pushes the data branch
+3. Commits both files to `refs/cosmo-agent/data` using git plumbing (temporary index, no working tree impact)
+4. Pushes the data ref
 
 ### Data storage
 
@@ -93,12 +93,14 @@ When the run finishes, the finalizer:
 ├── runs/<id>.json             Run metadata: prompt, branch, cost, PR URL, etc.
 └── logs/<id>.jsonl            Full Claude transcript: every tool call and response
 
-cosmo-agent/data branch        Orphan branch (pushable, browsable, persistent)
+refs/cosmo-agent/data          Custom git ref (pushable, persistent, not a branch)
 ├── runs/<id>.json
 └── logs/<id>.jsonl
 ```
 
-The orphan branch is committed to without touching the working tree — using `hash-object`, `update-index`, `write-tree`, and `commit-tree` against a temporary index file.
+Run data is stored under a custom git ref (`refs/cosmo-agent/data`) rather than a branch (`refs/heads/*`). This keeps it out of GitHub's branch list and avoids "recent pushes" banners. The ref is committed to without touching the working tree — using `hash-object`, `update-index`, `write-tree`, and `commit-tree` against a temporary index file.
+
+To inspect the data locally: `git log refs/cosmo-agent/data` or `git ls-tree -r refs/cosmo-agent/data`.
 
 ### Traceability
 

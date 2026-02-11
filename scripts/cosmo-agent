@@ -32,7 +32,8 @@ repo_root() {
   git rev-parse --show-toplevel 2>/dev/null || die "not inside a git repository"
 }
 
-DATA_BRANCH="cosmo-agent/data"
+# Custom ref namespace — avoids showing up as a branch in GitHub's UI
+DATA_REF="refs/cosmo-agent/data"
 
 git_dir() {
   # Use --git-common-dir so this works from agent worktrees too
@@ -190,18 +191,18 @@ _finalize_run() {
 
 # Ensures the orphan data branch exists. Creates it with an empty initial commit
 # if it doesn't. Uses git plumbing so nothing in the working tree is touched.
-_ensure_data_branch() {
+_ensure_data_ref() {
   local root
   root=$(repo_root)
-  if ! git -C "$root" rev-parse --verify "$DATA_BRANCH" &>/dev/null; then
+  if ! git -C "$root" rev-parse --verify "$DATA_REF" &>/dev/null; then
     local empty_tree init_commit
     empty_tree=$(git -C "$root" hash-object -t tree /dev/null)
     init_commit=$(echo "Initialize cosmo-agent run data" | git -C "$root" commit-tree "$empty_tree")
-    git -C "$root" update-ref "refs/heads/${DATA_BRANCH}" "$init_commit"
+    git -C "$root" update-ref "$DATA_REF" "$init_commit"
   fi
 }
 
-# Commits a run's state file and JSONL log to the orphan data branch, then pushes.
+# Commits a run's state file and JSONL log to the data ref, then pushes.
 # Uses a temporary index so the working tree and current branch are untouched.
 _sync_to_data_branch() {
   local id="$1"
@@ -210,14 +211,14 @@ _sync_to_data_branch() {
   local root
   root=$(repo_root)
 
-  _ensure_data_branch
+  _ensure_data_ref
 
   local parent_commit tmp_index
-  parent_commit=$(git -C "$root" rev-parse "$DATA_BRANCH")
+  parent_commit=$(git -C "$root" rev-parse "$DATA_REF")
   tmp_index=$(mktemp)
 
   # Read current tree into a temporary index
-  GIT_INDEX_FILE="$tmp_index" git -C "$root" read-tree "$DATA_BRANCH"
+  GIT_INDEX_FILE="$tmp_index" git -C "$root" read-tree "$DATA_REF"
 
   # Add run state file
   if [ -f "$state_file" ]; then
@@ -237,12 +238,12 @@ _sync_to_data_branch() {
   local new_tree new_commit
   new_tree=$(GIT_INDEX_FILE="$tmp_index" git -C "$root" write-tree)
   new_commit=$(echo "Run ${id}" | git -C "$root" commit-tree "$new_tree" -p "$parent_commit")
-  git -C "$root" update-ref "refs/heads/${DATA_BRANCH}" "$new_commit"
+  git -C "$root" update-ref "$DATA_REF" "$new_commit"
 
   rm -f "$tmp_index"
 
-  # Push the data branch
-  git -C "$root" push origin "$DATA_BRANCH" --quiet 2>/dev/null || true
+  # Push to matching ref on remote (not under refs/heads/, so GitHub won't show it as a branch)
+  git -C "$root" push origin "${DATA_REF}:${DATA_REF}" --quiet 2>/dev/null || true
 }
 
 # ── System Prompt ────────────────────────────────────────────────────────────

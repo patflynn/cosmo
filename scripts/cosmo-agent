@@ -119,10 +119,53 @@ _format_stream() {
   done
 }
 
+# ── Post-Run Finalizer ───────────────────────────────────────────────────────
+
+# Parses the JSONL log after a run completes and updates the state file
+# with cost, duration, and PR URL.
+_finalize_run() {
+  local id="$1"
+  local state_file="${STATE_DIR}/${id}.json"
+  local log_file="${LOG_DIR}/${id}.jsonl"
+
+  [ -f "$state_file" ] || return 0
+  [ -f "$log_file" ] || return 0
+
+  # Extract cost and duration from the result event
+  local cost duration
+  cost=$(jq -r 'select(.type == "result") | .total_cost_usd // empty' "$log_file" 2>/dev/null | tail -1)
+  duration=$(jq -r 'select(.type == "result") | .duration_ms // empty' "$log_file" 2>/dev/null | tail -1)
+
+  # Look for PR URL in the log — search assistant text for github PR URLs
+  local pr_url
+  pr_url=$(jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "text") | .text' "$log_file" 2>/dev/null \
+    | grep -oP 'https://github\.com/[^\s)]+/pull/[0-9]+' | tail -1 || echo "")
+
+  # If not found in text, try checking gh for a PR on this branch
+  if [ -z "$pr_url" ]; then
+    local branch
+    branch=$(jq -r '.branch' "$state_file")
+    pr_url=$(gh pr list --head "$branch" --json url --jq '.[0].url' 2>/dev/null || echo "")
+  fi
+
+  # Update state file
+  local tmp
+  tmp=$(mktemp)
+  jq \
+    --arg cost "${cost:-}" \
+    --arg duration "${duration:-}" \
+    --arg pr_url "${pr_url:-}" \
+    '. + {
+      cost_usd: (if $cost == "" then null else ($cost | tonumber) end),
+      duration_ms: (if $duration == "" then null else ($duration | tonumber) end),
+      pr_url: (if $pr_url == "" then null else $pr_url end)
+    }' "$state_file" > "$tmp" && mv "$tmp" "$state_file"
+}
+
 # ── System Prompt ────────────────────────────────────────────────────────────
 
 agent_system_prompt() {
-  local issue="${1:-}"
+  local id="$1" issue="${2:-}"
   local issue_line=""
   if [ -n "$issue" ]; then
     issue_line="
@@ -145,7 +188,8 @@ You are an autonomous agent working on the 'cosmo' NixOS/Home Manager flake repo
 3. Run 'nix flake check' to validate.
 4. Create a focused git commit. Do NOT include 'Co-Authored-By' lines mentioning Claude or Anthropic. Do NOT mention AI in commit messages.
 5. Push your branch: git push -u origin HEAD
-6. Create a PR with: gh pr create --fill${issue_line}
+6. Create a PR. Include the following footer at the bottom of the PR body (after your summary and test plan):
+   Run: ${id}${issue_line}
 
 ## Conventions
 - Nix language, 2-space indentation
@@ -201,7 +245,7 @@ cmd_launch() {
 
   # Build the system prompt
   local sys_prompt
-  sys_prompt=$(agent_system_prompt "$issue")
+  sys_prompt=$(agent_system_prompt "$id" "$issue")
 
   local log_file="${LOG_DIR}/${id}.jsonl"
 
@@ -213,9 +257,11 @@ cmd_launch() {
   claude_cmd+=" --append-system-prompt $(printf '%q' "$sys_prompt")"
   claude_cmd+=" $(printf '%q' "$prompt")"
 
-  # Wrap: run claude, pipe through tee (for log) and formatter (for display)
+  # Wrap: run claude, pipe through tee (for log) and formatter (for display), then finalize
+  local script_path
+  script_path="$(repo_root)/scripts/cosmo-agent"
   local pane_cmd
-  pane_cmd="cd $(printf '%q' "$worktree") && ${claude_cmd} | tee $(printf '%q' "$log_file") | $(printf '%q' "$(repo_root)/scripts/cosmo-agent") _format-stream; echo ''; echo \"Agent ${id} exited (status: \${PIPESTATUS[0]}). Press Enter to close.\"; read"
+  pane_cmd="cd $(printf '%q' "$worktree") && ${claude_cmd} | tee $(printf '%q' "$log_file") | $(printf '%q' "$script_path") _format-stream; $(printf '%q' "$script_path") _finalize $(printf '%q' "$id"); echo ''; echo \"Run ${id} exited (status: \${PIPESTATUS[0]}). Press Enter to close.\"; read"
 
   # Launch in a new tmux pane (no focus switch)
   local pane_id
@@ -273,26 +319,42 @@ cmd_status() {
     return 0
   fi
 
-  printf "%-22s  %-10s  %-8s  %-6s  %s\n" "AGENT ID" "STATUS" "BUDGET" "ISSUE" "PROMPT"
-  printf "%-22s  %-10s  %-8s  %-6s  %s\n" "--------" "------" "------" "-----" "------"
+  printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "RUN ID" "STATUS" "COST" "ISSUE" "PR" "PROMPT"
+  printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "------" "------" "----" "-----" "--" "------"
 
   for f in "${STATE_DIR}"/*.json; do
     [ -f "$f" ] || continue
 
-    local id prompt issue pane_id budget status
+    local id prompt issue pane_id budget status pr_url cost_usd
     id=$(jq -r '.id' "$f")
     prompt=$(jq -r '.prompt' "$f")
     issue=$(jq -r '.issue // "-"' "$f")
     pane_id=$(jq -r '.tmux_pane' "$f")
     budget=$(jq -r '.budget' "$f")
     branch=$(jq -r '.branch' "$f")
+    pr_url=$(jq -r '.pr_url // "-"' "$f")
+    cost_usd=$(jq -r '.cost_usd // empty' "$f")
+
+    # Format cost: show actual if available, otherwise show budget
+    local cost_display
+    if [ -n "$cost_usd" ] && [ "$cost_usd" != "null" ]; then
+      cost_display=$(awk "BEGIN {printf \"\\$%.2f\", ${cost_usd}}")
+    else
+      cost_display="<\$${budget}"
+    fi
+
+    # Format PR: show short form
+    local pr_display="-"
+    if [ "$pr_url" != "-" ] && [ "$pr_url" != "null" ] && [ -n "$pr_url" ]; then
+      pr_display=$(echo "$pr_url" | grep -oP '#\K[0-9]+$' || echo "$pr_url")
+      pr_display="#${pr_display}"
+    fi
 
     # Determine live status
     if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
       status="running"
     else
-      # Check if a PR was created
-      if gh pr list --head "$branch" --json number --jq '.[0].number' 2>/dev/null | grep -q '^[0-9]'; then
+      if [ "$pr_display" != "-" ]; then
         status="pr-created"
       else
         status="exited"
@@ -300,10 +362,10 @@ cmd_status() {
     fi
 
     # Truncate prompt for display
-    local display_prompt="${prompt:0:50}"
-    [ ${#prompt} -gt 50 ] && display_prompt="${display_prompt}..."
+    local display_prompt="${prompt:0:40}"
+    [ ${#prompt} -gt 40 ] && display_prompt="${display_prompt}..."
 
-    printf "%-22s  %-10s  \$%-7s  %-6s  %s\n" "$id" "$status" "$budget" "$issue" "$display_prompt"
+    printf "%-22s  %-10s  %-8s  %-6s  %-30s  %s\n" "$id" "$status" "$cost_display" "$issue" "$pr_display" "$display_prompt"
   done
 }
 
@@ -472,6 +534,7 @@ main() {
     cleanup) cmd_cleanup "$@" ;;
     help|--help|-h) cmd_help ;;
     _format-stream) _format_stream ;;
+    _finalize) _finalize_run "$@" ;;
     *)       die "unknown command: ${cmd}. Run 'cosmo-agent help' for usage." ;;
   esac
 }

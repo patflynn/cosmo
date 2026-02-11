@@ -1,0 +1,365 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# cosmo-agent — Multi-agent orchestration for Claude Code
+# Creates isolated git worktrees, launches autonomous claude sessions in tmux panes,
+# and tracks agent state for status checking and cleanup.
+
+STATE_DIR="${HOME}/.local/state/cosmo-agent/agents"
+WORKTREE_BASE="/tmp/cosmo-agent"
+DEFAULT_BUDGET="5.00"
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+die() { echo "error: $*" >&2; exit 1; }
+
+require_cmd() {
+  command -v "$1" &>/dev/null || die "'$1' is required but not found in PATH"
+}
+
+require_tmux() {
+  [ -n "${TMUX:-}" ] || die "cosmo-agent must be run inside a tmux session"
+}
+
+ensure_state_dir() {
+  mkdir -p "$STATE_DIR"
+}
+
+gen_id() {
+  local ts rand
+  ts=$(date +%Y%m%d-%H%M)
+  rand=$(head -c 2 /dev/urandom | xxd -p)
+  echo "${ts}-${rand}"
+}
+
+repo_root() {
+  git rev-parse --show-toplevel 2>/dev/null || die "not inside a git repository"
+}
+
+# ── System Prompt ────────────────────────────────────────────────────────────
+
+agent_system_prompt() {
+  local issue="${1:-}"
+  local issue_line=""
+  if [ -n "$issue" ]; then
+    issue_line="
+- Reference 'Fixes #${issue}' in the PR body so GitHub auto-closes the issue."
+  fi
+
+  cat <<SYSPROMPT
+You are an autonomous agent working on the 'cosmo' NixOS/Home Manager flake repository.
+
+## Repo Structure
+- flake.nix: Entry point defining nixosConfigurations and homeConfigurations
+- hosts/: Host-specific NixOS configs (classic-laddie, johnny-walker, makers-nix, weller)
+- home/: Home Manager modules (common.nix, workstation.nix, linux.nix, hyprland.nix, waybar.nix, etc.)
+- modules/: Reusable NixOS modules
+- secrets/: Agenix-managed encrypted secrets
+
+## Workflow
+1. Make your changes in this worktree.
+2. Run 'git add' on any new files (required for nix flake to see them).
+3. Run 'nix flake check' to validate.
+4. Create a focused git commit. Do NOT include 'Co-Authored-By' lines mentioning Claude or Anthropic. Do NOT mention AI in commit messages.
+5. Push your branch: git push -u origin HEAD
+6. Create a PR with: gh pr create --fill${issue_line}
+
+## Conventions
+- Nix language, 2-space indentation
+- Functional, declarative style
+- Never commit directly to main — always use a PR branch
+SYSPROMPT
+}
+
+# ── Subcommands ──────────────────────────────────────────────────────────────
+
+cmd_launch() {
+  local prompt="" issue="" budget="$DEFAULT_BUDGET"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --issue)   issue="$2"; shift 2 ;;
+      --budget)  budget="$2"; shift 2 ;;
+      -*)        die "unknown option: $1" ;;
+      *)
+        if [ -z "$prompt" ]; then
+          prompt="$1"; shift
+        else
+          die "unexpected argument: $1"
+        fi
+        ;;
+    esac
+  done
+
+  [ -n "$prompt" ] || die "usage: cosmo-agent launch \"<prompt>\" [--issue N] [--budget N]"
+
+  require_cmd claude
+  require_cmd git
+  require_cmd gh
+  require_cmd jq
+  require_tmux
+  ensure_state_dir
+
+  local id root worktree branch
+  id=$(gen_id)
+  root=$(repo_root)
+  branch="agent/${id}"
+  worktree="${WORKTREE_BASE}/${id}"
+
+  echo "Launching agent ${id}..."
+
+  # Fetch latest main
+  git -C "$root" fetch origin main --quiet
+
+  # Create worktree on a new branch based on origin/main
+  git -C "$root" worktree add "$worktree" -b "$branch" origin/main --quiet
+  echo "  worktree: ${worktree}"
+  echo "  branch:   ${branch}"
+
+  # Build the system prompt
+  local sys_prompt
+  sys_prompt=$(agent_system_prompt "$issue")
+
+  # Build the claude command that runs inside the pane
+  local claude_cmd
+  claude_cmd="claude -p --dangerously-skip-permissions"
+  claude_cmd+=" --max-budget-usd ${budget}"
+  claude_cmd+=" --append-system-prompt $(printf '%q' "$sys_prompt")"
+  claude_cmd+=" $(printf '%q' "$prompt")"
+
+  # Wrap so the pane stays open after claude exits
+  local pane_cmd
+  pane_cmd="cd $(printf '%q' "$worktree") && ${claude_cmd}; echo ''; echo \"Agent ${id} exited (status: \$?). Press Enter to close.\"; read"
+
+  # Launch in a new tmux pane (no focus switch)
+  local pane_id
+  pane_id=$(tmux split-window -v -d -P -F '#{pane_id}' "$pane_cmd")
+
+  # Title the pane for identification
+  tmux select-pane -t "$pane_id" -T "agent:${id}"
+
+  # Rebalance layout
+  tmux select-layout even-vertical 2>/dev/null || true
+
+  # Write state file
+  local created_at
+  created_at=$(date -Iseconds)
+  jq -n \
+    --arg id "$id" \
+    --arg prompt "$prompt" \
+    --arg issue "$issue" \
+    --arg branch "$branch" \
+    --arg worktree "$worktree" \
+    --arg tmux_pane "$pane_id" \
+    --arg budget "$budget" \
+    --arg created_at "$created_at" \
+    '{
+      id: $id,
+      prompt: $prompt,
+      issue: (if $issue == "" then null else $issue end),
+      branch: $branch,
+      worktree: $worktree,
+      tmux_pane: $tmux_pane,
+      budget: $budget,
+      created_at: $created_at
+    }' > "${STATE_DIR}/${id}.json"
+
+  echo "  pane:     ${pane_id}"
+  echo "  budget:   \$${budget}"
+  echo "  state:    ${STATE_DIR}/${id}.json"
+  echo ""
+  echo "Agent ${id} is running. Use 'cosmo-agent status' to check progress."
+}
+
+cmd_status() {
+  require_cmd jq
+  ensure_state_dir
+
+  local has_agents=false
+  for f in "${STATE_DIR}"/*.json; do
+    [ -f "$f" ] && has_agents=true && break
+  done
+  if [ "$has_agents" = false ]; then
+    echo "No agents found."
+    return 0
+  fi
+
+  printf "%-22s  %-10s  %-8s  %-6s  %s\n" "AGENT ID" "STATUS" "BUDGET" "ISSUE" "PROMPT"
+  printf "%-22s  %-10s  %-8s  %-6s  %s\n" "--------" "------" "------" "-----" "------"
+
+  for f in "${STATE_DIR}"/*.json; do
+    [ -f "$f" ] || continue
+
+    local id prompt issue pane_id budget status
+    id=$(jq -r '.id' "$f")
+    prompt=$(jq -r '.prompt' "$f")
+    issue=$(jq -r '.issue // "-"' "$f")
+    pane_id=$(jq -r '.tmux_pane' "$f")
+    budget=$(jq -r '.budget' "$f")
+    branch=$(jq -r '.branch' "$f")
+
+    # Determine live status
+    if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+      status="running"
+    else
+      # Check if a PR was created
+      if gh pr list --head "$branch" --json number --jq '.[0].number' 2>/dev/null | grep -q '^[0-9]'; then
+        status="pr-created"
+      else
+        status="exited"
+      fi
+    fi
+
+    # Truncate prompt for display
+    local display_prompt="${prompt:0:50}"
+    [ ${#prompt} -gt 50 ] && display_prompt="${display_prompt}..."
+
+    printf "%-22s  %-10s  \$%-7s  %-6s  %s\n" "$id" "$status" "$budget" "$issue" "$display_prompt"
+  done
+}
+
+cmd_logs() {
+  local id="${1:-}"
+  [ -n "$id" ] || die "usage: cosmo-agent logs <agent-id>"
+
+  require_cmd jq
+  local state_file="${STATE_DIR}/${id}.json"
+  [ -f "$state_file" ] || die "no agent found with id: ${id}"
+
+  local pane_id
+  pane_id=$(jq -r '.tmux_pane' "$state_file")
+
+  if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+    tmux capture-pane -t "$pane_id" -p -S -500
+  else
+    echo "Pane ${pane_id} is no longer alive. No logs available."
+    echo "(Tmux pane output is only available while the pane exists.)"
+  fi
+}
+
+cmd_cleanup() {
+  local target="${1:-}"
+  [ -n "$target" ] || die "usage: cosmo-agent cleanup <agent-id> | --all"
+
+  require_cmd jq
+  require_cmd git
+  ensure_state_dir
+
+  if [ "$target" = "--all" ]; then
+    local has_agents=false
+    for f in "${STATE_DIR}"/*.json; do
+      [ -f "$f" ] && has_agents=true && break
+    done
+    if [ "$has_agents" = false ]; then
+      echo "No agents to clean up."
+      return 0
+    fi
+    for f in "${STATE_DIR}"/*.json; do
+      [ -f "$f" ] || continue
+      local agent_id
+      agent_id=$(jq -r '.id' "$f")
+      cleanup_agent "$agent_id"
+    done
+  else
+    cleanup_agent "$target"
+  fi
+}
+
+cleanup_agent() {
+  local id="$1"
+  local state_file="${STATE_DIR}/${id}.json"
+  [ -f "$state_file" ] || die "no agent found with id: ${id}"
+
+  local pane_id worktree branch
+  pane_id=$(jq -r '.tmux_pane' "$state_file")
+  worktree=$(jq -r '.worktree' "$state_file")
+  branch=$(jq -r '.branch' "$state_file")
+
+  echo "Cleaning up agent ${id}..."
+
+  # 1. Kill tmux pane if still alive
+  if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+    tmux kill-pane -t "$pane_id" 2>/dev/null || true
+    echo "  killed tmux pane"
+  fi
+
+  # 2. Remove worktree
+  if [ -d "$worktree" ]; then
+    git worktree remove --force "$worktree" 2>/dev/null || true
+    echo "  removed worktree"
+  fi
+
+  # 3. Delete branches if PR was merged
+  local pr_state
+  pr_state=$(gh pr list --head "$branch" --json state --jq '.[0].state' 2>/dev/null || echo "")
+  if [ "$pr_state" = "MERGED" ]; then
+    git branch -D "$branch" 2>/dev/null || true
+    git push origin --delete "$branch" 2>/dev/null || true
+    echo "  deleted merged branch"
+  elif [ -z "$pr_state" ] || [ "$pr_state" = "null" ]; then
+    # No PR exists — clean up local branch, leave remote if it was pushed
+    git branch -D "$branch" 2>/dev/null || true
+    echo "  deleted local branch"
+  fi
+
+  # 4. Remove state file
+  rm -f "$state_file"
+  echo "  removed state file"
+  echo "  done."
+}
+
+cmd_help() {
+  cat <<'HELP'
+cosmo-agent — Multi-agent orchestration for Claude Code
+
+Usage:
+  cosmo-agent launch "<prompt>" [--issue N] [--budget N]
+  cosmo-agent status
+  cosmo-agent logs <agent-id>
+  cosmo-agent cleanup <agent-id>
+  cosmo-agent cleanup --all
+  cosmo-agent help
+
+Commands:
+  launch    Create a git worktree and launch an autonomous claude session
+            in a new tmux pane. Requires tmux.
+
+            Options:
+              --issue N    GitHub issue number to reference in the PR
+              --budget N   Max spend in USD (default: 5.00)
+
+  status    Show all agents and their current state (running/exited/pr-created).
+
+  logs      Capture and display the tmux pane output for an agent.
+
+  cleanup   Remove an agent's worktree, tmux pane, and state file.
+            Use --all to clean up all agents.
+
+  help      Show this help message.
+
+Examples:
+  cosmo-agent launch "Add bluetooth config to weller" --issue 42 --budget 3
+  cosmo-agent launch "Fix waybar clock format" --budget 2
+  cosmo-agent status
+  cosmo-agent logs 20260210-1430-a3f2
+  cosmo-agent cleanup --all
+HELP
+}
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+main() {
+  local cmd="${1:-help}"
+  shift || true
+
+  case "$cmd" in
+    launch)  cmd_launch "$@" ;;
+    status)  cmd_status "$@" ;;
+    logs)    cmd_logs "$@" ;;
+    cleanup) cmd_cleanup "$@" ;;
+    help|--help|-h) cmd_help ;;
+    *)       die "unknown command: ${cmd}. Run 'cosmo-agent help' for usage." ;;
+  esac
+}
+
+main "$@"

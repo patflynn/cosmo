@@ -1,3 +1,4 @@
+# Managed hosts: classic-laddie, johnny-walker, makers-nix, weller
 {
   description = "Cosmo: Fresh Start 2025";
 

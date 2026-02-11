@@ -32,11 +32,17 @@ repo_root() {
   git rev-parse --show-toplevel 2>/dev/null || die "not inside a git repository"
 }
 
+DATA_BRANCH="cosmo-agent/data"
+
 git_dir() {
-  git rev-parse --git-dir 2>/dev/null || die "not inside a git repository"
+  # Use --git-common-dir so this works from agent worktrees too
+  local d
+  d=$(git rev-parse --git-common-dir 2>/dev/null) || die "not inside a git repository"
+  # Ensure absolute path (--git-common-dir returns relative in main worktree)
+  (cd "$d" && pwd)
 }
 
-# Run data lives in .git/cosmo-agent/ — local to this clone, invisible to the working tree
+# Local cache in .git/cosmo-agent/ for active runs; synced to orphan branch on completion
 _state_dir=""
 _log_dir=""
 init_dirs() {
@@ -175,6 +181,68 @@ _finalize_run() {
       duration_ms: (if $duration == "" then null else ($duration | tonumber) end),
       pr_url: (if $pr_url == "" then null else $pr_url end)
     }' "$state_file" > "$tmp" && mv "$tmp" "$state_file"
+
+  # Sync to the persistent data branch
+  _sync_to_data_branch "$id"
+}
+
+# ── Data Branch Sync ─────────────────────────────────────────────────────────
+
+# Ensures the orphan data branch exists. Creates it with an empty initial commit
+# if it doesn't. Uses git plumbing so nothing in the working tree is touched.
+_ensure_data_branch() {
+  local root
+  root=$(repo_root)
+  if ! git -C "$root" rev-parse --verify "$DATA_BRANCH" &>/dev/null; then
+    local empty_tree init_commit
+    empty_tree=$(git -C "$root" hash-object -t tree /dev/null)
+    init_commit=$(echo "Initialize cosmo-agent run data" | git -C "$root" commit-tree "$empty_tree")
+    git -C "$root" update-ref "refs/heads/${DATA_BRANCH}" "$init_commit"
+  fi
+}
+
+# Commits a run's state file and JSONL log to the orphan data branch, then pushes.
+# Uses a temporary index so the working tree and current branch are untouched.
+_sync_to_data_branch() {
+  local id="$1"
+  local state_file="$(state_dir)/${id}.json"
+  local log_file="$(log_dir)/${id}.jsonl"
+  local root
+  root=$(repo_root)
+
+  _ensure_data_branch
+
+  local parent_commit tmp_index
+  parent_commit=$(git -C "$root" rev-parse "$DATA_BRANCH")
+  tmp_index=$(mktemp)
+
+  # Read current tree into a temporary index
+  GIT_INDEX_FILE="$tmp_index" git -C "$root" read-tree "$DATA_BRANCH"
+
+  # Add run state file
+  if [ -f "$state_file" ]; then
+    local blob
+    blob=$(git -C "$root" hash-object -w "$state_file")
+    GIT_INDEX_FILE="$tmp_index" git -C "$root" update-index --add --cacheinfo "100644,${blob},runs/${id}.json"
+  fi
+
+  # Add log file
+  if [ -f "$log_file" ]; then
+    local blob
+    blob=$(git -C "$root" hash-object -w "$log_file")
+    GIT_INDEX_FILE="$tmp_index" git -C "$root" update-index --add --cacheinfo "100644,${blob},logs/${id}.jsonl"
+  fi
+
+  # Write tree, create commit, update ref
+  local new_tree new_commit
+  new_tree=$(GIT_INDEX_FILE="$tmp_index" git -C "$root" write-tree)
+  new_commit=$(echo "Run ${id}" | git -C "$root" commit-tree "$new_tree" -p "$parent_commit")
+  git -C "$root" update-ref "refs/heads/${DATA_BRANCH}" "$new_commit"
+
+  rm -f "$tmp_index"
+
+  # Push the data branch
+  git -C "$root" push origin "$DATA_BRANCH" --quiet 2>/dev/null || true
 }
 
 # ── System Prompt ────────────────────────────────────────────────────────────

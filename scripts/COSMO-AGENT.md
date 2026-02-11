@@ -22,6 +22,7 @@ cosmo-agent solves this by letting a single Claude Code session (the coordinator
 ## Usage
 
 ```
+cosmo-agent session
 cosmo-agent launch "<prompt>" [--issue N] [--budget N]
 cosmo-agent status
 cosmo-agent logs <run-id> [--live | --replay | --raw]
@@ -31,11 +32,19 @@ cosmo-agent help
 
 ### Coordinator workflow
 
-Start a Claude Code session inside tmux. Ask it to do multiple things:
+Start a coordinator session from your repo root inside tmux:
+
+```bash
+scripts/cosmo-agent session
+```
+
+This creates an isolated worktree and launches an interactive Claude Code session in it. The base repo stays clean on `main` — no dirty tree, no stale branch checkouts.
+
+From inside the session, ask Claude to do multiple things:
 
 > "I need three things done: add bluetooth to weller (#42), fix the waybar clock, and add a scratch workspace to hyprland."
 
-Claude (the coordinator) launches each as a separate run:
+Claude (the coordinator) launches each as a separate worker:
 
 ```bash
 scripts/cosmo-agent launch "Add bluetooth config to weller" --issue 42 --budget 3
@@ -45,16 +54,18 @@ scripts/cosmo-agent launch "Add scratch workspace to hyprland" --budget 2
 
 Then monitors with `status`, checks output with `logs`, and cleans up after PRs merge.
 
+When done, `/exit` from Claude to return to your shell. The worktree is preserved for inspection — clean it up with `cosmo-agent cleanup <session-id>`.
+
 ### What you see
 
 ```
-┌──────────────────────────────────────────┐
-│  Coordinator (your Claude Code session)  │
-├──────────────┬──────────────┬────────────┤
-│ Run a3f2     │ Run b7c1     │ Run d9e5   │
-│ ▶ Read ...   │ ▶ Edit ...   │ ▶ Bash ... │
-│ ▶ Edit ...   │ ── done ──   │ ▶ Bash ... │
-└──────────────┴──────────────┴────────────┘
+┌─────────────────────────────────────────────────┐
+│  Coordinator session (interactive, in worktree)  │
+├──────────────┬──────────────┬───────────────────┤
+│ Worker a3f2  │ Worker b7c1  │ Worker d9e5       │
+│ ▶ Read ...   │ ▶ Edit ...   │ ▶ Bash ...        │
+│ ▶ Edit ...   │ ── done ──   │ ▶ Bash ...        │
+└──────────────┴──────────────┴───────────────────┘
 ```
 
 ### Status output
@@ -69,6 +80,21 @@ RUN ID                  STATUS      COST      ISSUE   PR                        
 ## Design
 
 ### Architecture
+
+#### Session (coordinator)
+
+`cosmo-agent session` does:
+
+1. Generate a session ID: `session-YYYYMMDD-HHMM-xxxx`
+2. `git fetch origin main`
+3. `git worktree add /tmp/cosmo-agent/session-<id> -b session/<id> origin/main`
+4. Write a state file with `"type": "session"` (no tmux pane, no budget, no log)
+5. Run `claude` interactively in the worktree (foreground, normal permission prompts)
+6. On exit: print cleanup instructions, preserve worktree
+
+The session runs interactively — no `--dangerously-skip-permissions`, no `--output-format`. The user approves actions normally. Workers launched from inside the session inherit the worktree's git state and can see the shared `.git/cosmo-agent/` data.
+
+#### Workers
 
 Each `launch` does:
 
@@ -113,10 +139,12 @@ Issue #42 ←──── "Fixes #42" ──── PR #260 ←──── "Run:
 
 ### Key decisions
 
-- **Print mode** (`claude -p`): agents are fire-and-forget. Cost control via `--max-budget-usd` only works in print mode.
-- **`--dangerously-skip-permissions`**: required for autonomous git/nix/gh operations. Acceptable because each agent runs in an isolated worktree with bounded budget.
+- **Session isolation**: the coordinator runs in a worktree too, so the base repo stays clean on `main`. No `--dangerously-skip-permissions` for sessions — the user approves actions normally.
+- **No auto-cleanup on session exit**: the worktree is preserved so the user can inspect it, resume, or continue manually.
+- **Print mode** (`claude -p`): worker agents are fire-and-forget. Cost control via `--max-budget-usd` only works in print mode.
+- **`--dangerously-skip-permissions`**: required for autonomous git/nix/gh operations in workers. Acceptable because each worker runs in an isolated worktree with bounded budget.
 - **`/tmp/cosmo-agent/`** for worktrees: ephemeral, auto-cleaned on reboot.
-- **Requires tmux**: the dashboard UX depends on pane management.
+- **Requires tmux**: the dashboard UX depends on pane management; sessions require it because their purpose is to coordinate workers which need tmux panes.
 - **Requires jq**: used for JSON state files and JSONL log parsing.
 
 ### Dependencies

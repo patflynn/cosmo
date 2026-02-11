@@ -390,6 +390,64 @@ cmd_launch() {
   echo "Agent ${id} is running. Use 'cosmo-agent status' to check progress."
 }
 
+cmd_session() {
+  require_cmd claude
+  require_cmd git
+  require_cmd jq
+  require_tmux
+  init_dirs
+
+  local id root worktree branch
+  id="session-$(gen_id)"
+  root=$(repo_root)
+  branch="session/${id}"
+  worktree="${WORKTREE_BASE}/${id}"
+
+  echo "Creating coordinator session ${id}..."
+
+  # Fetch latest main
+  git -C "$root" fetch origin main --quiet
+
+  # Create worktree on a new branch based on origin/main
+  git -C "$root" worktree add "$worktree" -b "$branch" origin/main --quiet
+  echo "  worktree: ${worktree}"
+  echo "  branch:   ${branch}"
+
+  # Write state file
+  local created_at
+  created_at=$(date -Iseconds)
+  jq -n \
+    --arg id "$id" \
+    --arg branch "$branch" \
+    --arg worktree "$worktree" \
+    --arg created_at "$created_at" \
+    '{
+      id: $id,
+      type: "session",
+      prompt: "(interactive session)",
+      issue: null,
+      branch: $branch,
+      worktree: $worktree,
+      tmux_pane: null,
+      budget: null,
+      log_file: null,
+      created_at: $created_at
+    }' > "$(state_dir)/${id}.json"
+
+  echo ""
+  echo "Starting interactive Claude Code session..."
+  echo "  Use 'cosmo-agent launch' from inside to spawn workers."
+  echo ""
+
+  # Run claude interactively in the worktree — foreground, user approves actions
+  (cd "$worktree" && claude) || true
+
+  echo ""
+  echo "Session ${id} ended."
+  echo "  Worktree preserved at: ${worktree}"
+  echo "  To clean up: cosmo-agent cleanup ${id}"
+}
+
 cmd_status() {
   require_cmd jq
   init_dirs
@@ -412,22 +470,25 @@ cmd_status() {
   for f in "${sd}"/*.json; do
     [ -f "$f" ] || continue
 
-    local id prompt issue pane_id budget status pr_url cost_usd
+    local id prompt issue pane_id budget status pr_url cost_usd run_type
     id=$(jq -r '.id' "$f")
     prompt=$(jq -r '.prompt' "$f")
     issue=$(jq -r '.issue // "-"' "$f")
-    pane_id=$(jq -r '.tmux_pane' "$f")
-    budget=$(jq -r '.budget' "$f")
+    pane_id=$(jq -r '.tmux_pane // empty' "$f")
+    budget=$(jq -r '.budget // empty' "$f")
     branch=$(jq -r '.branch' "$f")
     pr_url=$(jq -r '.pr_url // "-"' "$f")
     cost_usd=$(jq -r '.cost_usd // empty' "$f")
+    run_type=$(jq -r '.type // "agent"' "$f")
 
     # Format cost: show actual if available, otherwise show budget
     local cost_display
     if [ -n "$cost_usd" ] && [ "$cost_usd" != "null" ]; then
       cost_display=$(awk "BEGIN {printf \"\\$%.2f\", ${cost_usd}}")
-    else
+    elif [ -n "$budget" ] && [ "$budget" != "null" ]; then
       cost_display="<\$${budget}"
+    else
+      cost_display="-"
     fi
 
     # Format PR: show short form
@@ -438,7 +499,15 @@ cmd_status() {
     fi
 
     # Determine live status
-    if tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
+    if [ "$run_type" = "session" ]; then
+      local wt
+      wt=$(jq -r '.worktree' "$f")
+      if [ -d "$wt" ]; then
+        status="active"
+      else
+        status="ended"
+      fi
+    elif [ -n "$pane_id" ] && tmux list-panes -a -F '#{pane_id}' 2>/dev/null | grep -q "^${pane_id}$"; then
       status="running"
     else
       if [ "$pr_display" != "-" ]; then
@@ -572,6 +641,7 @@ cmd_help() {
 cosmo-agent — Multi-agent orchestration for Claude Code
 
 Usage:
+  cosmo-agent session
   cosmo-agent launch "<prompt>" [--issue N] [--budget N]
   cosmo-agent status
   cosmo-agent logs <agent-id>
@@ -580,6 +650,10 @@ Usage:
   cosmo-agent help
 
 Commands:
+  session   Start an interactive Claude Code session in an isolated worktree.
+            The coordinator runs here instead of the base repo, keeping the
+            base repo clean on main. Requires tmux.
+
   launch    Create a git worktree and launch an autonomous claude session
             in a new tmux pane. Requires tmux.
 
@@ -587,7 +661,7 @@ Commands:
               --issue N    GitHub issue number to reference in the PR
               --budget N   Max spend in USD (default: 5.00)
 
-  status    Show all agents and their current state (running/exited/pr-created).
+  status    Show all runs and their current state.
 
   logs      Show agent output. Displays live tmux pane if running,
             or replays from saved log if finished.
@@ -597,12 +671,13 @@ Commands:
               --replay   Re-format the saved JSON log
               --raw      Dump the raw JSONL log file
 
-  cleanup   Remove an agent's worktree, tmux pane, and state file.
-            Use --all to clean up all agents.
+  cleanup   Remove a run's worktree, tmux pane, and state file.
+            Use --all to clean up all runs.
 
   help      Show this help message.
 
 Examples:
+  cosmo-agent session
   cosmo-agent launch "Add bluetooth config to weller" --issue 42 --budget 3
   cosmo-agent launch "Fix waybar clock format" --budget 2
   cosmo-agent status
@@ -619,6 +694,7 @@ main() {
 
   case "$cmd" in
     launch)  cmd_launch "$@" ;;
+    session) cmd_session "$@" ;;
     status)  cmd_status "$@" ;;
     logs)    cmd_logs "$@" ;;
     cleanup) cmd_cleanup "$@" ;;

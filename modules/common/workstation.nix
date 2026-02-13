@@ -35,11 +35,4 @@
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
     LD_LIBRARY_PATH = "/run/opengl-driver/lib";
   };
-
-  # --- Gaming ---
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
-  };
 }

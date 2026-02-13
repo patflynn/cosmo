@@ -30,6 +30,11 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    klaus = {
+      url = "github:patflynn/klaus";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -40,6 +45,7 @@
       nixos-generators,
       agenix,
       pre-commit-hooks,
+      klaus,
       ...
     }@inputs:
     let
@@ -253,13 +259,12 @@
       devShells.x86_64-linux.default =
         let
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          klaus = pkgs.writeShellScriptBin "klaus" ''
-            exec "$(git rev-parse --show-toplevel)/scripts/cosmo-agent" "$@"
-          '';
         in
         pkgs.mkShell {
           inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
-          buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages ++ [ klaus ];
+          buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages ++ [
+            klaus.packages.x86_64-linux.default
+          ];
         };
     };
 }

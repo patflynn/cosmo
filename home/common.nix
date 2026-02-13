@@ -96,6 +96,32 @@
       setopt HIST_IGNORE_SPACE    # ignore commands that start with space
       setopt HIST_VERIFY          # show command with history expansion to user before running it
       setopt SHARE_HISTORY        # share command history data
+
+      # Auto-rename tmux session to repo:branch or directory name
+      if [ -n "$TMUX" ]; then
+        _tmux_auto_rename_last=""
+        _tmux_auto_rename() {
+          local name git_root
+          git_root=$(git rev-parse --show-toplevel 2>/dev/null)
+          if [ -n "$git_root" ]; then
+            local repo=$(basename "$git_root")
+            local branch=$(git branch --show-current 2>/dev/null)
+            if [ -n "$branch" ]; then
+              name="''${repo}:''${branch}"
+            else
+              name="''${repo}:$(git rev-parse --short HEAD 2>/dev/null)"
+            fi
+          else
+            name=$(basename "$PWD")
+          fi
+          if [ "$name" != "$_tmux_auto_rename_last" ]; then
+            tmux rename-session "$name" 2>/dev/null
+            _tmux_auto_rename_last="$name"
+          fi
+        }
+        autoload -Uz add-zsh-hook
+        add-zsh-hook precmd _tmux_auto_rename
+      fi
     '';
   };
 

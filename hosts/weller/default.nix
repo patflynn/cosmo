@@ -40,7 +40,10 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Seagate FireCuda 510 firmware crashes with APST power saving (#263)
-  boot.kernelParams = [ "nvme_core.default_ps_max_latency_us=0" ];
+  boot.kernelParams = [
+    "nvme_core.default_ps_max_latency_us=0"
+    "btusb.enable_autosuspend=n"
+  ];
 
   # ---------------------------------------------------------------------------
   # Filesystem - Btrfs with LUKS encryption (managed by disko)
@@ -74,10 +77,33 @@
   };
 
   # ---------------------------------------------------------------------------
-  # Bluetooth
+  # Bluetooth – optimised for Kinesis Advantage 360 Pro (ZMK / BLE)
   # ---------------------------------------------------------------------------
-  hardware.bluetooth.enable = true;
-  hardware.bluetooth.powerOnBoot = true;
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+    settings = {
+      General = {
+        # Keep adapter in page-scan mode for instant reconnects
+        FastConnectable = "true";
+        # ZMK uses "Just Works" pairing – always allow re-pairing
+        JustWorksRepairing = "always";
+        # Better LE handling & battery reporting
+        Experimental = "true";
+      };
+      LE = {
+        # Tighter polling interval (7.5–11.25 ms) for lower input latency
+        MinConnectionInterval = 6;
+        MaxConnectionInterval = 9;
+        ConnectionLatency = 0;
+      };
+      Policy = {
+        AutoEnable = "true";
+        ReconnectAttempts = 7;
+        ReconnectIntervals = "1,2,4,8,16,32,64";
+      };
+    };
+  };
   environment.systemPackages = with pkgs; [ bluetuith ];
 
   # ---------------------------------------------------------------------------

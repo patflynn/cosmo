@@ -43,7 +43,12 @@ in
     ];
 
     # Allow media services to read/write to the media directory
-    users.users.plex.extraGroups = [ "media" ];
+    # render + video grants access to /dev/dri/* for NVENC hardware transcoding
+    users.users.plex.extraGroups = [
+      "media"
+      "render"
+      "video"
+    ];
     users.users.jellyfin.extraGroups = [
       "media"
       "render"

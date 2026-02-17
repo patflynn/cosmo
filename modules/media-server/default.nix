@@ -10,7 +10,7 @@ let
 in
 {
   options.modules.media-server = {
-    enable = lib.mkEnableOption "Media Server Stack (Plex, Arrs, Torrent/VPN)";
+    enable = lib.mkEnableOption "Media Server Stack (Plex, Jellyfin, Arrs, Torrent/VPN)";
     vpnSecretPath = lib.mkOption {
       type = lib.types.path;
       default = "/run/agenix/media-vpn";
@@ -42,8 +42,19 @@ in
       "podman"
     ];
 
-    # Allow Plex to read/write to the media directory
-    users.users.plex.extraGroups = [ "media" ];
+    # Allow media services to read/write to the media directory
+    # render + video grants access to /dev/dri/* for NVENC hardware transcoding
+    users.users.plex.extraGroups = [
+      "media"
+      "render"
+      "video"
+    ];
+    users.users.jellyfin.extraGroups = [
+      "media"
+      "render"
+      "video"
+    ];
+    users.users.minidlna.extraGroups = [ "media" ];
 
     systemd.tmpfiles.rules = [
       "d /mnt/media/downloads 0775 ${config.cosmo.user.default} media -"
@@ -100,6 +111,31 @@ in
       openFirewall = true;
     };
 
+    # ---------------------------------------------------------
+    # 3b. Jellyfin (Media Server - Plex alternative)
+    # ---------------------------------------------------------
+
+    services.jellyfin = {
+      enable = true;
+      openFirewall = true; # Opens 8096 (web UI)
+    };
+
+    # ---------------------------------------------------------
+    # 3c. MiniDLNA (DLNA/UPnP for network audio: Hegel, Devialet)
+    # ---------------------------------------------------------
+
+    services.minidlna = {
+      enable = true;
+      openFirewall = true; # Opens 8200 (status) + 1900/UDP (SSDP discovery)
+      settings = {
+        friendly_name = "classic-laddie";
+        media_dir = [
+          "A,/mnt/media/music"
+        ];
+        inotify = "yes";
+      };
+    };
+
     # Open ports for containerized services (Gluetun/SABnzbd/qBittorrent)
     # Native services open their own ports, but containers need explicit host firewall rules.
     # Also open 80/443 for Caddy reverse proxy.
@@ -119,6 +155,7 @@ in
         "radarr"
         "prowlarr"
         "overseerr"
+        "jellyfin"
         "sabnzbd"
         "qbittorrent"
       ];
@@ -142,6 +179,14 @@ in
       virtualHosts."overseerr.local".extraConfig = ''
         tls internal
         reverse_proxy localhost:5055
+      '';
+      virtualHosts."jellyfin".extraConfig = ''
+        tls internal
+        reverse_proxy localhost:8096
+      '';
+      virtualHosts."jellyfin.local".extraConfig = ''
+        tls internal
+        reverse_proxy localhost:8096
       '';
     };
 

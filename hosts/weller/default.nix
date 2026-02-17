@@ -13,6 +13,7 @@
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/workstation.nix
+    ../../modules/common/gaming.nix
   ];
 
   cosmo.user.default = "patrick";
@@ -143,14 +144,7 @@
   # ---------------------------------------------------------------------------
   # Gaming
   # ---------------------------------------------------------------------------
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
-  };
-
-  # Gamemode for performance optimization
-  programs.gamemode.enable = true;
+  modules.gaming.enable = true;
 
   # ---------------------------------------------------------------------------
   # Security

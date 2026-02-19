@@ -40,11 +40,15 @@
 
         # Age tools
         inputs.agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
+
+        # Agent orchestration
+        inputs.klaus.packages."${pkgs.stdenv.hostPlatform.system}".default
       ]
       ++ lib.optional config.cosmo.gemini.enable pkgs.gemini-cli;
 
     programs.zsh.shellAliases = {
       rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";
+      rebuild-dev = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake . --override-input klaus path:$HOME/hack/klaus; else nix run home-manager -- switch --flake . --override-input klaus path:$HOME/hack/klaus; fi";
     };
   };
 }

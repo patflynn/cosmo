@@ -262,9 +262,7 @@
         in
         pkgs.mkShell {
           inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
-          buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages ++ [
-            klaus.packages.x86_64-linux.default
-          ];
+          buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages;
         };
     };
 }

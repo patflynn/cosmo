@@ -14,7 +14,6 @@
     ../../modules/common/users.nix
     ../../modules/common/workstation.nix
     ../../modules/common/gaming.nix
-    ../../modules/common/initrd-bluetooth.nix
   ];
 
   cosmo.user.default = "patrick";
@@ -107,11 +106,6 @@
       };
     };
   };
-  modules.initrd-bluetooth = {
-    enable = true;
-    pairingDir = ./bluetooth;
-  };
-
   environment.systemPackages = with pkgs; [ bluetuith ];
 
   # ---------------------------------------------------------------------------

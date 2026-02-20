@@ -46,28 +46,32 @@ in
     boot.initrd.systemd.contents = {
       "/lib/firmware/rtl_bt".source = "${pkgs.linux-firmware}/lib/firmware/rtl_bt";
 
-      "/etc/dbus-1".source = let
-        bluetoothDbusPolicy = pkgs.writeTextDir "share/dbus-1/system.d/bluetooth.conf" ''
-          <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
-            "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
-          <busconfig>
-            <policy context="default">
-              <allow own="org.bluez"/>
-              <allow send_destination="org.bluez"/>
-              <allow send_interface="org.bluez"/>
-              <allow send_interface="org.freedesktop.DBus.ObjectManager"/>
-              <allow send_interface="org.freedesktop.DBus.Properties"/>
-            </policy>
-          </busconfig>
-        '';
-      in lib.mkForce (pkgs.makeDBusConf.override {
-        suidHelper = "/bin/false";
-        serviceDirectories = [
-          pkgs.dbus
-          config.boot.initrd.systemd.package
-          bluetoothDbusPolicy
-        ];
-      });
+      "/etc/dbus-1".source =
+        let
+          bluetoothDbusPolicy = pkgs.writeTextDir "share/dbus-1/system.d/bluetooth.conf" ''
+            <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+              "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+            <busconfig>
+              <policy context="default">
+                <allow own="org.bluez"/>
+                <allow send_destination="org.bluez"/>
+                <allow send_interface="org.bluez"/>
+                <allow send_interface="org.freedesktop.DBus.ObjectManager"/>
+                <allow send_interface="org.freedesktop.DBus.Properties"/>
+              </policy>
+            </busconfig>
+          '';
+        in
+        lib.mkForce (
+          pkgs.makeDBusConf.override {
+            suidHelper = "/bin/false";
+            serviceDirectories = [
+              pkgs.dbus
+              config.boot.initrd.systemd.package
+              bluetoothDbusPolicy
+            ];
+          }
+        );
 
       "/etc/bluetooth/main.conf".text = ''
         [General]

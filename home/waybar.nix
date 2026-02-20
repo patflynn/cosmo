@@ -126,6 +126,7 @@ in
           "network"
           "pulseaudio"
           "bluetooth"
+          "custom/notification"
           "tray"
         ];
 
@@ -242,6 +243,14 @@ in
           on-click = "kitty bluetuith";
         };
 
+        "custom/notification" = {
+          exec = ''makoctl mode -l 2>/dev/null | grep -q do-not-disturb && echo '{"text": "󰂛", "tooltip": "Do not disturb", "class": "dnd"}' || echo '{"text": "󰂚", "tooltip": "Notifications", "class": "enabled"}"'';
+          return-type = "json";
+          interval = 5;
+          on-click = "makoctl mode -t do-not-disturb";
+          on-click-right = "makoctl dismiss -a";
+        };
+
         tray = {
           icon-size = 16;
           spacing = 8;
@@ -302,6 +311,7 @@ in
       #bluetooth,
       #custom-gpu,
       #custom-weather,
+      #custom-notification,
       #tray {
         background-color: alpha(@base, 0.85);
         border: 2px solid @surface0;
@@ -407,6 +417,14 @@ in
 
       #bluetooth.disabled,
       #bluetooth.off {
+        color: @subtext0;
+      }
+
+      #custom-notification {
+        color: @lavender;
+      }
+
+      #custom-notification.dnd {
         color: @subtext0;
       }
 

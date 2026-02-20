@@ -10,6 +10,7 @@
     ./hypridle.nix
     ./hyprlock.nix
     ./hyprpaper.nix
+    ./mako.nix
     ./waybar.nix
   ];
 
@@ -21,7 +22,6 @@
     wf-recorder # Screen recorder
     ffmpeg # For GIF conversion
     jq # JSON processor
-    libnotify # For notifications
 
     # Script to record GIF
     (pkgs.writeShellScriptBin "record-gif" ''
@@ -141,6 +141,7 @@
       # --- Layer Rules ---
       layerrule = [
         "blur on, ignore_alpha 1, match:namespace waybar"
+        "blur on, ignore_alpha 1, match:namespace notifications"
       ];
 
       # --- Keybindings ---

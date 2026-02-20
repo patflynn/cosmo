@@ -34,6 +34,7 @@
       ignore-timeout = 0;
       icons = 1;
       max-icon-size = 48;
+      max-history = 10;
 
       # Actions
       on-button-left = "dismiss";

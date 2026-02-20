@@ -493,7 +493,7 @@ cmd_session() {
   echo ""
 
   # Run claude interactively in the worktree — foreground, user approves actions
-  (cd "$worktree" && claude) || true
+  (cd "$worktree" && claude --trust-workspace) || true
 
   echo ""
   echo "Session ${id} ended."

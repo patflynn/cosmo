@@ -198,6 +198,10 @@
         # Screen recording
         "$mainMod SHIFT, G, Record GIF, exec, record-gif"
         "$mainMod SHIFT, S, Stop recording, exec, pkill --signal SIGINT wf-recorder"
+
+        # Notifications
+        "$mainMod SHIFT, N, Restore notification, exec, makoctl restore"
+        "$mainMod, N, Dismiss notification, exec, makoctl dismiss"
       ];
 
       debug = {

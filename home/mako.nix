@@ -34,6 +34,7 @@
       ignore-timeout = 0;
       icons = 1;
       max-icon-size = 48;
+      max-history = 10;
 
       # Actions
       on-button-left = "dismiss";
@@ -41,13 +42,13 @@
       on-button-right = "dismiss-all";
 
       # Urgency: low
-      "[urgency=low]" = {
+      "urgency=low" = {
         border-color = "#585b70";
         default-timeout = 3000;
       };
 
       # Urgency: critical
-      "[urgency=critical]" = {
+      "urgency=critical" = {
         border-color = "#f38ba8";
         default-timeout = 0;
       };

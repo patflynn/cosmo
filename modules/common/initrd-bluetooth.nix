@@ -43,9 +43,20 @@ in
     # boot.initrd.systemd.contents.  Instead, override the dbus config to
     # include our bluetooth policy in the generated config.
     # -----------------------------------------------------------------------
-    boot.initrd.systemd.contents = {
-      "/lib/firmware/rtl_bt".source = "${pkgs.linux-firmware}/lib/firmware/rtl_bt";
+    # -----------------------------------------------------------------------
+    # Realtek BT firmware – included via extraFirmwarePaths so it ends up
+    # inside the modulesClosure (which is symlinked to /lib).  Placing it
+    # in boot.initrd.systemd.contents would conflict with that symlink.
+    # -----------------------------------------------------------------------
+    hardware.firmware = [ pkgs.linux-firmware ];
+    boot.initrd.extraFirmwarePaths =
+      let
+        firmwareDir = "${pkgs.linux-firmware}/lib/firmware/rtl_bt";
+        files = builtins.attrNames (builtins.readDir firmwareDir);
+      in
+      map (f: "rtl_bt/${f}") files;
 
+    boot.initrd.systemd.contents = {
       "/etc/dbus-1".source =
         let
           bluetoothDbusPolicy = pkgs.writeTextDir "share/dbus-1/system.d/bluetooth.conf" ''

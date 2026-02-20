@@ -1,0 +1,14 @@
+{
+  "id": "20260220-1657-283d",
+  "prompt": "Enable systemd-based initrd on weller. Add boot.initrd.systemd.enable = true to hosts/weller/default.nix in the Bootloader section (after the existing boot.loader settings, before the kernel params). This is the first step toward supporting Bluetooth in stage 1 (initrd) so the Kinesis BLE keyboard works at the LUKS passphrase prompt. PR title: 'weller: switch to systemd-based initrd'",
+  "issue": null,
+  "branch": "agent/20260220-1657-283d",
+  "worktree": "/tmp/cosmo-agent/20260220-1657-283d",
+  "tmux_pane": "%2",
+  "budget": "1",
+  "log_file": "/home/patrick/hack/cosmo/.git/cosmo-agent/logs/20260220-1657-283d.jsonl",
+  "created_at": "2026-02-20T16:57:52-05:00",
+  "cost_usd": 0.15343174999999998,
+  "duration_ms": 66580,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/279"
+}

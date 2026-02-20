@@ -4,7 +4,8 @@ This guide details the setup and configuration of the "State of the Art" media s
 
 ## 1. The Stack
 
-*   **Media Server:** [Plex](https://www.plex.tv/) (Native). Hardware accelerated (NVENC).
+*   **Media Server:** [Plex](https://www.plex.tv/) (Native) & [Jellyfin](https://jellyfin.org/) (Native). Hardware accelerated (NVENC).
+*   **DLNA/UPnP:** [MiniDLNA](https://www.ready-media.info/) (Native). For network audio devices (Hegel, Devialet).
 *   **Request Manager:** [Overseerr](https://overseerr.dev/) (Native). "Netflix-like" request interface for Plex.
 *   **Automation (The Arrs):**
     *   **Sonarr:** TV Shows
@@ -75,7 +76,9 @@ Once deployed (`nixos-rebuild switch ...`), the services will be available at th
 | Service | Port | Description |
 | :--- | :--- | :--- |
 | **Plex** | `32400` | Media Player UI (Web) |
+| **Jellyfin** | `8096` | Media Player UI (Web) |
 | **Overseerr** | `5055` | Request UI (Start here!) |
+| **MiniDLNA** | `8200` | DLNA Status Page (DLNA/UPnP on 1900/UDP) |
 | **Sonarr** | `8989` | TV Management |
 | **Radarr** | `7878` | Movie Management |
 | **Prowlarr** | `9696` | Indexer Config |

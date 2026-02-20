@@ -36,10 +36,11 @@ Use these tools to manage existing content, fix incorrect matches, or monitor up
 
 ## 3. Watching Content
 
-**Tool:** **Plex** (`http://plex:32400` or Plex App on TV/Phone)
+**Tools:** **Plex** (`http://plex:32400`) or **Jellyfin** (`http://jellyfin:8096`)
 
-*   **Library:** Your requested content will automatically appear in your "Movies" or "TV Shows" library.
-*   **Playback:** Plex handles transcoding and streaming to your devices.
+*   **Library:** Your requested content will automatically appear in your "Movies" or "TV Shows" library in both Plex and Jellyfin.
+*   **Playback:** Both servers handle transcoding and streaming to your devices. Jellyfin is a great open-source alternative if you prefer it over Plex.
+*   **Audio:** For high-end audio streaming, you can also use **MiniDLNA** to stream music directly to supported network players.
 
 ## 4. Troubleshooting Downloads
 

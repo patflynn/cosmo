@@ -1,6 +1,6 @@
-# Bud-Lite Setup (Debian + Home Manager)
+# Crostini Setup (Debian + Home Manager)
 
-`bud-lite` is configured as a standalone Home Manager setup running on top of Debian (specifically inside a Chromebook Crostini container).
+`crostini` is configured as a standalone Home Manager setup running on top of Debian (specifically inside a Chromebook Crostini container).
 
 ## Prerequisites
 

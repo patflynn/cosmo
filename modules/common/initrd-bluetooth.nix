@@ -31,47 +31,24 @@ in
     ];
 
     # -----------------------------------------------------------------------
-    # D-Bus (required by bluetoothd)
-    # -----------------------------------------------------------------------
-    boot.initrd.systemd.dbus.enable = true;
-
-    # -----------------------------------------------------------------------
     # Firmware, D-Bus policy, BlueZ config, and pairing keys
-    #
-    # The dbus module creates /etc/dbus-1 as a symlink to a read-only store
-    # path via makeDBusConf, so we cannot place files inside it via
-    # boot.initrd.systemd.contents.  Instead, override the dbus config to
-    # include our bluetooth policy in the generated config.
     # -----------------------------------------------------------------------
     boot.initrd.systemd.contents = {
       "/lib/firmware/rtl_bt".source = "${pkgs.linux-firmware}/lib/firmware/rtl_bt";
 
-      "/etc/dbus-1".source =
-        let
-          bluetoothDbusPolicy = pkgs.writeTextDir "share/dbus-1/system.d/bluetooth.conf" ''
-            <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
-              "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
-            <busconfig>
-              <policy context="default">
-                <allow own="org.bluez"/>
-                <allow send_destination="org.bluez"/>
-                <allow send_interface="org.bluez"/>
-                <allow send_interface="org.freedesktop.DBus.ObjectManager"/>
-                <allow send_interface="org.freedesktop.DBus.Properties"/>
-              </policy>
-            </busconfig>
-          '';
-        in
-        lib.mkForce (
-          pkgs.makeDBusConf.override {
-            suidHelper = "/bin/false";
-            serviceDirectories = [
-              pkgs.dbus
-              config.boot.initrd.systemd.package
-              bluetoothDbusPolicy
-            ];
-          }
-        );
+      "/etc/dbus-1/system.d/bluetooth.conf".text = ''
+        <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+          "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+        <busconfig>
+          <policy context="default">
+            <allow own="org.bluez"/>
+            <allow send_destination="org.bluez"/>
+            <allow send_interface="org.bluez"/>
+            <allow send_interface="org.freedesktop.DBus.ObjectManager"/>
+            <allow send_interface="org.freedesktop.DBus.Properties"/>
+          </policy>
+        </busconfig>
+      '';
 
       "/etc/bluetooth/main.conf".text = ''
         [General]
@@ -92,6 +69,11 @@ in
 
       "/var/lib/bluetooth".source = cfg.pairingDir;
     };
+
+    # -----------------------------------------------------------------------
+    # D-Bus (required by bluetoothd)
+    # -----------------------------------------------------------------------
+    boot.initrd.systemd.dbus.enable = true;
 
     # -----------------------------------------------------------------------
     # bluetoothd service

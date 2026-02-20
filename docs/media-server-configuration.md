@@ -1,6 +1,6 @@
 # Media Server Configuration Guide
 
-This document outlines the step-by-step configuration required to get the automated media stack (Plex, *Arrs, Gluetun, SABnzbd, qBittorrent) communicating correctly on NixOS.
+This document outlines the step-by-step configuration required to get the automated media stack (Plex, Jellyfin, MiniDLNA, *Arrs, Gluetun, SABnzbd, qBittorrent) communicating correctly on NixOS.
 
 ## 1. Prerequisites (NixOS Level)
 
@@ -8,13 +8,13 @@ These settings are handled by the `modules/media-server/default.nix` configurati
 
 *   **Firewall:**
     *   Open ports **8080** (SABnzbd) and **8081** (qBittorrent) on the host to allow LAN access to containers.
-    *   Native services (Plex, Sonarr, etc.) open their ports automatically.
+    *   Native services (Plex, Jellyfin, MiniDLNA, Sonarr, etc.) open their ports automatically.
 *   **Networking:**
-    *   Map service hostnames to `127.0.0.1` in `/etc/hosts` (via `networking.hosts`) to simplify inter-service communication (e.g., `sabnzbd`, `sonarr`, `plex`).
+    *   Map service hostnames to `127.0.0.1` in `/etc/hosts` (via `networking.hosts`) to simplify inter-service communication (e.g., `sabnzbd`, `sonarr`, `plex`, `jellyfin`).
 *   **Directories:**
     *   `/mnt/media/downloads/usenet/{complete,incomplete}` (Owned by `patrick:media`)
     *   `/mnt/media/downloads/torrents/{complete,incomplete}` (Owned by `patrick:media`)
-    *   `/mnt/media/{tv,movies}` (Owned by `patrick:media`)
+    *   `/mnt/media/{tv,movies,music}` (Owned by `patrick:media`)
 *   **Containers:**
     *   **Gluetun:** Configured with WireGuard (Mullvad) credentials. Use specific endpoint IPs to ensure stability.
     *   **SABnzbd & qBittorrent:** Network routed through Gluetun (`--network=container:gluetun`).
@@ -84,13 +84,13 @@ Since download clients run in containers but Sonarr/Radarr run natively, paths m
 *   **Sonarr:** Set Root Folder to `/mnt/media/tv`.
 *   **Radarr:** Set Root Folder to `/mnt/media/movies`.
 
-## 5. Overseerr Configuration (Request Frontend)
+## 5. Overseerr & Jellyfin Configuration (Frontends)
 
-**URL:** `https://overseerr`
+**Overseerr:** `https://overseerr` | **Jellyfin:** `https://jellyfin`
 
-*   **Note on HTTPS:** Accessing via `https://overseerr` is required because modern browsers (like Chrome) often force HTTPS for local hostnames. Caddy is configured with `tls internal` to provide a self-signed certificate. You may need to click "Advanced" and "Proceed" the first time you visit.
-*   **UDM Pro:** Ensure a Local DNS record exists pointing `overseerr` to the host IP.
-*   **Plex:** Connect to your Plex server (`plex`, port `32400`).
+*   **Note on HTTPS:** Accessing via `https://overseerr` or `https://jellyfin` is required because modern browsers (like Chrome) often force HTTPS for local hostnames. Caddy is configured with `tls internal` to provide a self-signed certificate. You may need to click "Advanced" and "Proceed" the first time you visit.
+*   **UDM Pro:** Ensure Local DNS records exist pointing `overseerr` and `jellyfin` to the host IP.
+*   **Plex:** Connect Overseerr to your Plex server (`plex`, port `32400`).
 *   **Services:**
     *   Add **Radarr Server:** `radarr` (port `7878`). Select Quality Profile (e.g., HD-1080p) and Root Folder (`/mnt/media/movies`).
     *   Add **Sonarr Server:** `sonarr` (port `8989`). Select Quality Profile and Root Folder (`/mnt/media/tv`).

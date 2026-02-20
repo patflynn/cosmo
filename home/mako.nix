@@ -41,13 +41,13 @@
       on-button-right = "dismiss-all";
 
       # Urgency: low
-      "[urgency=low]" = {
+      "urgency=low" = {
         border-color = "#585b70";
         default-timeout = 3000;
       };
 
       # Urgency: critical
-      "[urgency=critical]" = {
+      "urgency=critical" = {
         border-color = "#f38ba8";
         default-timeout = 0;
       };

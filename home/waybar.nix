@@ -244,11 +244,12 @@ in
         };
 
         "custom/notification" = {
-          exec = ''makoctl mode -l 2>/dev/null | grep -q do-not-disturb && echo '{"text": "󰂛", "tooltip": "Do not disturb", "class": "dnd"}' || echo '{"text": "󰂚", "tooltip": "Notifications", "class": "enabled"}"'';
+          exec = ''makoctl mode -l 2>/dev/null | grep -q do-not-disturb && echo '{"text": "󰂛", "tooltip": "Do not disturb", "class": "dnd"}' || echo '{"text": "󰂚", "tooltip": "Notifications", "class": "enabled"}' '';
           return-type = "json";
           interval = 5;
           on-click = "makoctl mode -t do-not-disturb";
           on-click-right = "makoctl dismiss -a";
+          on-click-middle = "makoctl restore";
         };
 
         tray = {

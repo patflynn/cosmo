@@ -21,8 +21,8 @@ in
   services.openssh = {
     enable = true;
     settings = {
-      PermitRootLogin = "yes";
-      PasswordAuthentication = true;
+      PermitRootLogin = "prohibit-password"; # Only allow key-based root login
+      PasswordAuthentication = false; # Disable password-based login for better security
     };
   };
 
@@ -39,12 +39,12 @@ in
       "networkmanager"
       "video"
     ];
-    initialPassword = "nixos";
+    # No initial password - use SSH keys for access
     openssh.authorizedKeys.keys = keys.users;
   };
 
-  # Make it easy to assume root during bootstrap
-  security.sudo.wheelNeedsPassword = false;
+  # For bootstrap, we want a balance of security and convenience
+  security.sudo.wheelNeedsPassword = lib.mkDefault true;
 
   # Ensure compatibility
   system.stateVersion = "25.11";

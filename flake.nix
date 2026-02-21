@@ -185,6 +185,7 @@
         weller-bootstrap = mkBootstrap {
           hardware = ./hosts/weller/hardware.nix;
           disk = ./hosts/weller/disk-config.nix;
+          hostName = "weller-bootstrap";
         };
 
         # Hostname: weller (dual-boot Windows 11 + NixOS workstation)

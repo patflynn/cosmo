@@ -147,7 +147,7 @@
       # --- Window Rules ---
       # Hide Chrome's Spotify "now playing" floating popup (redundant with waybar mpris)
       windowrule = [
-        "workspace special:trash silent, class:^(google-chrome)$, floating:1, title:.*•.*"
+        "match:class ^(google-chrome)$, match:float yes, match:title .*•.*, workspace special:trash silent"
       ];
 
       # --- Keybindings ---

@@ -71,6 +71,31 @@
             }
           ];
         };
+
+      mkBootstrap =
+        {
+          system ? "x86_64-linux",
+          hardware,
+          disk ? null,
+          hostName ? "nixos-bootstrap",
+          user ? "patrick",
+          email ? "big.pat@gmail.com",
+        }:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = { inherit inputs; };
+          modules = [
+            hardware
+            (if disk != null then disk else { })
+            (if disk != null then inputs.disko.nixosModules.disko else { })
+            ./modules/bootstrap.nix
+            {
+              networking.hostName = hostName;
+              cosmo.user.default = user;
+              cosmo.user.email = email;
+            }
+          ];
+        };
     in
     {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
@@ -157,15 +182,9 @@
         };
 
         # Hostname: weller-bootstrap (Initial install target)
-        weller-bootstrap = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            ./hosts/weller/hardware.nix
-            ./hosts/weller/disk-config.nix
-            ./modules/bootstrap.nix
-            inputs.disko.nixosModules.disko
-          ];
+        weller-bootstrap = mkBootstrap {
+          hardware = ./hosts/weller/hardware.nix;
+          disk = ./hosts/weller/disk-config.nix;
         };
 
         # Hostname: weller (dual-boot Windows 11 + NixOS workstation)

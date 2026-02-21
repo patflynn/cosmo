@@ -14,8 +14,8 @@ in
   ];
 
   # Define the default user options here since we are importing system.nix
-  cosmo.user.default = "patrick";
-  cosmo.user.email = "big.pat@gmail.com";
+  cosmo.user.default = lib.mkDefault "patrick";
+  cosmo.user.email = lib.mkDefault "big.pat@gmail.com";
 
   # Enable SSH
   services.openssh = {

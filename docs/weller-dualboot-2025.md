@@ -131,10 +131,14 @@ The first stage installs a minimal system with:
    nixos-install --no-write-lock-file --flake /tmp/cosmo#weller-bootstrap
    ```
 
-4. **Reboot and Set Password**
+4. **Reboot and Access via SSH**
    - Reboot into the new system.
-   - Log in as `patrick` with the initial password `nixos`.
-   - Change your password immediately: `passwd`.
+   - From your laptop, log in as `root` (using your SSH keys):
+     ```bash
+     ssh root@weller-bootstrap
+     ```
+   - No initial password is required as your keys from `secrets/keys.nix` are pre-authorized in the bootstrap image.
+   - For better security, password authentication is disabled by default.
 
 ### 5.2 Stage 2: Full Configuration
 

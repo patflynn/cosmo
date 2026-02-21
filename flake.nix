@@ -78,6 +78,7 @@
           hardware,
           disk ? null,
           hostName ? "nixos-bootstrap",
+          hostId ? null,
           user ? "patrick",
           email ? "big.pat@gmail.com",
         }:
@@ -94,6 +95,7 @@
               cosmo.user.default = user;
               cosmo.user.email = email;
             }
+            (if hostId != null then { networking.hostId = hostId; } else { })
           ];
         };
     in
@@ -126,6 +128,13 @@
               }
             )
           ];
+        };
+
+        # Hostname: classic-laddie-bootstrap
+        classic-laddie-bootstrap = mkBootstrap {
+          hardware = ./hosts/classic-laddie/hardware.nix;
+          hostName = "classic-laddie-bootstrap";
+          hostId = "8425e349";
         };
 
         # Hostname: makers-nix

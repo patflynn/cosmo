@@ -144,6 +144,12 @@
         "blur on, ignore_alpha 1, match:namespace notifications"
       ];
 
+      # --- Window Rules ---
+      # Hide Chrome's Spotify "now playing" floating popup (redundant with waybar mpris)
+      windowrulev2 = [
+        "workspace special:trash silent, class:^(google-chrome)$, floating:1, title:.*•.*"
+      ];
+
       # --- Keybindings ---
       "$mainMod" = "SUPER";
       bindd = [
@@ -202,6 +208,12 @@
         # Notifications
         "$mainMod SHIFT, N, Restore notification, exec, makoctl restore"
         "$mainMod, N, Dismiss notification, exec, makoctl dismiss"
+      ];
+
+      # --- Mouse Bindings ---
+      bindm = [
+        "ALT, mouse:272, movewindow"
+        "ALT, mouse:273, resizewindow"
       ];
 
       debug = {

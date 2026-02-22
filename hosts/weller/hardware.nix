@@ -30,6 +30,7 @@
   # ---------------------------------------------------------------------------
   # Windows is on Disk 0, NixOS on Disk 1 - use UEFI boot menu (F11/F12) to switch
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.memtest86.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.systemd.enable = true;
 

@@ -32,6 +32,10 @@
 
       # Version Control
       git
+
+      # Hardware Diagnostics
+      smartmontools
+      nvme-cli
     ];
 
     # Enable Flakes and new command line tools

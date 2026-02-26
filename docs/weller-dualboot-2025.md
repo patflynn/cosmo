@@ -95,58 +95,77 @@ Configure UDM Pro:
 
 ---
 
-## 5. Installation Steps
+## 5. Installation Steps (Two-Stage Process)
 
-### 5.1 Boot NixOS Installer via PXE
+To avoid "chicken-and-egg" problems with secrets (`agenix`) and SSH keys, we use a two-stage installation process.
 
-1. Boot the machine and press F11/F12 for boot menu
-2. Select "UEFI: Network Boot" or similar
-3. netboot.xyz will load → select Linux Network Installs → NixOS
-4. Connect to network (should already be connected via PXE)
+### 5.1 Stage 1: Bootstrap Install
 
-### 5.2 Verify Target Disk
+The first stage installs a minimal system with:
+- **Mutable users** (allows setting/changing passwords)
+- **SSH enabled** with password authentication
+- **No secrets/agenix** (prevents decryption errors on first boot)
 
-```bash
-# List disks and find the Seagate by-id
-ls -la /dev/disk/by-id/ | grep -i seagate
+1. **Boot NixOS Installer via PXE**
+   - Boot the machine and press F11/F12 for boot menu
+   - Select "UEFI: Network Boot" or similar
+   - netboot.xyz will load → select Linux Network Installs → NixOS
 
-# Should show something like:
-# nvme-Seagate_FireCuda_510_SSD_ZP2000GM30001_0024_CF01_4800_43D3
+2. **Partition and Format with Disko**
+   ```bash
+   # Clone cosmo repo
+   nix-shell -p git
+   git clone https://github.com/patflynn/cosmo /tmp/cosmo
+   cd /tmp/cosmo
 
-# Verify this matches the disk-config.nix device path
-```
+   # Run disko to partition, encrypt, and mount
+   # This will prompt for the LUKS encryption password
+   sudo nix --experimental-features "nix-command flakes" \
+     run github:nix-community/disko -- \
+     --mode disko ./hosts/weller/disk-config.nix
+   ```
 
-### 5.3 Partition, Encrypt, and Format with Disko
+3. **Install the Bootstrap Configuration**
+   ```bash
+   # Install using the weller-bootstrap target
+   nixos-install --no-write-lock-file --flake /tmp/cosmo#weller-bootstrap
+   ```
 
-```bash
-# Clone cosmo repo
-nix-shell -p git
-git clone https://github.com/patflynn/cosmo /tmp/cosmo
-cd /tmp/cosmo
+4. **Reboot and Access via SSH**
+   - Reboot into the new system.
+   - From your laptop, log in as `root` (using your SSH keys):
+     ```bash
+     ssh root@weller-bootstrap
+     ```
+   - No initial password is required as your keys from `secrets/keys.nix` are pre-authorized in the bootstrap image.
+   - For better security, password authentication is disabled by default.
 
-# Run disko to partition, encrypt, and mount
-# This will prompt for the LUKS encryption password
-sudo nix --experimental-features "nix-command flakes" \
-  run github:nix-community/disko -- \
-  --mode disko ./hosts/weller/disk-config.nix
-```
+### 5.2 Stage 2: Full Configuration
 
-Disko will:
-- Create GPT partition table
-- Create 1GB EFI partition
-- Create LUKS2 encrypted partition (prompts for password)
-- Format with Btrfs and create subvolumes (@root, @home, @nix, @swap)
-- Mount everything to /mnt
-- Create 16GB swapfile
+Once the bootstrap system is running, we can finalize the setup.
 
-### 5.4 Install NixOS
+1. **Generate Host SSH Key**
+   ```bash
+   # The host key is usually at /etc/ssh/ssh_host_ed25519_key.pub
+   cat /etc/ssh/ssh_host_ed25519_key.pub
+   ```
 
-```bash
-# Install NixOS from the flake
-nixos-install --no-write-lock-file --flake /tmp/cosmo#weller
+2. **Update Repository Secrets (on your laptop)**
+   - Copy the new host key to `secrets/keys.nix`.
+   - Rekey secrets: `agenix -r`.
+   - Commit and push changes to GitHub.
 
-# Set root password when prompted (or skip if using SSH keys only)
-```
+3. **Apply Full Configuration (on weller)**
+   ```bash
+   cd ~/hack/cosmo # or wherever you keep the repo
+   git pull
+   sudo nixos-rebuild switch --flake .#weller
+   ```
+
+The system will now have:
+- Immutable users (managed by Nix)
+- Secrets decrypted via `agenix`
+- Full workstation environment (NVIDIA, Hyprland, etc.)
 
 ---
 

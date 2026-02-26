@@ -156,6 +156,18 @@
           ];
         };
 
+        # Hostname: weller-bootstrap (Initial install target)
+        weller-bootstrap = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./hosts/weller/hardware.nix
+            ./hosts/weller/disk-config.nix
+            ./modules/bootstrap.nix
+            inputs.disko.nixosModules.disko
+          ];
+        };
+
         # Hostname: weller (dual-boot Windows 11 + NixOS workstation)
         weller = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";

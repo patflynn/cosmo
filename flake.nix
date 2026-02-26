@@ -71,6 +71,33 @@
             }
           ];
         };
+
+      mkBootstrap =
+        {
+          system ? "x86_64-linux",
+          hardware,
+          disk ? null,
+          hostName ? "nixos-bootstrap",
+          hostId ? null,
+          user ? "patrick",
+          email ? "big.pat@gmail.com",
+        }:
+        nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = { inherit inputs; };
+          modules = [
+            hardware
+            (if disk != null then disk else { })
+            (if disk != null then inputs.disko.nixosModules.disko else { })
+            ./modules/bootstrap.nix
+            {
+              networking.hostName = hostName;
+              cosmo.user.default = user;
+              cosmo.user.email = email;
+            }
+            (if hostId != null then { networking.hostId = hostId; } else { })
+          ];
+        };
     in
     {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
@@ -101,6 +128,13 @@
               }
             )
           ];
+        };
+
+        # Bootstrap install target for classic-laddie (hostname: classic-laddie)
+        classic-laddie-bootstrap = mkBootstrap {
+          hardware = ./hosts/classic-laddie/hardware.nix;
+          hostName = "classic-laddie";
+          hostId = "8425e349";
         };
 
         # Hostname: makers-nix
@@ -154,6 +188,13 @@
               }
             )
           ];
+        };
+
+        # Bootstrap install target for weller (hostname: weller)
+        weller-bootstrap = mkBootstrap {
+          hardware = ./hosts/weller/hardware.nix;
+          disk = ./hosts/weller/disk-config.nix;
+          hostName = "weller";
         };
 
         # Hostname: weller (dual-boot Windows 11 + NixOS workstation)

@@ -7,7 +7,7 @@
 
 {
   imports = [
-    ./hardware-configuration.nix
+    ./hardware.nix
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/workstation.nix
@@ -17,6 +17,11 @@
 
   cosmo.user.default = "patrick";
   cosmo.user.email = "big.pat@gmail.com";
+
+  # ---------------------------------------------------------------------------
+  # Networking
+  # ---------------------------------------------------------------------------
+  networking.hostName = "classic-laddie";
 
   # ---------------------------------------------------------------------------
   # Remote Desktop Streaming (Sunshine/Moonlight)
@@ -40,41 +45,9 @@
     mode = "0440";
   };
 
-  # Bootloader (Keep what matches your hardware!)
-  # If your hardware-configuration.nix says you are EFI, use systemd-boot:
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  # If you are Legacy BIOS, you might need: boot.loader.grub.device = "/dev/sda";
-
-  # Enable proprietary software (required for Nvidia drivers)
-  nixpkgs.config.allowUnfree = true;
-
-  # Graphics
-  hardware.graphics.enable = true;
-
-  # Nvidia Driver Configuration
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia = {
-    modesetting.enable = true;
-    powerManagement.enable = false;
-    powerManagement.finegrained = false;
-    open = false;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-  };
-
-  # Allow qemu-libvirtd to access the GPU
-  users.groups.video.members = [ "qemu-libvirtd" ];
-  users.groups.render.members = [ "qemu-libvirtd" ];
-
-  networking.hostName = "classic-laddie";
-  networking.hostId = "8425e349"; # Required for ZFS
-  networking.networkmanager.enable = true;
-
-  # Storage Support (Roadmap Phase 1)
-  boot.supportedFilesystems = [ "zfs" ];
-
+  # ---------------------------------------------------------------------------
   # Remote Access (Roadmap Phase 1)
+  # ---------------------------------------------------------------------------
   services.tailscale = {
     enable = true;
     useRoutingFeatures = "server";

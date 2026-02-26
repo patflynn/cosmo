@@ -130,10 +130,10 @@
           ];
         };
 
-        # Hostname: classic-laddie-bootstrap
+        # Bootstrap install target for classic-laddie (hostname: classic-laddie)
         classic-laddie-bootstrap = mkBootstrap {
           hardware = ./hosts/classic-laddie/hardware.nix;
-          hostName = "classic-laddie-bootstrap";
+          hostName = "classic-laddie";
           hostId = "8425e349";
         };
 
@@ -190,11 +190,11 @@
           ];
         };
 
-        # Hostname: weller-bootstrap (Initial install target)
+        # Bootstrap install target for weller (hostname: weller)
         weller-bootstrap = mkBootstrap {
           hardware = ./hosts/weller/hardware.nix;
           disk = ./hosts/weller/disk-config.nix;
-          hostName = "weller-bootstrap";
+          hostName = "weller";
         };
 
         # Hostname: weller (dual-boot Windows 11 + NixOS workstation)

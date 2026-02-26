@@ -135,7 +135,7 @@ The first stage installs a minimal system with:
    - Reboot into the new system.
    - From your laptop, log in as `root` (using your SSH keys):
      ```bash
-     ssh root@weller-bootstrap
+     ssh root@weller
      ```
    - No initial password is required as your keys from `secrets/keys.nix` are pre-authorized in the bootstrap image.
    - For better security, password authentication is disabled by default.

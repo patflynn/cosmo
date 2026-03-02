@@ -16,6 +16,9 @@
   };
 
   config = {
+    # MemTest86+ boot entry for memory diagnostics
+    boot.loader.systemd-boot.memtest86.enable = true;
+
     # Core System Packages
     # These are installed system-wide and available to all users (including root).
     environment.systemPackages = with pkgs; [
@@ -29,6 +32,12 @@
 
       # System Monitor
       htop
+
+      # Hardware Diagnostics
+      smartmontools
+      nvme-cli
+      lm_sensors
+      memtester
 
       # Version Control
       git

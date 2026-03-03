@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }:
 
@@ -16,8 +17,8 @@
   };
 
   config = {
-    # MemTest86+ boot entry for memory diagnostics
-    boot.loader.systemd-boot.memtest86.enable = true;
+    # MemTest86+ boot entry for memory diagnostics (only on systemd-boot hosts)
+    boot.loader.systemd-boot.memtest86 = lib.mkIf config.boot.loader.systemd-boot.enable { enable = true; };
 
     # Core System Packages
     # These are installed system-wide and available to all users (including root).
@@ -32,12 +33,6 @@
 
       # System Monitor
       htop
-
-      # Hardware Diagnostics
-      smartmontools
-      nvme-cli
-      lm_sensors
-      memtester
 
       # Version Control
       git

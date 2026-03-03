@@ -1,0 +1,14 @@
+{
+  "id": "20260302-1900-e445",
+  "prompt": "Fix PR #299 on branch agent/20260302-1855-70c6. Two changes needed:\n\n1. Remove the hardware diagnostic packages (smartmontools, nvme-cli, lm_sensors, memtester) that were added to modules/common/system.nix. Only keep the MemTest86+ boot entry.\n\n2. Guard the MemTest86+ boot entry with lib.mkIf so it doesn't break on hosts without systemd-boot (like the WSL host makers-nix). Change it to:\n   boot.loader.systemd-boot.memtest86 = lib.mkIf config.boot.loader.systemd-boot.enable { enable = true; };\n\nMake sure lib and config are available in the function parameters of system.nix. Commit and push to the existing PR branch.",
+  "issue": null,
+  "branch": "agent/20260302-1900-e445",
+  "worktree": "/tmp/klaus-sessions/session-20260302-1840-2e08/20260302-1900-e445",
+  "tmux_pane": "%6",
+  "budget": "5.00",
+  "log_file": "/home/patrick/hack/cosmo/.git/klaus/logs/20260302-1900-e445.jsonl",
+  "created_at": "2026-03-02T19:00:02-05:00",
+  "cost_usd": 0.42685249999999997,
+  "duration_ms": 42294,
+  "pr_url": null
+}

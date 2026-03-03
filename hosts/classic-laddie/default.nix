@@ -159,12 +159,11 @@
     config = {
       homeassistant = {
         name = "Cosmo Home";
-        # TODO: Replace with your actual location
-        latitude = 40.7128;
-        longitude = -74.0060;
-        elevation = 10;
+        latitude = 45.5245;
+        longitude = -73.5813;
+        elevation = 36;
         unit_system = "metric";
-        time_zone = "America/New_York";
+        time_zone = "America/Montreal";
       };
       http = {
         server_port = 8123;

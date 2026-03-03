@@ -18,7 +18,9 @@
 
   config = {
     # MemTest86+ boot entry for memory diagnostics (only on systemd-boot hosts)
-    boot.loader.systemd-boot.memtest86 = lib.mkIf config.boot.loader.systemd-boot.enable { enable = true; };
+    boot.loader.systemd-boot.memtest86 = lib.mkIf config.boot.loader.systemd-boot.enable {
+      enable = true;
+    };
 
     # Core System Packages
     # These are installed system-wide and available to all users (including root).

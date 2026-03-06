@@ -1,0 +1,14 @@
+{
+  "id": "20260306-1605-a57b",
+  "prompt": "Remove GUI desktop and Sunshine remoting capability from classic-laddie, converting it to a headless server.\n\nChanges needed:\n\n1. hosts/classic-laddie/default.nix:\n   - Remove the import of ../../modules/common/workstation.nix (line 13)\n   - Remove the import of ../../modules/common/remoting.nix (line 14)\n   - Remove the 'Remote Desktop Streaming' section (lines 27-29: the comment and modules.remoting.enable = true)\n   - Remove the 'AUTO-LOGIN' section (lines 60-64: the comment and services.displayManager.autoLogin block) since it only existed for headless streaming\n   - Remove the sunshine package override (lines 66-67: the comment and services.sunshine.package line)\n\n2. flake.nix:\n   - In the classic-laddie nixosConfiguration home-manager imports (around lines 122-126), remove ./home/workstation.nix and ./home/remoting.nix, keeping only ./home/identities/personal.nix\n\nDo NOT modify:\n- hardware.nix (NVIDIA drivers are still needed for media transcoding and VM GPU passthrough)\n- The workstation.nix or remoting.nix module files themselves (other hosts may use them)\n- Any other host configurations",
+  "issue": null,
+  "branch": "agent/20260306-1605-a57b",
+  "worktree": "/tmp/klaus-sessions/session-20260306-1602-a184/20260306-1605-a57b",
+  "tmux_pane": "%1",
+  "budget": "5.00",
+  "log_file": "/home/patrick/hack/cosmo/.git/klaus/logs/20260306-1605-a57b.jsonl",
+  "created_at": "2026-03-06T16:05:28-05:00",
+  "cost_usd": 0.43798724999999994,
+  "duration_ms": 57480,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/302"
+}

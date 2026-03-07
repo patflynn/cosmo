@@ -141,6 +141,28 @@
     "media"
   ];
 
+  # ---------------------------------------------------------------------------
+  # Home Automation Server
+  # ---------------------------------------------------------------------------
+  services.home-assistant = {
+    enable = true;
+    openFirewall = true;
+    extraComponents = [ "default_config" ];
+    config = {
+      homeassistant = {
+        name = "Cosmo Home";
+        latitude = 45.5245;
+        longitude = -73.5813;
+        elevation = 36;
+        unit_system = "metric";
+        time_zone = "America/Montreal";
+      };
+      http = {
+        server_port = 8123;
+      };
+    };
+  };
+
   # Do not change this unless you reinstall the OS
   system.stateVersion = "25.11";
 }

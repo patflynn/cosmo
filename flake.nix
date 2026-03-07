@@ -121,6 +121,7 @@
                 home-manager.users.${config.cosmo.user.default} = {
                   imports = [
                     ./home/server.nix
+                    ./home/dev.nix
                     ./home/identities/personal.nix
                   ];
                 };

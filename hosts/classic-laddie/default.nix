@@ -10,8 +10,6 @@
     ./hardware.nix
     ../../modules/common/system.nix
     ../../modules/common/users.nix
-    ../../modules/common/workstation.nix
-    ../../modules/common/remoting.nix
     ../../modules/media-server/default.nix
   ];
 
@@ -22,11 +20,6 @@
   # Networking
   # ---------------------------------------------------------------------------
   networking.hostName = "classic-laddie";
-
-  # ---------------------------------------------------------------------------
-  # Remote Desktop Streaming (Sunshine/Moonlight)
-  # ---------------------------------------------------------------------------
-  modules.remoting.enable = true;
 
   # ---------------------------------------------------------------------------
   # Media Server Configuration
@@ -56,15 +49,6 @@
 
   # Set your time zone
   time.timeZone = "America/New_York";
-
-  # AUTO-LOGIN: Facilitates headless streaming via Sunshine
-  services.displayManager.autoLogin = {
-    enable = true;
-    user = config.cosmo.user.default;
-  };
-
-  # Enable hardware acceleration for Sunshine
-  services.sunshine.package = pkgs.sunshine.override { cudaSupport = true; };
 
   # Virtualization Host Role
   virtualisation.libvirtd = {

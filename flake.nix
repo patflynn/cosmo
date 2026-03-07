@@ -32,7 +32,7 @@
     };
 
     klaus = {
-      url = "github:patflynn/klaus";
+      url = "github:patflynn/klaus/v0.3.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

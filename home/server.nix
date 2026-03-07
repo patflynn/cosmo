@@ -1,9 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  imports = [
-    ./dev.nix
-  ];
+  imports = [ ./common.nix ];
 
   programs.zsh.shellAliases = {
     # System Maintenance

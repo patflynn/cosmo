@@ -1,0 +1,16 @@
+{
+  "id": "20260308-2115-2373",
+  "prompt": "Investigate why Andor Season 2 episodes are failing to play on Plex.\n\nIMPORTANT CONTEXT: The media server runs on host 'classic-laddie'. You are running ON classic-laddie and can access live logs and services directly.\n\n## What to check\n\n1. **Sonarr logs** — Check Sonarr logs for any issues with Andor Season 2 downloads/imports:\n   - journalctl -u sonarr --since '1 week ago' | grep -i andor\n   - Or check Sonarr's log directory (likely /var/lib/sonarr/logs/ or similar)\n\n2. **Plex logs** — Check Plex Media Server logs for playback errors:\n   - journalctl -u plex --since '1 week ago' | grep -i andor\n   - Or check /var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Logs/\n\n3. **File system** — Check if the Andor S02 files actually exist and are accessible:\n   - Find where TV shows are stored (check the NixOS media-server module config for paths)\n   - ls the Andor directory, check file sizes, permissions\n   - Check if files are complete (not partial downloads)\n\n4. **Codec/format** — Check the media files:\n   - Use mediainfo or ffprobe on an Andor S02 episode to see codec details\n   - Compare with a working show's episodes\n\n5. **NixOS config** — Read modules/media-server/default.nix and hosts/classic-laddie/default.nix to understand the setup (mount points, service configs, etc.)\n\nReport your findings with specific details about what's wrong and suggest fixes.",
+  "issue": null,
+  "branch": "agent/20260308-2115-2373",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260308-2115-2373",
+  "tmux_pane": "%80",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260308-0946-3f9e/logs/20260308-2115-2373.jsonl",
+  "created_at": "2026-03-08T21:15:12-04:00",
+  "cost_usd": 1.1742801500000002,
+  "duration_ms": 225471,
+  "pr_url": null,
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

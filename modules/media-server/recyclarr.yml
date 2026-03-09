@@ -1,0 +1,64 @@
+# Recyclarr configuration for the media stack.
+# Syncs TRaSH Guides quality profiles and custom formats to Sonarr/Radarr.
+#
+# Custom format IDs come from TRaSH Guides:
+#   https://trash-guides.info/
+#
+# To find more custom format IDs, run:
+#   recyclarr list custom-formats sonarr
+#   recyclarr list custom-formats radarr
+
+sonarr:
+  main:
+    base_url: http://localhost:8989
+    api_key: !secret sonarr_api_key
+
+    quality_definition:
+      type: series
+
+    custom_formats:
+      # Unwanted releases - reject outright
+      - trash_ids:
+          - 85c61753df5da1fb2aab6f2a47426b09 # BR-DISK
+          - 9c11cd3f07101cdba90a2d81cf0e56b4 # LQ
+          - e2315f990da2e2cbfc9fa5b7a6fcfe48 # LQ (Release Title)
+          - 32b367365729d530ca1c124a0b180c64 # Bad Dual Groups
+        assign_scores_to:
+          - name: Any
+
+      # Penalize x265 re-encodes for HD content (not HDR/DV, often quality loss)
+      - trash_ids:
+          - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
+        assign_scores_to:
+          - name: Any
+
+radarr:
+  main:
+    base_url: http://localhost:7878
+    api_key: !secret radarr_api_key
+
+    quality_definition:
+      type: movie
+
+    custom_formats:
+      # Unwanted releases - reject outright
+      - trash_ids:
+          - ed38b889b31be83fda192888e2286d83 # BR-DISK
+          - 90a6f9a284dff5103f6346090e6280c8 # LQ
+          - e204b80c87be9497a8a6eaff48f72905 # LQ (Release Title)
+          - b6832f586342ef70d9c128d40c07b872 # Bad Dual Groups
+        assign_scores_to:
+          - name: Any
+
+      # VVC/H.266 rejection (TRaSH Guides x266 custom format)
+      - trash_ids:
+          - 390455c22a9cac81a738f6cbad705c3c # x266 (VVC/H.266)
+        assign_scores_to:
+          - name: Any
+            score: -10000
+
+      # Penalize x265 re-encodes for HD content
+      - trash_ids:
+          - dc98083864ea246d05a42df0d05f81cc # x265 (HD)
+        assign_scores_to:
+          - name: Any

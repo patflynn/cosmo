@@ -9,6 +9,7 @@ let
   cfg = config.modules.media-server;
 in
 {
+  imports = [ ./recyclarr.nix ];
   options.modules.media-server = {
     enable = lib.mkEnableOption "Media Server Stack (Plex, Jellyfin, Arrs, Torrent/VPN)";
     vpnSecretPath = lib.mkOption {

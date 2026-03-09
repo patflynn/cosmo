@@ -26,6 +26,13 @@
   # ---------------------------------------------------------------------------
   modules.media-server.enable = true;
 
+  # Declarative config sync for the media stack (Recyclarr + VVC rejection + Prowlarr connections).
+  # Before enabling, populate the API key secrets:
+  #   cd secrets && agenix -e sonarr-api-key.age   # paste the API key from Sonarr UI → Settings → General
+  #   cd secrets && agenix -e radarr-api-key.age   # paste the API key from Radarr UI → Settings → General
+  #   cd secrets && agenix -e prowlarr-api-key.age  # paste the API key from Prowlarr UI → Settings → General
+  modules.media-server.recyclarr.enable = true;
+
   # VPN Credentials for Gluetun (Mullvad)
   # Run: agenix -e secrets/media-vpn.age
   # Content format:
@@ -36,6 +43,20 @@
     owner = config.cosmo.user.default; # Needs to be readable by the user running podman (or root if system)
     group = "podman";
     mode = "0440";
+  };
+
+  # API keys for the *arr stack (used by the media-stack-sync service)
+  age.secrets."sonarr-api-key" = {
+    file = ../../secrets/sonarr-api-key.age;
+    mode = "0400";
+  };
+  age.secrets."radarr-api-key" = {
+    file = ../../secrets/radarr-api-key.age;
+    mode = "0400";
+  };
+  age.secrets."prowlarr-api-key" = {
+    file = ../../secrets/prowlarr-api-key.age;
+    mode = "0400";
   };
 
   # ---------------------------------------------------------------------------

@@ -29,7 +29,7 @@ let
 
     # Helper: call curl with API key passed via stdin (avoids leaking key in /proc/cmdline)
     curl_api() {
-      local api_key="$1"; shift
+      local api_key="''${1?API key is required for curl_api}"; shift
       printf 'header = "X-Api-Key: %s"\n' "$api_key" | $curl -sf -K - "$@"
     }
 
@@ -131,10 +131,10 @@ let
 
     # Helper: add a Prowlarr application connection if it doesn't already exist
     add_prowlarr_connection() {
-      local app_name="$1" impl="$2" contract="$3" base_url="$4" api_key="$5"
-      local categories="$6"  # JSON array string, e.g. "[5000,5010]"
+      local prowlarr_apps="$1" app_name="$2" impl="$3" contract="$4" base_url="$5" api_key="$6"
+      local categories="$7"  # JSON array string, e.g. "[5000,5010]"
 
-      if [ "$(echo "$PROWLARR_APPS" | $jq --arg n "$app_name" '[.[] | select(.name == $n)] | length')" != "0" ]; then
+      if [ "$(echo "$prowlarr_apps" | $jq --arg n "$app_name" '[.[] | select(.name == $n)] | length')" != "0" ]; then
         echo "$app_name connection already exists in Prowlarr."
         return 0
       fi
@@ -169,10 +169,10 @@ let
       echo "$app_name connection added."
     }
 
-    add_prowlarr_connection "Sonarr" "Sonarr" "SonarrSettings" \
+    add_prowlarr_connection "$PROWLARR_APPS" "Sonarr" "Sonarr" "SonarrSettings" \
       "http://localhost:8989" "$SONARR_API_KEY" "[5000,5010,5020,5030,5040,5045,5050]"
 
-    add_prowlarr_connection "Radarr" "Radarr" "RadarrSettings" \
+    add_prowlarr_connection "$PROWLARR_APPS" "Radarr" "Radarr" "RadarrSettings" \
       "http://localhost:7878" "$RADARR_API_KEY" "[2000,2010,2020,2030,2040,2045,2050,2060]"
 
     echo "=== Media stack sync complete ==="

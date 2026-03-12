@@ -9,7 +9,7 @@
 #   recyclarr list custom-formats radarr
 
 sonarr:
-  main:
+  sonarr:
     base_url: http://localhost:8989
     api_key: !secret sonarr_api_key
 
@@ -33,7 +33,7 @@ sonarr:
           - name: Any
 
 radarr:
-  main:
+  radarr:
     base_url: http://localhost:7878
     api_key: !secret radarr_api_key
 

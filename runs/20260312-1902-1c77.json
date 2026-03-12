@@ -1,0 +1,16 @@
+{
+  "id": "20260312-1902-1c77",
+  "prompt": "Add language filtering to the media stack config to prevent non-English releases from being grabbed.\n\n## Context\nSonarr v4 has language preferences in quality profiles. Currently the profiles don't restrict language, so Sonarr grabbed German-dubbed VVC releases of Andor S2.\n\n## Requirements\nAdd to the media-stack-sync script (modules/media-server/recyclarr.nix) a step that sets the language to English on all Sonarr and Radarr quality profiles via the API. In Sonarr/Radarr v4 API, quality profiles have a 'language' field that can be set.\n\nThe approach should be:\n1. For each quality profile, check if the language is already set to English\n2. If not, update it to English via PUT to /api/v3/qualityprofile/{id}\n\nThe Sonarr v4 API language field on quality profiles looks like: {\"id\": 1, \"name\": \"English\"}\n\nAlso consider adding a TRaSH Guides custom format to recyclarr.yml if there's a standard one for penalizing non-English releases (check what's available).\n\nAdd this as a new section in the sync script, after the VVC rejection section. Include a comment explaining why.\n\nMake sure nixfmt passes and the NixOS config evaluates.",
+  "issue": null,
+  "branch": "agent/20260312-1902-1c77",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260312-1902-1c77",
+  "tmux_pane": "%13",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260312-1808-879a/logs/20260312-1902-1c77.jsonl",
+  "created_at": "2026-03-12T19:02:42-04:00",
+  "cost_usd": 0.4726826000000001,
+  "duration_ms": 134296,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/322",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

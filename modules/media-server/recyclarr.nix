@@ -122,7 +122,46 @@ let
     ensure_vvc_custom_format "$RADARR_URL" "$RADARR_API_KEY" "Radarr" "v3"
 
     # ---------------------------------------------------------------
-    # 3. Prowlarr application connections
+    # 3. Enforce English language on all quality profiles
+    # ---------------------------------------------------------------
+    # Sonarr v4 quality profiles have a "language" field that controls which
+    # releases are accepted. Without this, profiles default to "Any" and will
+    # grab foreign-language releases (e.g. German-dubbed VVC encodes of
+    # Andor S2). Setting language to English (id=1) prevents this.
+    echo "=== Enforcing English language on quality profiles ==="
+
+    enforce_english_language() {
+      local url="$1" api_key="$2" name="$3"
+
+      $curl -sf "$url/api/v3/qualityprofile" \
+        -H "X-Api-Key: $api_key" | \
+        $jq -c '.[]' | while IFS= read -r profile; do
+          local pid pname lang_id
+          pid=$(echo "$profile" | $jq '.id')
+          pname=$(echo "$profile" | $jq -r '.name')
+          lang_id=$(echo "$profile" | $jq '.language.id // empty')
+
+          if [ "$lang_id" = "1" ]; then
+            echo "  Profile '$pname' ($pid) in $name already set to English."
+            continue
+          fi
+
+          echo "  Setting profile '$pname' ($pid) in $name to English..."
+          local updated
+          updated=$(echo "$profile" | $jq '.language = {"id": 1, "name": "English"}')
+          $curl -sf -X PUT "$url/api/v3/qualityprofile/$pid" \
+            -H "X-Api-Key: $api_key" \
+            -H "Content-Type: application/json" \
+            -d "$updated" > /dev/null
+          echo "    Done."
+        done
+    }
+
+    enforce_english_language "$SONARR_URL" "$SONARR_API_KEY" "Sonarr"
+    enforce_english_language "$RADARR_URL" "$RADARR_API_KEY" "Radarr"
+
+    # ---------------------------------------------------------------
+    # 4. Prowlarr application connections
     # ---------------------------------------------------------------
     echo "=== Configuring Prowlarr connections ==="
 
@@ -205,7 +244,7 @@ in
 
   config = lib.mkIf (cfg.enable && rcfg.enable) {
     systemd.services.media-stack-sync = {
-      description = "Sync media stack configuration (Recyclarr + VVC rejection + Prowlarr connections)";
+      description = "Sync media stack configuration (Recyclarr + VVC rejection + English language + Prowlarr connections)";
       after = [
         "network-online.target"
         "sonarr.service"

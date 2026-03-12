@@ -1,0 +1,16 @@
+{
+  "id": "20260312-1809-771e",
+  "prompt": "Fix all 5 unresolved Gemini Code Assist review comments on PR #315 (modules/media-server/recyclarr.nix):\n\n1. HIGH/Security (L37-38): API keys are leaked via curl command-line args visible in /proc/\u003cpid\u003e/cmdline. Fix by using curl's --config or -K option to read headers from stdin instead. For example:\n   cat \u003c\u003cEOF | curl -sf -K - \"$url/api/v3/system/status\"\n   header = \"X-Api-Key: $api_key\"\n   EOF\n   Apply this pattern everywhere curl is called with -H \"X-Api-Key: ...\" in the script.\n\n2. HIGH (L122): The call ensure_vvc_custom_format \"$RADARR_URL\" \"$RADARR_API_KEY\" \"Radarr\" \"v3\" is redundant because recyclarr.yml already adds VVC/H.266 rejection for Radarr via TRaSH Guides (trash_id 390455c22a9cac81a738f6cbad705c3c). Remove this line, keeping only the Sonarr call.\n\n3. MEDIUM/Security (L138-150): The Prowlarr connection JSON payloads for Sonarr and Radarr use shell string interpolation with escaped quotes, which is fragile and injection-prone. Refactor into a reusable shell function and use jq to construct the JSON payload safely (similar to how jq is used elsewhere in the script).\n\n4. MEDIUM (L46): The warning message 'WARNING: $name did not become ready in time, skipping.' is misleading because set -e means the script will exit when wait_for_api returns 1. Change to 'ERROR: $name did not become ready in time. Exiting.'\n\n5. MEDIUM (L63): Quote the ${recyclarrConfig} variable in the cp command: cp \"${recyclarrConfig}\" \"$STATE_DIR/recyclarr.yml\"\n\nMake sure the NixOS config still evaluates (nix build --dry-run or nix flake check if available). Run any pre-commit hooks. Create a PR targeting the PR #315 branch.",
+  "issue": "315",
+  "branch": "agent/20260312-1809-771e",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260312-1809-771e",
+  "tmux_pane": "%3",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260312-1808-879a/logs/20260312-1809-771e.jsonl",
+  "created_at": "2026-03-12T18:09:51-04:00",
+  "cost_usd": 0.50429425,
+  "duration_ms": 154545,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/316",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

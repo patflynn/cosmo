@@ -172,9 +172,9 @@
     config = {
       homeassistant = {
         name = "Cosmo Home";
-        latitude = 45.5245;
-        longitude = -73.5813;
-        elevation = 36;
+        latitude = 45.5250;
+        longitude = -73.5970;
+        elevation = 52;
         unit_system = "metric";
         time_zone = "America/Montreal";
       };

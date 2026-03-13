@@ -27,8 +27,8 @@
 
   programs.zsh.shellAliases = {
     # Override common.nix 'update' alias for Home Manager standalone
-    update = lib.mkForce "home-manager switch --flake github:patflynn/cosmo#${config.home.username}@crostini";
+    update = lib.mkForce "nix run home-manager/master -- switch --flake github:patflynn/cosmo#${config.home.username}@crostini";
     # Local rebuild for testing changes
-    rebuild = lib.mkForce "home-manager switch --flake .#${config.home.username}@crostini";
+    rebuild = lib.mkForce "nix run home-manager/master -- switch --flake .#${config.home.username}@crostini";
   };
 }

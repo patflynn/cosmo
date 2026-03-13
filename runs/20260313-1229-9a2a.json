@@ -1,0 +1,16 @@
+{
+  "id": "20260313-1229-9a2a",
+  "prompt": "Add a custom format to reject dubbed releases in both Sonarr and Radarr, without filtering out original-language foreign films.\n\n## Context\nThe Andor S2 problem was German-dubbed VVC releases (filename: 'German.DL.1080p.HDR.WEBRip.h266-266ers'). We do NOT want to set the quality profile language to English because that would filter out original-language foreign films (French cinema, Japanese anime, etc.). The user speaks French and prefers subtitled foreign movies.\n\n## Requirements\nAdd to the media-stack-sync script (modules/media-server/recyclarr.nix) a custom format that penalizes dubbed releases. The custom format should:\n\n1. Be named 'Reject Dubbed Releases' (or similar)\n2. Match release title patterns indicating dubs: \\b(DUBBED|DUB)\\b and also the German dual-language pattern \\bDL\\b (which means 'Dual Language' in German scene naming)\n3. Also match common foreign-language dub tags like \\b(FRENCH|GERMAN|SPANISH|ITALIAN|RUSSIAN|PORTUGUESE|HINDI|CHINESE|KOREAN|JAPANESE|ARABIC|TURKISH|POLISH|DUTCH|SWEDISH|NORWEGIAN|DANISH|FINNISH|CZECH|HUNGARIAN|ROMANIAN|THAI|VIETNAMESE|INDONESIAN|MALAY|TAGALOG)\\.(?:DL|DUBBED|DUB)\\b — i.e. language name followed by DL/DUBBED/DUB\n4. Use a score of -10000 on all quality profiles to effectively reject them\n5. Be idempotent — check if the custom format already exists before creating\n\nImportant: Do NOT use \\bDL\\b alone as it could match other things. The pattern should specifically target dub indicators.\n\nActually, the safest patterns are:\n- \\b(DUBBED|DUB)\\b — catches any explicitly dubbed release\n- \\b\\w+\\.DL\\b — catches the scene convention of 'Language.DL' (Dual Language)\n\nAssign score -10000 to all quality profiles in both Sonarr and Radarr.\n\nFollow the same pattern as the existing ensure_vvc_custom_format function. Add this as a new section in the sync script.\n\nAlso check if TRaSH Guides has any relevant custom format IDs for this — if so, prefer adding them to recyclarr.yml instead of manual API calls.\n\nMake sure nixfmt passes.",
+  "issue": null,
+  "branch": "agent/20260313-1229-9a2a",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260313-1229-9a2a",
+  "tmux_pane": "%18",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260312-1808-879a/logs/20260313-1229-9a2a.jsonl",
+  "created_at": "2026-03-13T12:29:56-04:00",
+  "cost_usd": 0.47484185,
+  "duration_ms": 143463,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/325",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

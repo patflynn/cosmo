@@ -122,7 +122,78 @@ let
     ensure_vvc_custom_format "$RADARR_URL" "$RADARR_API_KEY" "Radarr" "v3"
 
     # ---------------------------------------------------------------
-    # 3. Prowlarr application connections
+    # 3. Dubbed release rejection custom format
+    # ---------------------------------------------------------------
+    # Rejects dubbed releases (e.g. German.DL.1080p) without filtering out
+    # original-language foreign films. Two specs (OR logic):
+    #   - \b(DUBBED|DUB)\b     — explicit dub tags
+    #   - \b\w+\.DL\b          — scene 'Language.DL' (Dual Language) convention
+    echo "=== Ensuring dubbed release rejection custom format ==="
+
+    ensure_dubbed_custom_format() {
+      local url="$1" api_key="$2" name="$3" api_ver="$4"
+      local cf_name="Reject Dubbed Releases"
+
+      local existing_count
+      existing_count=$($curl -sf "$url/api/$api_ver/customformat" \
+        -H "X-Api-Key: $api_key" | \
+        $jq --arg n "$cf_name" '[.[] | select(.name == $n)] | length')
+
+      if [ "$existing_count" != "0" ]; then
+        echo "Dubbed release rejection already exists in $name."
+        return 0
+      fi
+
+      echo "Creating dubbed release rejection custom format in $name..."
+      local cf_id
+      local json_payload
+      json_payload=$(printf '{
+          "name": "%s",
+          "includeCustomFormatWhenRenaming": false,
+          "specifications": [
+            {
+              "name": "DUBBED/DUB tag",
+              "implementation": "ReleaseTitleSpecification",
+              "negate": false,
+              "required": false,
+              "fields": [{"name": "value", "value": "\\b(DUBBED|DUB)\\b"}]
+            },
+            {
+              "name": "Language.DL (Dual Language)",
+              "implementation": "ReleaseTitleSpecification",
+              "negate": false,
+              "required": false,
+              "fields": [{"name": "value", "value": "\\b\\w+\\.DL\\b"}]
+            }
+          ]
+        }' "$cf_name")
+      cf_id=$($curl -sf -X POST "$url/api/$api_ver/customformat" \
+        -H "X-Api-Key: $api_key" \
+        -H "Content-Type: application/json" \
+        -d "$json_payload" | $jq '.id')
+
+      # Assign -10000 score to every quality profile so it is rejected everywhere
+      $curl -sf "$url/api/$api_ver/qualityprofile" \
+        -H "X-Api-Key: $api_key" | \
+        $jq -c '.[]' | while IFS= read -r profile; do
+          local pid
+          pid=$(echo "$profile" | $jq '.id')
+          local updated
+          updated=$(echo "$profile" | $jq --argjson cf_id "$cf_id" --arg cf_name "$cf_name" \
+            '.formatItems += [{"format": $cf_id, "name": $cf_name, "score": -10000}]')
+          $curl -sf -X PUT "$url/api/$api_ver/qualityprofile/$pid" \
+            -H "X-Api-Key: $api_key" \
+            -H "Content-Type: application/json" \
+            -d "$updated" > /dev/null
+          echo "  Assigned dubbed rejection (score -10000) to profile $pid in $name"
+        done
+    }
+
+    ensure_dubbed_custom_format "$SONARR_URL" "$SONARR_API_KEY" "Sonarr" "v3"
+    ensure_dubbed_custom_format "$RADARR_URL" "$RADARR_API_KEY" "Radarr" "v3"
+
+    # ---------------------------------------------------------------
+    # 4. Prowlarr application connections
     # ---------------------------------------------------------------
     echo "=== Configuring Prowlarr connections ==="
 
@@ -205,7 +276,7 @@ in
 
   config = lib.mkIf (cfg.enable && rcfg.enable) {
     systemd.services.media-stack-sync = {
-      description = "Sync media stack configuration (Recyclarr + VVC rejection + Prowlarr connections)";
+      description = "Sync media stack configuration (Recyclarr + VVC/dubbed rejection + Prowlarr connections)";
       after = [
         "network-online.target"
         "sonarr.service"

@@ -1,0 +1,15 @@
+{
+  "id": "20260313-1250-76ee",
+  "prompt": "Update the Home Assistant GPS coordinates in hosts/classic-laddie/default.nix to Mile End, Montreal. The current coordinates are latitude=45.5245, longitude=-73.5813. Change them to latitude=45.5250 and longitude=-73.5970 which corresponds to the Mile End neighbourhood. Also update the elevation to 52 which is more accurate for Mile End. Make a single commit with a clear message about correcting the coordinates.",
+  "issue": null,
+  "branch": "agent/20260313-1250-76ee",
+  "worktree": "/tmp/klaus-sessions/session-20260313-1249-7955/20260313-1250-76ee",
+  "tmux_pane": "%22",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260313-1249-7955/logs/20260313-1250-76ee.jsonl",
+  "created_at": "2026-03-13T12:50:28-04:00",
+  "cost_usd": 0.14295349999999998,
+  "duration_ms": 23946,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/327",
+  "target_repo": "cosmo"
+}

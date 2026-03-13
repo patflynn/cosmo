@@ -1,0 +1,16 @@
+{
+  "id": "20260313-1217-fdde",
+  "prompt": "Fix crostini home-manager configuration to support multiple usernames across different machines.\n\n## Changes needed\n\n### 1. flake.nix (homeConfigurations section)\nReplace the single 'crostini' output with two per-user outputs:\n\n```nix\n# Remove this:\n\"crostini\" = mkHome {\n  username = \"patrick\";\n  identity = ./home/identities/personal.nix;\n  baseModule = ./home/crostini.nix;\n};\n\n# Add these:\n\"patrick@crostini\" = mkHome {\n  username = \"patrick\";\n  identity = ./home/identities/personal.nix;\n  baseModule = ./home/crostini.nix;\n};\n\n\"paflynn@crostini\" = mkHome {\n  username = \"paflynn\";\n  identity = ./home/identities/work.nix;\n  baseModule = ./home/crostini.nix;\n};\n```\n\n### 2. home/crostini.nix\nThe update and rebuild aliases should use 'nix run home-manager/master --' instead of bare 'home-manager' since home-manager may not be on PATH before first activation:\n\n```nix\nupdate = lib.mkForce \"nix run home-manager/master -- switch --flake github:patflynn/cosmo#${config.home.username}@crostini\";\nrebuild = lib.mkForce \"nix run home-manager/master -- switch --flake .#${config.home.username}@crostini\";\n```\n\n### 3. CI (.github/workflows/ci.yml)\nUpdate the home configurations matrix to replace 'crostini' with 'patrick@crostini' and 'paflynn@crostini'.\n\n### 4. docs/crostini-setup.md\nUpdate any references to the old flake output name.\n\nMake sure nixfmt passes and CI config is correct.",
+  "issue": null,
+  "branch": "agent/20260313-1217-fdde",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260313-1217-fdde",
+  "tmux_pane": "%15",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260312-1808-879a/logs/20260313-1217-fdde.jsonl",
+  "created_at": "2026-03-13T12:17:55-04:00",
+  "cost_usd": 0.28890975,
+  "duration_ms": 53201,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/324",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

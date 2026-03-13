@@ -243,9 +243,16 @@
         };
 
         # 3. Personal Crostini
-        "crostini" = mkHome {
+        "patrick@crostini" = mkHome {
           username = "patrick";
           identity = ./home/identities/personal.nix;
+          baseModule = ./home/crostini.nix;
+        };
+
+        # 4. Work Crostini
+        "paflynn@crostini" = mkHome {
+          username = "paflynn";
+          identity = ./home/identities/work.nix;
           baseModule = ./home/crostini.nix;
         };
       };

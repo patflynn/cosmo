@@ -146,11 +146,9 @@ let
 
       echo "Creating dubbed release rejection custom format in $name..."
       local cf_id
-      cf_id=$($curl -sf -X POST "$url/api/$api_ver/customformat" \
-        -H "X-Api-Key: $api_key" \
-        -H "Content-Type: application/json" \
-        -d '{
-          "name": "Reject Dubbed Releases",
+      local json_payload
+      json_payload=$(printf '{
+          "name": "%s",
           "includeCustomFormatWhenRenaming": false,
           "specifications": [
             {
@@ -168,7 +166,11 @@ let
               "fields": [{"name": "value", "value": "\\b\\w+\\.DL\\b"}]
             }
           ]
-        }' | $jq '.id')
+        }' "$cf_name")
+      cf_id=$($curl -sf -X POST "$url/api/$api_ver/customformat" \
+        -H "X-Api-Key: $api_key" \
+        -H "Content-Type: application/json" \
+        -d "$json_payload" | $jq '.id')
 
       # Assign -10000 score to every quality profile so it is rejected everywhere
       $curl -sf "$url/api/$api_ver/qualityprofile" \
@@ -177,8 +179,8 @@ let
           local pid
           pid=$(echo "$profile" | $jq '.id')
           local updated
-          updated=$(echo "$profile" | $jq --argjson cf_id "$cf_id" \
-            '.formatItems += [{"format": $cf_id, "name": "Reject Dubbed Releases", "score": -10000}]')
+          updated=$(echo "$profile" | $jq --argjson cf_id "$cf_id" --arg cf_name "$cf_name" \
+            '.formatItems += [{"format": $cf_id, "name": $cf_name, "score": -10000}]')
           $curl -sf -X PUT "$url/api/$api_ver/qualityprofile/$pid" \
             -H "X-Api-Key: $api_key" \
             -H "Content-Type: application/json" \

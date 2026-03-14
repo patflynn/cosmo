@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   # --- Desktop Environment ---
@@ -33,6 +38,16 @@
     XDG_SESSION_TYPE = "wayland";
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    LD_LIBRARY_PATH = "/run/opengl-driver/lib";
+    LD_LIBRARY_PATH = lib.mkForce "/run/opengl-driver/lib";
+  };
+
+  # --- Audio ---
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    jack.enable = true; # Useful for pro audio interfaces like the Focusrite Scarlett
   };
 }

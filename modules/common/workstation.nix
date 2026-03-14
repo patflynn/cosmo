@@ -38,7 +38,13 @@
     XDG_SESSION_TYPE = "wayland";
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";
-    LD_LIBRARY_PATH = lib.mkForce "/run/opengl-driver/lib";
+    LD_LIBRARY_PATH = lib.mkForce (
+      let
+        openGLPath = "/run/opengl-driver/lib";
+        pipewireJackPath = lib.makeLibraryPath [ pkgs.pipewire.jack ];
+      in
+      if config.services.pipewire.jack.enable then "${pipewireJackPath}:${openGLPath}" else openGLPath
+    );
   };
 
   # --- Audio ---

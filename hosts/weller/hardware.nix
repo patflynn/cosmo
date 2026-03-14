@@ -33,6 +33,42 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.systemd.enable = true;
 
+  # Bluetooth support in initrd for LUKS decryption (Kinesis 360 Pro)
+  boot.initrd.systemd.dbus.enable = true;
+  boot.initrd.systemd.packages = [ pkgs.bluez ];
+  boot.initrd.kernelModules = [
+    "btusb"
+    "bluetooth"
+    "uhid"
+    "hidp"
+    "hid_generic"
+  ];
+  boot.initrd.systemd.services.bluetoothd = {
+    description = "Bluetooth service (initrd)";
+    wantedBy = [ "initrd.target" ];
+    after = [
+      "dbus.socket"
+      "systemd-udev-trigger.service"
+    ];
+    before = [ "systemd-cryptsetup@cryptroot.service" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.bluez}/libexec/bluetooth/bluetoothd -n";
+      Type = "simple";
+    };
+    unitConfig.DefaultDependencies = false;
+  };
+  # Copy pairing keys into initrd
+  boot.initrd.secrets = {
+    "/var/lib/bluetooth" = "/var/lib/bluetooth";
+  };
+  # Experimental BLE support in initrd
+  boot.initrd.systemd.contents."/etc/bluetooth/main.conf".text = ''
+    [General]
+    Experimental = true
+    [Policy]
+    AutoEnable = true
+  '';
+
   # Seagate FireCuda 510 firmware crashes with APST power saving (#263)
   boot.kernelParams = [
     "nvme_core.default_ps_max_latency_us=0"
@@ -72,6 +108,7 @@
   # ---------------------------------------------------------------------------
   # Bluetooth – optimised for Kinesis Advantage 360 Pro (ZMK / BLE)
   # ---------------------------------------------------------------------------
+  hardware.enableAllFirmware = true;
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;

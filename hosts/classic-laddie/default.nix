@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   inputs,
   ...
@@ -165,6 +166,20 @@
   # ---------------------------------------------------------------------------
   # Home Automation Server
   # ---------------------------------------------------------------------------
+
+  # Location coordinates for Home Assistant (latitude, longitude, elevation).
+  # Create with: cd secrets && agenix -e ha-location.age
+  # Content format (env vars sourced at service start):
+  #   HA_LATITUDE=45.5250
+  #   HA_LONGITUDE=-73.5970
+  #   HA_ELEVATION=52
+  age.secrets."ha-location" = {
+    file = ../../secrets/ha-location.age;
+    owner = "hass";
+    group = "hass";
+    mode = "0400";
+  };
+
   services.home-assistant = {
     enable = true;
     openFirewall = true;
@@ -178,9 +193,6 @@
     config = {
       homeassistant = {
         name = "Cosmo Home";
-        latitude = 45.5250;
-        longitude = -73.5970;
-        elevation = 52;
         unit_system = "metric";
         time_zone = "America/Montreal";
       };
@@ -189,6 +201,22 @@
       };
     };
   };
+
+  # Inject location coordinates from agenix secret into HA's configuration.yaml
+  # at startup, after the NixOS module generates the base config file.
+  systemd.services.home-assistant.preStart = lib.mkAfter ''
+    source ${config.age.secrets."ha-location".path}
+
+    cfgFile="/var/lib/hass/configuration.yaml"
+
+    # Convert Nix store symlink to a writable copy so we can inject secrets
+    if [ -L "$cfgFile" ]; then
+      cp --remove-destination "$(readlink -f "$cfgFile")" "$cfgFile"
+    fi
+
+    # Add coordinates to the homeassistant section
+    ${pkgs.gnused}/bin/sed -i "/^homeassistant:/a\  elevation: $HA_ELEVATION\n  latitude: $HA_LATITUDE\n  longitude: $HA_LONGITUDE" "$cfgFile"
+  '';
 
   # Do not change this unless you reinstall the OS
   system.stateVersion = "25.11";

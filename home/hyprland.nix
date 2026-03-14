@@ -65,6 +65,16 @@
       wl-copy "$GIF"
     '')
 
+    # Screenshot scripts (avoids quoting issues in Hyprland binds)
+    (pkgs.writeShellScriptBin "screenshot-region" ''
+      REGION=$(slurp) || exit 0
+      grim -g "$REGION" - | wl-copy
+    '')
+    (pkgs.writeShellScriptBin "screenshot-region-edit" ''
+      REGION=$(slurp) || exit 0
+      grim -g "$REGION" - | swappy -f -
+    '')
+
     # Cheatsheet Script
     (pkgs.writeShellScriptBin "hypr-cheatsheet" ''
       #!/usr/bin/env bash
@@ -192,13 +202,13 @@
         "$mainMod SHIFT, 5, Move to workspace 5, movetoworkspace, 5"
 
         # Screenshots
-        ", Print, Screenshot region to clipboard, exec, grim -g \"$(slurp)\" - | wl-copy"
-        "$mainMod, Print, Screenshot region to editor, exec, grim -g \"$(slurp)\" - | swappy -f -"
+        ", Print, Screenshot region to clipboard, exec, screenshot-region"
+        "$mainMod, Print, Screenshot region to editor, exec, screenshot-region-edit"
         "SHIFT, Print, Screenshot fullscreen, exec, grim - | wl-copy"
 
         # Screenshot alternatives (no Print key)
-        "$mainMod SHIFT, P, Screenshot region to clipboard, exec, grim -g \"$(slurp)\" - | wl-copy"
-        "$mainMod ALT, P, Screenshot region to editor, exec, grim -g \"$(slurp)\" - | swappy -f -"
+        "$mainMod SHIFT, P, Screenshot region to clipboard, exec, screenshot-region"
+        "$mainMod ALT, P, Screenshot region to editor, exec, screenshot-region-edit"
         "$mainMod CTRL, P, Screenshot fullscreen, exec, grim - | wl-copy"
 
         # Screen recording

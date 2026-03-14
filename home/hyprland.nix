@@ -67,10 +67,12 @@
 
     # Screenshot scripts (avoids quoting issues in Hyprland binds)
     (pkgs.writeShellScriptBin "screenshot-region" ''
-      grim -g "$(slurp)" - | wl-copy
+      REGION=$(slurp) || exit 0
+      grim -g "$REGION" - | wl-copy
     '')
     (pkgs.writeShellScriptBin "screenshot-region-edit" ''
-      grim -g "$(slurp)" - | swappy -f -
+      REGION=$(slurp) || exit 0
+      grim -g "$REGION" - | swappy -f -
     '')
 
     # Cheatsheet Script

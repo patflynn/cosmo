@@ -168,7 +168,13 @@
   services.home-assistant = {
     enable = true;
     openFirewall = true;
-    extraComponents = [ "default_config" ];
+    extraComponents = [
+      "default_config"
+      "daikin"
+      "hue"
+      "hunterdouglas_powerview"
+      "lutron_caseta"
+    ];
     config = {
       homeassistant = {
         name = "Cosmo Home";

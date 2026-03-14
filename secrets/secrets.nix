@@ -7,4 +7,5 @@ in
   "sonarr-api-key.age".publicKeys = keys.users ++ keys.hosts;
   "radarr-api-key.age".publicKeys = keys.users ++ keys.hosts;
   "prowlarr-api-key.age".publicKeys = keys.users ++ keys.hosts;
+  "ha-location.age".publicKeys = keys.users ++ keys.hosts;
 }

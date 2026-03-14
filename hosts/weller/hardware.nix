@@ -53,11 +53,15 @@
     before = [ "systemd-cryptsetup@cryptroot.service" ];
     serviceConfig = {
       ExecStart = "${pkgs.bluez}/libexec/bluetooth/bluetoothd -n";
+      # Give the BLE keyboard time to reconnect before cryptsetup prompts
+      ExecStartPost = "${pkgs.coreutils}/bin/sleep 3";
       Type = "simple";
     };
     unitConfig.DefaultDependencies = false;
   };
-  # Copy pairing keys into initrd
+  # Copy pairing keys into initrd.
+  # N.B. These end up unencrypted on the EFI partition – accepted tradeoff so the
+  # Kinesis 360 Pro BLE keyboard is available at the LUKS passphrase prompt.
   boot.initrd.secrets = {
     "/var/lib/bluetooth" = "/var/lib/bluetooth";
   };
@@ -108,7 +112,7 @@
   # ---------------------------------------------------------------------------
   # Bluetooth – optimised for Kinesis Advantage 360 Pro (ZMK / BLE)
   # ---------------------------------------------------------------------------
-  hardware.enableAllFirmware = true;
+  hardware.enableRedistributableFirmware = true;
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;

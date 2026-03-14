@@ -170,8 +170,10 @@
     openFirewall = true;
     extraComponents = [
       "default_config"
-      "lutron_caseta"
+      "daikin"
+      "hue"
       "hunterdouglas_powerview"
+      "lutron_caseta"
     ];
     config = {
       homeassistant = {

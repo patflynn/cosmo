@@ -1,0 +1,16 @@
+{
+  "id": "20260317-1547-348b",
+  "prompt": "Fix issue #254. Read the issue carefully and implement the solution. Write integration/e2e tests where possible. Run the test suite before creating a PR.",
+  "issue": "254",
+  "branch": "agent/20260317-1547-348b",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260317-1547-348b",
+  "tmux_pane": "%4",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260317-1537-7fc3/logs/20260317-1547-348b.jsonl",
+  "created_at": "2026-03-17T15:47:51-04:00",
+  "cost_usd": null,
+  "duration_ms": 32207,
+  "pr_url": null,
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

@@ -94,7 +94,7 @@
           ) as $mods
         | (if $mods == "" then .key else $mods + " + " + .key end)
           + " — " + .description
-      ' | wofi --dmenu --width 1000 --height 600 -p "Keybindings"
+      ' | fuzzel --dmenu --width 80 --lines 20 --prompt "Keybindings: "
     '')
   ];
 
@@ -170,7 +170,7 @@
         "$mainMod, Y, Terminal file manager, exec, kitty -e yazi"
         "$mainMod, B, Open browser, exec, google-chrome-stable"
         "$mainMod, V, Toggle floating, togglefloating,"
-        "$mainMod, R, App launcher, exec, wofi --show drun"
+        "$mainMod, R, App launcher, exec, fuzzel"
         "$mainMod, slash, Keybindings cheatsheet, exec, hypr-cheatsheet"
         "$mainMod, P, Pseudotile, pseudo,"
         "$mainMod, L, Lock screen, exec, hyprlock"

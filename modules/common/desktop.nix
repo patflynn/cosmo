@@ -10,9 +10,11 @@
 {
   imports = [
     ./bluetooth.nix
+    ./health.nix
   ];
 
   modules.bluetooth.enable = true;
+  modules.health.enable = true;
 
   # --- Audio ---
   security.rtkit.enable = true;

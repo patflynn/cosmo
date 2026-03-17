@@ -1,0 +1,16 @@
+{
+  "id": "20260317-0726-89e0",
+  "prompt": "Fix a security gap on classic-laddie: auto-login is enabled (services.displayManager.autoLogin) but the screen is NOT locked immediately after login, leaving a 5-minute window where anyone at the keyboard has full access before hypridle locks the session.\n\nThe fix: add exec-once = [ \"hyprlock\" ] to the hyprland settings for classic-laddie, so the screen locks immediately after auto-login. This is already done in home/remoting.nix for johnny-walker (line 32).\n\nThe best place to add this is in flake.nix inside classic-laddie's home-manager config block (around line 121-128). Add an inline hyprland setting:\n\n```nix\nhome-manager.users.${config.cosmo.user.default} = {\n  imports = [\n    ./home/server.nix\n    ./home/dev.nix\n    ./home/workstation.nix\n    ./home/identities/personal.nix\n  ];\n  # Lock screen immediately on session start (auto-login is enabled)\n  wayland.windowManager.hyprland.settings.exec-once = [ \"hyprlock\" ];\n};\n```\n\nThis ensures that even though SDDM auto-logs in, hyprlock immediately presents a password prompt, so physical access requires authentication.\n\nRun nix flake check to validate the config before creating the PR. If that doesn't work, at minimum run: nix eval .#nixosConfigurations.classic-laddie.config.system.build.toplevel --no-build 2\u003e\u00261 | head -5 to check for eval errors.",
+  "issue": null,
+  "branch": "agent/20260317-0726-89e0",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260317-0726-89e0",
+  "tmux_pane": "%5",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260317-0710-869e/logs/20260317-0726-89e0.jsonl",
+  "created_at": "2026-03-17T07:26:53-04:00",
+  "cost_usd": 0.20291225,
+  "duration_ms": 136556,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/352",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

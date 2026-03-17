@@ -27,6 +27,12 @@
 
   modules.gaming.enable = true;
 
+  # Auto-login to desktop session
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = config.cosmo.user.default;
+  };
+
   # ---------------------------------------------------------------------------
   # Media Server Configuration
   # ---------------------------------------------------------------------------

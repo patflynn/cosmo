@@ -1,0 +1,16 @@
+{
+  "id": "20260317-0736-542c",
+  "prompt": "A one-line change has already been made in home/workstation.nix — confirm_os_window_close = 0 was added to the kitty settings to disable the 'Are you sure you want to close this OS Window?' confirmation dialog. \n\nJust verify the change looks correct, run nix flake check or a basic eval to validate, and create a PR. The change is at line 61 of home/workstation.nix.",
+  "issue": null,
+  "branch": "agent/20260317-0736-542c",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260317-0736-542c",
+  "tmux_pane": "%7",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260317-0710-869e/logs/20260317-0736-542c.jsonl",
+  "created_at": "2026-03-17T07:36:34-04:00",
+  "cost_usd": 0.150391,
+  "duration_ms": 65803,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/353",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

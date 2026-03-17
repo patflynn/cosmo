@@ -58,6 +58,7 @@
       font_size = 12;
       window_padding_width = 4;
       open_url_with = "xdg-open";
+      confirm_os_window_close = 0;
     };
   };
 

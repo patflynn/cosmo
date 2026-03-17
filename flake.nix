@@ -125,6 +125,8 @@
                     ./home/workstation.nix
                     ./home/identities/personal.nix
                   ];
+                  # Lock screen immediately on session start (auto-login is enabled)
+                  wayland.windowManager.hyprland.settings.exec-once = [ "hyprlock" ];
                 };
               }
             )

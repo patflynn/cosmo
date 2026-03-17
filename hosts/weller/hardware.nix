@@ -109,34 +109,6 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
-  # ---------------------------------------------------------------------------
-  # Bluetooth – optimised for Kinesis Advantage 360 Pro (ZMK / BLE)
-  # ---------------------------------------------------------------------------
+  # Bluetooth settings are now in modules/common/bluetooth.nix (via desktop.nix)
   hardware.enableRedistributableFirmware = true;
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = true;
-    settings = {
-      General = {
-        # Keep adapter in page-scan mode for instant reconnects
-        FastConnectable = "true";
-        # ZMK uses "Just Works" pairing – always allow re-pairing
-        JustWorksRepairing = "always";
-        # Better LE handling & battery reporting
-        Experimental = "true";
-      };
-      LE = {
-        # Tighter polling interval (7.5–11.25 ms) for lower input latency
-        MinConnectionInterval = 6;
-        MaxConnectionInterval = 9;
-        ConnectionLatency = 0;
-      };
-      Policy = {
-        AutoEnable = "true";
-        ReconnectAttempts = 7;
-        ReconnectIntervals = "1,2,4,8,16,32,64";
-      };
-    };
-  };
-  environment.systemPackages = with pkgs; [ bluetuith ];
 }

@@ -14,6 +14,7 @@
     ../../modules/common/desktop.nix
     ../../modules/common/workstation.nix
     ../../modules/common/gaming.nix
+    ../../modules/common/ddcci.nix
     ../../modules/media-server/default.nix
   ];
 
@@ -24,6 +25,11 @@
   # Networking
   # ---------------------------------------------------------------------------
   networking.hostName = "classic-laddie";
+
+  # ---------------------------------------------------------------------------
+  # Monitor Control (DDC/CI)
+  # ---------------------------------------------------------------------------
+  modules.ddcci.enable = true;
 
   modules.gaming.enable = true;
 

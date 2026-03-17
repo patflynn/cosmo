@@ -124,6 +124,7 @@
                     ./home/dev.nix
                     ./home/workstation.nix
                     ./home/identities/personal.nix
+                    ./home/monitor-input.nix
                   ];
                   # Lock screen immediately on session start (auto-login is enabled)
                   wayland.windowManager.hyprland.settings.exec-once = [ "hyprlock" ];
@@ -221,7 +222,6 @@
                   imports = [
                     ./home/workstation.nix
                     ./home/identities/personal.nix
-                    ./home/monitor-input.nix
                   ];
                 };
               }

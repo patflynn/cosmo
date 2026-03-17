@@ -14,7 +14,6 @@
     ../../modules/common/desktop.nix
     ../../modules/common/workstation.nix
     ../../modules/common/gaming.nix
-    ../../modules/common/ddcci.nix
   ];
 
   cosmo.user.default = "patrick";
@@ -58,11 +57,6 @@
 
   # Enable CUDA support for Sunshine
   # services.sunshine.package = pkgs.sunshine.override { cudaSupport = true; };
-
-  # ---------------------------------------------------------------------------
-  # Monitor Control (DDC/CI)
-  # ---------------------------------------------------------------------------
-  modules.ddcci.enable = true;
 
   # ---------------------------------------------------------------------------
   # Gaming

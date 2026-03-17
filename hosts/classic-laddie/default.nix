@@ -12,6 +12,7 @@
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/desktop.nix
+    ../../modules/common/workstation.nix
     ../../modules/common/gaming.nix
     ../../modules/media-server/default.nix
   ];

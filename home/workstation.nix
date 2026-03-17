@@ -12,7 +12,7 @@
 
   # Essential workstation packages (User Level)
   home.packages = with pkgs; [
-    wofi # App launcher
+    fuzzel # App launcher
     kdePackages.dolphin # File manager
     bibata-cursors
     google-chrome
@@ -58,6 +58,29 @@
       font_size = 12;
       window_padding_width = 4;
       open_url_with = "xdg-open";
+    };
+  };
+
+  programs.fuzzel = {
+    enable = true;
+    settings = {
+      main = {
+        font = "monospace:size=12";
+        terminal = "kitty -e";
+      };
+      colors = {
+        background = "1e1e2edd";
+        text = "cdd6f4ff";
+        selection = "585b70ff";
+        selection-text = "cdd6f4ff";
+        border = "cba6f7ff";
+        match = "a6e3a1ff";
+        selection-match = "a6e3a1ff";
+      };
+      border = {
+        width = 2;
+        radius = 10;
+      };
     };
   };
 

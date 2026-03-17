@@ -1,0 +1,16 @@
+{
+  "id": "20260317-0739-801b",
+  "prompt": "Replace wofi with fuzzel as the app launcher and dmenu replacement. Fuzzel is Wayland-native and has proper fuzzy/substring matching (wofi's dmenu mode only matches from word starts, which makes searching the keybindings cheatsheet frustrating).\n\nChanges needed:\n\n1. home/workstation.nix: Replace wofi with fuzzel in home.packages (line 15)\n\n2. home/hyprland.nix line 97: Replace the wofi cheatsheet command:\n   Old: wofi --dmenu --width 1000 --height 600 -p \"Keybindings\"\n   New: fuzzel --dmenu --width 80 --lines 20 --prompt \"Keybindings: \"\n\n3. home/hyprland.nix line 173: Replace the app launcher binding:\n   Old: \"\\$mainMod, R, App launcher, exec, wofi --show drun\"\n   New: \"\\$mainMod, R, App launcher, exec, fuzzel\"\n   (fuzzel launches in drun mode by default)\n\n4. Optionally add a programs.fuzzel config block in workstation.nix to match the Catppuccin-Mocha theme. Use these colors:\n   ```nix\n   programs.fuzzel = {\n     enable = true;\n     settings = {\n       main = {\n         font = \"monospace:size=12\";\n         terminal = \"kitty -e\";\n       };\n       colors = {\n         background = \"1e1e2edd\";\n         text = \"cdd6f4ff\";\n         selection = \"585b70ff\";\n         selection-text = \"cdd6f4ff\";\n         border = \"cba6f7ff\";\n         match = \"a6e3a1ff\";\n         selection-match = \"a6e3a1ff\";\n       };\n       border = {\n         width = 2;\n         radius = 10;\n       };\n     };\n   };\n   ```\n\nMake sure wofi is fully removed (no remaining references). Run the test suite or nix flake check to validate.",
+  "issue": null,
+  "branch": "agent/20260317-0739-801b",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260317-0739-801b",
+  "tmux_pane": "%9",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260317-0710-869e/logs/20260317-0739-801b.jsonl",
+  "created_at": "2026-03-17T07:39:15-04:00",
+  "cost_usd": 0.25214725,
+  "duration_ms": 124053,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/354",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

@@ -75,6 +75,34 @@
       grim -g "$REGION" - | swappy -f -
     '')
 
+    # Monitor input switching via DDC/CI (Dell U4025QW)
+    # VCP code 0x60 = Input Source. Values are monitor-specific;
+    # run `ddcutil capabilities` and `ddcutil getvcp 60` to discover them.
+    (pkgs.writeShellScriptBin "monitor-input" ''
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      usage() {
+        echo "Usage: monitor-input <dp|usbc>" >&2
+        exit 1
+      }
+
+      [ $# -eq 1 ] || usage
+
+      case "$1" in
+        dp)    value=0x0f; label="DisplayPort" ;;
+        usbc)  value=0x11; label="USB-C" ;;
+        *)     usage ;;
+      esac
+
+      if ddcutil setvcp 60 "$value"; then
+        notify-send "Monitor Input" "Switched to $label"
+      else
+        notify-send -u critical "Monitor Input" "Failed to switch to $label"
+        exit 1
+      fi
+    '')
+
     # Cheatsheet Script
     (pkgs.writeShellScriptBin "hypr-cheatsheet" ''
       #!/usr/bin/env bash
@@ -214,6 +242,10 @@
         # Screen recording
         "$mainMod SHIFT, G, Record GIF, exec, record-gif"
         "$mainMod SHIFT, S, Stop recording, exec, pkill --signal SIGINT wf-recorder"
+
+        # Monitor input switching (DDC/CI)
+        "$mainMod ALT, 1, Switch monitor to DisplayPort, exec, monitor-input dp"
+        "$mainMod ALT, 2, Switch monitor to USB-C, exec, monitor-input usbc"
 
         # Notifications
         "$mainMod SHIFT, N, Restore notification, exec, makoctl restore"

@@ -47,4 +47,12 @@
   # ---------------------------------------------------------------------------
   boot.supportedFilesystems = [ "zfs" ];
 
+  # ---------------------------------------------------------------------------
+  # USB stability
+  # ---------------------------------------------------------------------------
+  # Disable USB autosuspend to prevent enumeration timeouts during boot
+  # (usb 6-3.1.1: device not accepting address, error -62) and Bluetooth
+  # adapter power-management stalls that cause mouse stuttering.
+  boot.kernelParams = [ "usbcore.autosuspend=-1" ];
+
 }

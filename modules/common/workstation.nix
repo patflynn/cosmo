@@ -46,14 +46,4 @@
       if config.services.pipewire.jack.enable then "${pipewireJackPath}:${openGLPath}" else openGLPath
     );
   };
-
-  # --- Audio ---
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    jack.enable = true; # Useful for pro audio interfaces like the Focusrite Scarlett
-  };
 }

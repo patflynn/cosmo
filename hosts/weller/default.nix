@@ -11,6 +11,7 @@
     ./hardware.nix
     ../../modules/common/system.nix
     ../../modules/common/users.nix
+    ../../modules/common/desktop.nix
     ../../modules/common/workstation.nix
     ../../modules/common/gaming.nix
   ];

@@ -35,5 +35,8 @@
       };
     };
   };
+  # Prevent Bluetooth adapter auto-suspend (causes jitter with BT peripherals)
+  boot.kernelParams = [ "btusb.enable_autosuspend=n" ];
+
   environment.systemPackages = with pkgs; [ bluetuith ];
 }

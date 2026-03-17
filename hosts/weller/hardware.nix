@@ -76,7 +76,6 @@
   # Seagate FireCuda 510 firmware crashes with APST power saving (#263)
   boot.kernelParams = [
     "nvme_core.default_ps_max_latency_us=0"
-    "btusb.enable_autosuspend=n"
   ];
 
   # ---------------------------------------------------------------------------

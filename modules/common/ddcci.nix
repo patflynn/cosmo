@@ -25,6 +25,9 @@ in
     # Add ddcutil to system packages for interactive use
     environment.systemPackages = [ pkgs.ddcutil ];
 
+    # Ensure the i2c group exists for the udev rule
+    users.groups.i2c = {};
+
     # Ensure the default user is in the i2c group for non-root DDC/CI access
     users.users.${config.cosmo.user.default}.extraGroups = [ "i2c" ];
   };

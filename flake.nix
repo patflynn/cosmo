@@ -221,6 +221,7 @@
                   imports = [
                     ./home/workstation.nix
                     ./home/identities/personal.nix
+                    ./home/monitor-input.nix
                   ];
                 };
               }

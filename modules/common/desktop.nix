@@ -12,6 +12,8 @@
     ./bluetooth.nix
   ];
 
+  modules.bluetooth.enable = true;
+
   # --- Audio ---
   security.rtkit.enable = true;
   services.pipewire = {

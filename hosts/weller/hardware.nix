@@ -107,7 +107,4 @@
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
-
-  # Bluetooth settings are now in modules/common/bluetooth.nix (via desktop.nix)
-  hardware.enableRedistributableFirmware = true;
 }

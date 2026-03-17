@@ -11,6 +11,8 @@
     ./hardware.nix
     ../../modules/common/system.nix
     ../../modules/common/users.nix
+    ../../modules/common/workstation.nix
+    ../../modules/common/gaming.nix
     ../../modules/media-server/default.nix
   ];
 
@@ -21,6 +23,8 @@
   # Networking
   # ---------------------------------------------------------------------------
   networking.hostName = "classic-laddie";
+
+  modules.gaming.enable = true;
 
   # ---------------------------------------------------------------------------
   # Media Server Configuration

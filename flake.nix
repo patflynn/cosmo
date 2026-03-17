@@ -122,6 +122,7 @@
                   imports = [
                     ./home/server.nix
                     ./home/dev.nix
+                    ./home/workstation.nix
                     ./home/identities/personal.nix
                   ];
                 };

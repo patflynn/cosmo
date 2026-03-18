@@ -12,7 +12,7 @@
       set -euo pipefail
 
       usage() {
-        echo "Usage: monitor-input <dp|usbc>" >&2
+        echo "Usage: monitor-input <dp|tb>" >&2
         exit 1
       }
 
@@ -20,7 +20,7 @@
 
       case "$1" in
         dp)    value=0x0f; label="DisplayPort" ;;
-        usbc)  value=0x11; label="USB-C" ;;
+        tb)    value=0x11; label="Thunderbolt" ;;
         *)     usage ;;
       esac
 
@@ -36,6 +36,6 @@
   wayland.windowManager.hyprland.settings.bindd = [
     # Monitor input switching (DDC/CI)
     "SUPER ALT, 1, Switch monitor to DisplayPort, exec, monitor-input dp"
-    "SUPER ALT, 2, Switch monitor to USB-C, exec, monitor-input usbc"
+    "SUPER ALT, 2, Switch monitor to Thunderbolt, exec, monitor-input tb"
   ];
 }

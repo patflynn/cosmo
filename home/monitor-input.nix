@@ -20,7 +20,7 @@
 
       case "$1" in
         dp)    value=0x0f; label="DisplayPort" ;;
-        tb)    value=0x11; label="Thunderbolt" ;;
+        tb)    value=0x19; label="Thunderbolt" ;;
         *)     usage ;;
       esac
 

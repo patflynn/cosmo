@@ -1,0 +1,16 @@
+{
+  "id": "20260318-1847-1449",
+  "prompt": "Fix the weather widget showing 'null°C' when the wttr.in API returns null/missing fields.\n\nThe issue is in home/waybar.nix, in the waybar-weather script. When the curl request succeeds but the API returns null values for temperature fields, jq -r outputs the literal string 'null', resulting in 'null°C' being displayed.\n\nAdd a null check after the jq extractions (after line 17, before line 19). If any of the critical fields (temp, feels, desc, humidity, code) are 'null' or empty, fall back to the same error output as the curl failure case:\n\nAfter line 17 (the humidity extraction), add:\n```bash\n# Bail out if API returned incomplete data\nif [ \"$temp\" = \"null\" ] || [ -z \"$temp\" ]; then\n  echo '{\"text\": \"󰖐 --\", \"tooltip\": \"Weather data incomplete\"}'\n  exit 0\nfi\n```\n\nThis way, if the API returns but with null fields, we show the same '--' placeholder instead of 'null°C'.\n\nMake sure the existing tests pass before creating the PR.",
+  "issue": null,
+  "branch": "agent/20260318-1847-1449",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260318-1847-1449",
+  "tmux_pane": "%4",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260318-1844-021c/logs/20260318-1847-1449.jsonl",
+  "created_at": "2026-03-18T18:47:35-04:00",
+  "cost_usd": 0.34421834999999995,
+  "duration_ms": 124304,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/361",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

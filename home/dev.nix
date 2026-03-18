@@ -48,7 +48,6 @@
 
     programs.zsh.shellAliases = {
       rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";
-      rebuild-dev = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake . --override-input klaus path:$HOME/hack/klaus; else nix run home-manager -- switch --flake . --override-input klaus path:$HOME/hack/klaus; fi";
     };
   };
 }

@@ -1,0 +1,16 @@
+{
+  "id": "20260317-2219-ed04",
+  "prompt": "Fix the monitor-input script in home/monitor-input.nix. The two input options should be DisplayPort (dp) and Thunderbolt (tb). There is NO HDMI connected.\n\nCurrent state (wrong):\n- dp  -\u003e VCP 0x0f (DisplayPort) — this is correct\n- usbc -\u003e VCP 0x11 — this is actually HDMI, not USB-C/Thunderbolt\n\nRequired changes:\n1. Rename 'usbc' to 'tb'\n2. Change the VCP value for tb from 0x11 to 0x19 (this is the Thunderbolt input on the Dell U4025QW, shows as 'Unrecognized value' in ddcutil capabilities)\n3. Update the label from 'USB-C' to 'Thunderbolt'\n4. Update the usage string to 'dp|tb'\n5. Update the Hyprland keybinding description from 'USB-C' to 'Thunderbolt'\n6. Update comments to reference Thunderbolt instead of USB-C\n\nOnly modify home/monitor-input.nix — no other files.",
+  "issue": null,
+  "branch": "agent/20260317-2219-ed04",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260317-2219-ed04",
+  "tmux_pane": "%15",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260317-2216-892a/logs/20260317-2219-ed04.jsonl",
+  "created_at": "2026-03-17T22:19:51-04:00",
+  "cost_usd": 0.179349,
+  "duration_ms": 42425,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/358",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

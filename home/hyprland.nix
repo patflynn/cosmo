@@ -105,7 +105,7 @@
       # Auto-detect monitors with preferred resolution
       # Format: name, resolution, position, scale
       monitor = [
-        "DP-2, highrr, auto, 1.15"
+        "DP-2, highrr, auto, 1.25"
         ", preferred, auto, 1"
       ];
 

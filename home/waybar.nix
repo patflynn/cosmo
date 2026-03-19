@@ -16,6 +16,12 @@ let
         desc=$(echo "$json" | ${pkgs.jq}/bin/jq -r '.current_condition[0].weatherDesc[0].value')
         humidity=$(echo "$json" | ${pkgs.jq}/bin/jq -r '.current_condition[0].humidity')
 
+        # Bail out if API returned incomplete data
+        if [[ "$temp" == "null" || -z "$temp" || "$feels" == "null" || -z "$feels" || "$desc" == "null" || -z "$desc" || "$humidity" == "null" || -z "$humidity" ]]; then
+          echo '{"text": "󰖐 --", "tooltip": "Weather data incomplete"}'
+          exit 0
+        fi
+
         # Map weather code to icon
         get_icon() {
           case "$1" in

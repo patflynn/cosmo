@@ -107,6 +107,17 @@ in
     };
   };
 
+  systemd.user.services.waybar = {
+    Unit = {
+      After = [ "graphical-session.target" ];
+      Wants = [ "graphical-session.target" ];
+    };
+    Service = {
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+  };
+
   programs.waybar = {
     enable = true;
     systemd.enable = true;

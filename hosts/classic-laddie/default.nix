@@ -26,7 +26,7 @@
   # ---------------------------------------------------------------------------
   networking.hostName = "classic-laddie";
 
-  # Dell U4025QW DPI compensation for GTK apps (~140 real DPI vs 96 assumed)
+  # Dell U4025QW DPI compensation for GTK apps. A scale of 1.15 was found to be optimal.
   environment.sessionVariables.GDK_DPI_SCALE = "1.15";
 
   # ---------------------------------------------------------------------------

@@ -26,6 +26,9 @@
   # ---------------------------------------------------------------------------
   networking.hostName = "classic-laddie";
 
+  # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)
+  environment.sessionVariables.GDK_DPI_SCALE = "1.25";
+
   # ---------------------------------------------------------------------------
   # Monitor Control (DDC/CI)
   # ---------------------------------------------------------------------------

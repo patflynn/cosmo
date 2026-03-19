@@ -1,0 +1,16 @@
+{
+  "id": "20260319-0827-d280",
+  "prompt": "Add GDK_DPI_SCALE environment variable to the classic-laddie host config, NOT to the generic workstation module.\n\nIn hosts/classic-laddie/default.nix, add an environment.sessionVariables block with GDK_DPI_SCALE = \"1.15\". Place it near the top of the config, after the networking section (around line 28). For example:\n\n  # Dell U4025QW DPI compensation for GTK apps (~140 real DPI vs 96 assumed)\n  environment.sessionVariables.GDK_DPI_SCALE = \"1.15\";\n\nThis is host-specific because the Dell U4025QW monitor is only on this machine. Don't touch modules/common/workstation.nix.",
+  "issue": null,
+  "branch": "agent/20260319-0827-d280",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260319-0827-d280",
+  "tmux_pane": "%9",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260318-1844-021c/logs/20260319-0827-d280.jsonl",
+  "created_at": "2026-03-19T08:27:16-04:00",
+  "cost_usd": 0.1668435,
+  "duration_ms": 34327,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/364",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

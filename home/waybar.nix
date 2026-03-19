@@ -110,7 +110,6 @@ in
   systemd.user.services.waybar = {
     Unit = {
       After = [ "graphical-session.target" ];
-      Wants = [ "graphical-session.target" ];
     };
     Service = {
       Restart = "on-failure";

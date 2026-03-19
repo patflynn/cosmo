@@ -34,6 +34,7 @@
   # Hint Electron apps to use Wayland
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
+    # Fractional scaling for GTK apps. Adjust for different displays.
     GDK_DPI_SCALE = "1.15";
     LIBVA_DRIVER_NAME = "nvidia";
     XDG_SESSION_TYPE = "wayland";

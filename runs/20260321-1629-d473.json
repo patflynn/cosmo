@@ -1,0 +1,16 @@
+{
+  "id": "20260321-1629-d473",
+  "prompt": "In home/workstation.nix, add xdg.configFile entries for Wayland flags:\n\n1. chrome-flags.conf with:\n   --ozone-platform=wayland\n   --enable-features=WaylandWindowDecorations\n\n2. electron-flags.conf with:\n   --ozone-platform=wayland\n   --enable-features=WaylandWindowDecorations\n\nAlso add the JetBrains Wayland fix: add _JAVA_AWT_WM_NONREPARENTING = \"1\" to the environment.sessionVariables in modules/common/workstation.nix.\n\nRun nixos-rebuild dry-run or nix flake check to validate the config before creating the PR.",
+  "issue": null,
+  "branch": "agent/20260321-1629-d473",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260321-1629-d473",
+  "tmux_pane": "%2",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260321-1139-dc3c/logs/20260321-1629-d473.jsonl",
+  "created_at": "2026-03-21T16:29:54-04:00",
+  "cost_usd": 0.1872055,
+  "duration_ms": 77461,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/372",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

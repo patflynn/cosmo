@@ -182,7 +182,10 @@
       # combining any two of these keys (e.g. Super+Return, Super+Space).
       # Super+Backspace works (Backspace is on the left thumb cluster).
       #
-      # Modifier scheme for HJKL:
+      # Directional home row keys: J=left, K=down, L=up, ;=right
+      # (Kinesis Advantage key wells make JKL; more natural than HJKL)
+      #
+      # Modifier scheme for JKL;:
       #   Super       = focus (spatial, works across all layouts)
       #   Super+Shift = move/swap window
       #   Super+Ctrl  = resize
@@ -208,11 +211,11 @@
         "$mainMod, up, Focus up, movefocus, u"
         "$mainMod, down, Focus down, movefocus, d"
 
-        # Focus (vim-style — spatial movefocus works across all layouts)
-        "$mainMod, H, Focus left, movefocus, l"
-        "$mainMod, J, Focus down, movefocus, d"
-        "$mainMod, K, Focus up, movefocus, u"
-        "$mainMod, L, Focus right, movefocus, r"
+        # Focus (home row — spatial movefocus works across all layouts)
+        "$mainMod, J, Focus left, movefocus, l"
+        "$mainMod, K, Focus down, movefocus, d"
+        "$mainMod, L, Focus up, movefocus, u"
+        "$mainMod, semicolon, Focus right, movefocus, r"
 
         # Move window
         "$mainMod SHIFT, left, Move window left, movewindow, l"
@@ -220,11 +223,11 @@
         "$mainMod SHIFT, up, Move window up, movewindow, u"
         "$mainMod SHIFT, down, Move window down, movewindow, d"
 
-        # Move window (vim-style)
-        "$mainMod SHIFT, H, Move window left, movewindow, l"
-        "$mainMod SHIFT, J, Move window down, movewindow, d"
-        "$mainMod SHIFT, K, Move window up, movewindow, u"
-        "$mainMod SHIFT, L, Move window right, movewindow, r"
+        # Move window (home row)
+        "$mainMod SHIFT, J, Move window left, movewindow, l"
+        "$mainMod SHIFT, K, Move window down, movewindow, d"
+        "$mainMod SHIFT, L, Move window up, movewindow, u"
+        "$mainMod SHIFT, semicolon, Move window right, movewindow, r"
 
         # Master layout
         "$mainMod, BackSpace, Swap with master, layoutmsg, swapwithmaster master"
@@ -232,11 +235,7 @@
         "$mainMod, comma, Add master window, layoutmsg, addmaster"
         "$mainMod, period, Remove master window, layoutmsg, removemaster"
 
-        # Scroll layout (workspace 1 — column-based tape navigation)
-        "$mainMod, bracketright, Scroll tape right, layoutmsg, move +col"
-        "$mainMod, bracketleft, Scroll tape left, layoutmsg, move -col"
-        "$mainMod SHIFT, bracketright, Swap column right, layoutmsg, swapcol r"
-        "$mainMod SHIFT, bracketleft, Swap column left, layoutmsg, swapcol l"
+        # Scroll layout (workspace 1)
         "$mainMod, equal, Fit visible columns, layoutmsg, fit visible"
         "$mainMod SHIFT, equal, Cycle column width, layoutmsg, colresize +conf"
 
@@ -277,8 +276,8 @@
 
         # Groups (tabbed windows)
         "$mainMod, G, Toggle group, togglegroup,"
-        "$mainMod ALT, J, Change active in group forward, changegroupactive, f"
-        "$mainMod ALT, K, Change active in group backward, changegroupactive, b"
+        "$mainMod ALT, J, Change active in group backward, changegroupactive, b"
+        "$mainMod ALT, semicolon, Change active in group forward, changegroupactive, f"
 
         # Notifications
         "$mainMod SHIFT, N, Restore notification, exec, makoctl restore"
@@ -291,12 +290,12 @@
         "ALT, mouse:273, resizewindow"
       ];
 
-      # --- Keyboard Resize (Super+Ctrl+HJKL) ---
+      # --- Keyboard Resize (Super+Ctrl+JKL;) ---
       binde = [
-        "$mainMod CTRL, H, resizeactive, -20 0"
-        "$mainMod CTRL, L, resizeactive, 20 0"
-        "$mainMod CTRL, J, resizeactive, 0 20"
-        "$mainMod CTRL, K, resizeactive, 0 -20"
+        "$mainMod CTRL, J, resizeactive, -20 0"
+        "$mainMod CTRL, K, resizeactive, 0 20"
+        "$mainMod CTRL, L, resizeactive, 0 -20"
+        "$mainMod CTRL, semicolon, resizeactive, 20 0"
       ];
 
       debug = {

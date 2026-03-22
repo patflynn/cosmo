@@ -177,6 +177,16 @@
       ];
 
       # --- Keybindings ---
+      # NOTE: Keyboard is a Kinesis Advantage (split ergo). Super, Enter, Space,
+      # Ctrl(R), PgUp, PgDn are all on the right thumb cluster. Avoid chords
+      # combining any two of these keys (e.g. Super+Return, Super+Space).
+      # Super+Backspace works (Backspace is on the left thumb cluster).
+      #
+      # Modifier scheme for HJKL:
+      #   Super       = focus (spatial, works across all layouts)
+      #   Super+Shift = move/swap window
+      #   Super+Ctrl  = resize
+      #   Super+Alt   = group/tab cycling
       "$mainMod" = "SUPER";
       bindd = [
         "$mainMod, Q, Open terminal, exec, kitty"
@@ -198,9 +208,11 @@
         "$mainMod, up, Focus up, movefocus, u"
         "$mainMod, down, Focus down, movefocus, d"
 
-        # Focus (vim-style)
-        "$mainMod, J, Focus next window, layoutmsg, cyclenext"
-        "$mainMod, K, Focus previous window, layoutmsg, cycleprev"
+        # Focus (vim-style — spatial movefocus works across all layouts)
+        "$mainMod, H, Focus left, movefocus, l"
+        "$mainMod, J, Focus down, movefocus, d"
+        "$mainMod, K, Focus up, movefocus, u"
+        "$mainMod, L, Focus right, movefocus, r"
 
         # Move window
         "$mainMod SHIFT, left, Move window left, movewindow, l"
@@ -209,14 +221,24 @@
         "$mainMod SHIFT, down, Move window down, movewindow, d"
 
         # Move window (vim-style)
-        "$mainMod SHIFT, J, Swap with next, layoutmsg, swapnext"
-        "$mainMod SHIFT, K, Swap with previous, layoutmsg, swapprev"
+        "$mainMod SHIFT, H, Move window left, movewindow, l"
+        "$mainMod SHIFT, J, Move window down, movewindow, d"
+        "$mainMod SHIFT, K, Move window up, movewindow, u"
+        "$mainMod SHIFT, L, Move window right, movewindow, r"
 
         # Master layout
-        "$mainMod, Return, Swap with master, layoutmsg, swapwithmaster master"
-        "$mainMod SHIFT, Return, Focus master, layoutmsg, focusmaster auto"
+        "$mainMod, BackSpace, Swap with master, layoutmsg, swapwithmaster master"
+        "$mainMod SHIFT, BackSpace, Focus master, layoutmsg, focusmaster auto"
         "$mainMod, comma, Add master window, layoutmsg, addmaster"
         "$mainMod, period, Remove master window, layoutmsg, removemaster"
+
+        # Scroll layout (workspace 1 — column-based tape navigation)
+        "$mainMod, bracketright, Scroll tape right, layoutmsg, move +col"
+        "$mainMod, bracketleft, Scroll tape left, layoutmsg, move -col"
+        "$mainMod SHIFT, bracketright, Swap column right, layoutmsg, swapcol r"
+        "$mainMod SHIFT, bracketleft, Swap column left, layoutmsg, swapcol l"
+        "$mainMod, equal, Fit visible columns, layoutmsg, fit visible"
+        "$mainMod SHIFT, equal, Cycle column width, layoutmsg, colresize +conf"
 
         # Workspaces
         "$mainMod, 1, Workspace 1, workspace, 1"
@@ -269,10 +291,10 @@
         "ALT, mouse:273, resizewindow"
       ];
 
-      # --- Keyboard Resize ---
+      # --- Keyboard Resize (Super+Ctrl+HJKL) ---
       binde = [
-        "$mainMod, H, resizeactive, -20 0"
-        "$mainMod, L, resizeactive, 20 0"
+        "$mainMod CTRL, H, resizeactive, -20 0"
+        "$mainMod CTRL, L, resizeactive, 20 0"
         "$mainMod CTRL, J, resizeactive, 0 20"
         "$mainMod CTRL, K, resizeactive, 0 -20"
       ];

@@ -1,0 +1,15 @@
+{
+  "id": "20260322-1144-4f8e",
+  "prompt": "Monitor CI for PR #375. Check the current CI status, and if any checks have failed, diagnose the failures and push fixes. Check for merge conflicts and rebase if needed. Also check and address any PR review comments. After pushing fixes, reply to addressed review comments. Repeat until all checks pass.",
+  "issue": null,
+  "branch": "agent/20260322-1142-dbc2",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260322-1144-4f8e",
+  "tmux_pane": "%4",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260322-1047-98a4/logs/20260322-1144-4f8e.jsonl",
+  "created_at": "2026-03-22T11:44:18-04:00",
+  "cost_usd": 0.143343,
+  "duration_ms": 115079,
+  "pr_url": null,
+  "type": "watch"
+}

@@ -104,6 +104,13 @@
     color-scheme = 1; # 1 = prefer dark
   };
 
+  xdg.configFile."chrome-flags.conf".text = ''
+    --ozone-platform=wayland
+    --enable-features=WaylandWindowDecorations
+  '';
+
+  xdg.configFile."electron-flags.conf".text = config.xdg.configFile."chrome-flags.conf".text;
+
   home.pointerCursor = {
     gtk.enable = true;
     # x11.enable = true;

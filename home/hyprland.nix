@@ -109,6 +109,15 @@
         ", preferred, auto, 1"
       ];
 
+      # --- Workspace Layouts ---
+      workspace = [
+        "1, layout:scrolling"
+        "2, layout:master"
+        "3, layout:master"
+        "4, layout:master"
+        "5, layout:dwindle"
+      ];
+
       # --- Input ---
       input = {
         kb_layout = "us";
@@ -124,7 +133,14 @@
         border_size = 2;
         "col.active_border" = "rgb(cba6f7) rgb(94e2d5) 45deg"; # Catppuccin Mocha Mauve -> Teal
         "col.inactive_border" = "rgb(585b70)"; # Catppuccin Mocha Surface2
-        layout = "dwindle";
+        layout = "master";
+      };
+
+      # --- Master Layout ---
+      master = {
+        new_status = "slave";
+        orientation = "left";
+        mfact = 0.55;
       };
 
       # --- Decoration ---
@@ -161,6 +177,16 @@
       ];
 
       # --- Keybindings ---
+      # NOTE: Keyboard is a Kinesis Advantage (split ergo). Super, Enter, Space,
+      # Ctrl(R), PgUp, PgDn are all on the right thumb cluster. Avoid chords
+      # combining any two of these keys (e.g. Super+Return, Super+Space).
+      # Super+Backspace works (Backspace is on the left thumb cluster).
+      #
+      # Modifier scheme for HJKL:
+      #   Super       = focus (spatial, works across all layouts)
+      #   Super+Shift = move/swap window
+      #   Super+Ctrl  = resize
+      #   Super+Alt   = group/tab cycling
       "$mainMod" = "SUPER";
       bindd = [
         "$mainMod, Q, Open terminal, exec, kitty"
@@ -170,10 +196,11 @@
         "$mainMod, Y, Terminal file manager, exec, kitty -e yazi"
         "$mainMod, B, Open browser, exec, google-chrome-stable"
         "$mainMod, V, Toggle floating, togglefloating,"
+        "$mainMod, F, Toggle fullscreen, fullscreen, 1"
+        "$mainMod SHIFT, F, True fullscreen, fullscreen, 0"
         "$mainMod, R, App launcher, exec, fuzzel"
         "$mainMod, slash, Keybindings cheatsheet, exec, hypr-cheatsheet"
         "$mainMod, P, Pseudotile, pseudo,"
-        "$mainMod, L, Lock screen, exec, hyprlock"
 
         # Focus
         "$mainMod, left, Focus left, movefocus, l"
@@ -181,11 +208,37 @@
         "$mainMod, up, Focus up, movefocus, u"
         "$mainMod, down, Focus down, movefocus, d"
 
+        # Focus (vim-style — spatial movefocus works across all layouts)
+        "$mainMod, H, Focus left, movefocus, l"
+        "$mainMod, J, Focus down, movefocus, d"
+        "$mainMod, K, Focus up, movefocus, u"
+        "$mainMod, L, Focus right, movefocus, r"
+
         # Move window
         "$mainMod SHIFT, left, Move window left, movewindow, l"
         "$mainMod SHIFT, right, Move window right, movewindow, r"
         "$mainMod SHIFT, up, Move window up, movewindow, u"
         "$mainMod SHIFT, down, Move window down, movewindow, d"
+
+        # Move window (vim-style)
+        "$mainMod SHIFT, H, Move window left, movewindow, l"
+        "$mainMod SHIFT, J, Move window down, movewindow, d"
+        "$mainMod SHIFT, K, Move window up, movewindow, u"
+        "$mainMod SHIFT, L, Move window right, movewindow, r"
+
+        # Master layout
+        "$mainMod, BackSpace, Swap with master, layoutmsg, swapwithmaster master"
+        "$mainMod SHIFT, BackSpace, Focus master, layoutmsg, focusmaster auto"
+        "$mainMod, comma, Add master window, layoutmsg, addmaster"
+        "$mainMod, period, Remove master window, layoutmsg, removemaster"
+
+        # Scroll layout (workspace 1 — column-based tape navigation)
+        "$mainMod, bracketright, Scroll tape right, layoutmsg, move +col"
+        "$mainMod, bracketleft, Scroll tape left, layoutmsg, move -col"
+        "$mainMod SHIFT, bracketright, Swap column right, layoutmsg, swapcol r"
+        "$mainMod SHIFT, bracketleft, Swap column left, layoutmsg, swapcol l"
+        "$mainMod, equal, Fit visible columns, layoutmsg, fit visible"
+        "$mainMod SHIFT, equal, Cycle column width, layoutmsg, colresize +conf"
 
         # Workspaces
         "$mainMod, 1, Workspace 1, workspace, 1"
@@ -215,6 +268,18 @@
         "$mainMod SHIFT, G, Record GIF, exec, record-gif"
         "$mainMod SHIFT, S, Stop recording, exec, pkill --signal SIGINT wf-recorder"
 
+        # Workspace cycling
+        "$mainMod, Tab, Next workspace, workspace, m+1"
+        "$mainMod SHIFT, Tab, Previous workspace, workspace, m-1"
+
+        # Urgent
+        "$mainMod, U, Focus urgent window, focusurgentorlast,"
+
+        # Groups (tabbed windows)
+        "$mainMod, G, Toggle group, togglegroup,"
+        "$mainMod ALT, J, Change active in group forward, changegroupactive, f"
+        "$mainMod ALT, K, Change active in group backward, changegroupactive, b"
+
         # Notifications
         "$mainMod SHIFT, N, Restore notification, exec, makoctl restore"
         "$mainMod, N, Dismiss notification, exec, makoctl dismiss"
@@ -224,6 +289,14 @@
       bindm = [
         "ALT, mouse:272, movewindow"
         "ALT, mouse:273, resizewindow"
+      ];
+
+      # --- Keyboard Resize (Super+Ctrl+HJKL) ---
+      binde = [
+        "$mainMod CTRL, H, resizeactive, -20 0"
+        "$mainMod CTRL, L, resizeactive, 20 0"
+        "$mainMod CTRL, J, resizeactive, 0 20"
+        "$mainMod CTRL, K, resizeactive, 0 -20"
       ];
 
       debug = {

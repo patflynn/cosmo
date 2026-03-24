@@ -44,6 +44,7 @@
         variant = "mocha";
       };
     };
+    gtk4.theme = null; # GTK4 apps use libadwaita; don't inherit the GTK3 theme
     iconTheme = {
       name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;

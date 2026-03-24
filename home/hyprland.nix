@@ -144,10 +144,14 @@
       };
 
       # --- Scrolling Layout ---
-      scrolling = {
-        column_width = "0.3";
-        explicit_column_widths = "0.25, 0.3, 0.4, 0.5, 0.667, 1.0";
-      };
+      scrolling =
+        let
+          default_width = "0.3";
+        in
+        {
+          column_width = default_width;
+          explicit_column_widths = "0.25, ${default_width}, 0.4, 0.5, 0.667, 1.0";
+        };
 
       # --- Decoration ---
       decoration = {

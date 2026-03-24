@@ -1,0 +1,15 @@
+{
+  "id": "20260324-1911-83e3",
+  "prompt": "Monitor CI for PR #382. Check the current CI status, and if any checks have failed, diagnose the failures and push fixes. Check for merge conflicts and rebase if needed. Also check and address any PR review comments. After pushing fixes, reply to addressed review comments. Repeat until all checks pass.",
+  "issue": null,
+  "branch": "agent/20260324-1910-659d",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260324-1911-83e3",
+  "tmux_pane": "%27",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260324-1808-6400/logs/20260324-1911-83e3.jsonl",
+  "created_at": "2026-03-24T19:11:51-04:00",
+  "cost_usd": 0.094744,
+  "duration_ms": 10155,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/382",
+  "type": "watch"
+}

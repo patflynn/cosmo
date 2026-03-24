@@ -145,8 +145,8 @@
 
       # --- Scrolling Layout ---
       scrolling = {
-        column_width = 0.333;
-        explicit_column_widths = "0.25, 0.333, 0.4, 0.5, 0.667, 1.0";
+        column_width = 1.0 / 3;
+        explicit_column_widths = "0.25, ${toString (1.0 / 3)}, 0.4, 0.5, ${toString (2.0 / 3)}, 1.0";
       };
 
       # --- Decoration ---

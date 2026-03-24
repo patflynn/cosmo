@@ -178,9 +178,7 @@
 
       # --- Window Rules ---
       # Hide Chrome's Spotify "now playing" floating popup (redundant with waybar mpris)
-      windowrule = [
-        "match:class ^(google-chrome)$, match:float yes, match:title .*•.*, workspace special:trash silent"
-      ];
+      windowrule = [ "match:class ^(google-chrome)$, match:float yes, match:title .*•.*, workspace special:trash silent" ];
 
       # --- Keybindings ---
       # NOTE: Keyboard is a Kinesis Advantage (split ergo). Super, Enter, Space,

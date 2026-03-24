@@ -180,11 +180,6 @@
       # Hide Chrome's Spotify "now playing" floating popup (redundant with waybar mpris)
       windowrule = [
         "match:class ^(google-chrome)$, match:float yes, match:title .*•.*, workspace special:trash silent"
-        {
-          name = "chrome-scrolling-width";
-          "match:class" = "^(google-chrome)$";
-          scrolling_width = "0.4";
-        }
       ];
 
       # --- Keybindings ---

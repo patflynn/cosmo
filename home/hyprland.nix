@@ -144,10 +144,15 @@
       };
 
       # --- Scrolling Layout ---
-      scrolling = {
-        column_width = "0.333333";
-        explicit_column_widths = "0.25, 0.333333, 0.4, 0.5, 0.666667, 1.0";
-      };
+      scrolling =
+        let
+          one_third = "0.333";
+          two_thirds = "0.667";
+        in
+        {
+          column_width = one_third;
+          explicit_column_widths = "0.25, ${one_third}, 0.4, 0.5, ${two_thirds}, 1.0";
+        };
 
       # --- Decoration ---
       decoration = {
@@ -180,11 +185,6 @@
       # Hide Chrome's Spotify "now playing" floating popup (redundant with waybar mpris)
       windowrule = [
         "match:class ^(google-chrome)$, match:float yes, match:title .*•.*, workspace special:trash silent"
-        {
-          name = "chrome-scrolling-width";
-          "match:class" = "^(google-chrome)$";
-          scrolling_width = "0.4";
-        }
       ];
 
       # --- Keybindings ---

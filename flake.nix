@@ -1,4 +1,4 @@
-# Managed hosts: classic-laddie, johnny-walker, makers-nix, weller
+# Managed hosts: classic-laddie, johnny-walker, klaus-worker-0, makers-nix, weller
 {
   description = "Cosmo: Fresh Start 2025";
 
@@ -35,6 +35,11 @@
       url = "github:patflynn/klaus";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    microvm = {
+      url = "github:astro/microvm.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -46,6 +51,7 @@
       agenix,
       pre-commit-hooks,
       klaus,
+      microvm,
       ...
     }@inputs:
     let
@@ -110,6 +116,7 @@
           modules = [
             ./hosts/classic-laddie/default.nix
             agenix.nixosModules.default
+            microvm.nixosModules.host
             home-manager.nixosModules.home-manager
             (
               { config, ... }:
@@ -228,6 +235,17 @@
             )
           ];
         };
+
+        # Hostname: klaus-worker-0 (microVM worker for klaus agent)
+        klaus-worker-0 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            microvm.nixosModules.microvm
+            ./modules/klaus-worker/default.nix
+            { networking.hostName = "klaus-worker-0"; }
+          ];
+        };
       };
 
       homeConfigurations = {
@@ -265,6 +283,7 @@
         # Expose zizmor here so CI can run it via 'nix run .#zizmor'
         # to avoid registry lookups and devShell hooks.
         zizmor = nixpkgs.legacyPackages.x86_64-linux.zizmor;
+        klaus-worker-0 = self.nixosConfigurations.klaus-worker-0.config.microvm.declaredRunner;
         johnny-walker-image = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };

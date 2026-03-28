@@ -1,0 +1,16 @@
+{
+  "id": "20260328-1539-0265",
+  "prompt": "Phase 1: Add microvm.nix support to cosmo for klaus worker microVMs on classic-laddie.\n\n## What to do\n\n### 1. Add microvm.nix flake input\n\nIn flake.nix, add:\n\n\nPass it through the outputs function args and specialArgs where needed.\n\n### 2. Create modules/klaus-worker/default.nix\n\nA NixOS module that defines a klaus agent microVM template. Key config:\n\n- hypervisor: cloud-hypervisor\n- vcpu: 4, mem: 4096 (4GB)\n- virtiofs share of host /nix/store mounted at /nix/.ro-store (read-only)\n- writableStoreOverlay at /nix/.rw-store\n- A persistent volume mounted at /var/lib/klaus (20GB, ext4)\n- TAP network interface (type tap, id and mac to be parameterized)\n- Inside the VM: tailscale, openssh, git, gh, tmux, and the klaus package from the klaus flake input\n- networking.hostName should be set by the caller\n- Minimal NixOS config - no desktop, no GUI, headless worker\n- system.stateVersion = \"25.11\"\n- A systemd user or system service isn't needed yet - for Phase 1 we'll SSH in manually\n\n### 3. Enable the microvm.nix host module on classic-laddie\n\nIn hosts/classic-laddie/default.nix:\n- Import inputs.microvm.nixosModules.host\n- Do NOT set microvm.autostart (workers are on-demand, not at boot)\n- Add a bridge network br-klaus with IP 10.100.0.1/24 for microVM networking\n- Enable NAT from br-klaus so VMs can reach the internet (networking.nat with internalInterfaces = [\"br-klaus\"])\n\n### 4. Add a single worker definition to flake.nix\n\nAdd a nixosConfiguration called \"klaus-worker-0\" that:\n- Uses nixpkgs.lib.nixosSystem with x86_64-linux\n- Imports microvm.nixosModules.microvm and the klaus-worker module\n- Sets networking.hostName = \"klaus-worker-0\"\n- Passes inputs through specialArgs\n\nAlso add a package output: packages.x86_64-linux.klaus-worker-0 that references self.nixosConfigurations.klaus-worker-0.config.microvm.declaredRunner so we can build/run it.\n\n### Style notes\n- Follow existing code conventions in the repo (look at how other modules and hosts are structured)\n- Use nixfmt-tree formatting (the repo's formatter)\n- Keep it minimal and clean - this is Phase 1, we'll iterate\n- Read CLAUDE.md and AGENTS.md for repo-specific guidance\n- Run nix flake check and nix fmt before creating the PR to make sure everything is valid",
+  "issue": null,
+  "branch": "agent/20260328-1539-0265",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260328-1539-0265",
+  "tmux_pane": "%67",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260328-1435-39a7/logs/20260328-1539-0265.jsonl",
+  "created_at": "2026-03-28T15:39:26-04:00",
+  "cost_usd": 0.9440548499999998,
+  "duration_ms": 271545,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/388",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

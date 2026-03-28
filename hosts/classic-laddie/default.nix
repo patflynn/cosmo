@@ -26,6 +26,21 @@
   # ---------------------------------------------------------------------------
   networking.hostName = "classic-laddie";
 
+  # Bridge network for klaus microVMs
+  networking.bridges.br-klaus.interfaces = [ ];
+  networking.interfaces.br-klaus.ipv4.addresses = [
+    {
+      address = "10.100.0.1";
+      prefixLength = 24;
+    }
+  ];
+
+  # NAT from br-klaus so microVMs can reach the internet
+  networking.nat = {
+    enable = true;
+    internalInterfaces = [ "br-klaus" ];
+  };
+
   # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)
   environment.sessionVariables.GDK_DPI_SCALE = "1.25";
 

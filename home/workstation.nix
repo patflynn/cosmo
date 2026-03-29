@@ -24,6 +24,9 @@
 
     # Media
     mpv # Video player
+    vlc
+    ffmpeg
+    gthumb # Photo browser
 
     # File Managers
     yazi # Terminal file manager

@@ -13,8 +13,8 @@
   # Essential workstation packages (User Level)
   home.packages = with pkgs; [
     fuzzel # App launcher
-    xfce.thunar # File manager
-    xfce.tumbler # Thumbnail service for Thunar
+    thunar # File manager
+    tumbler # Thumbnail service for Thunar
     ffmpegthumbnailer # Video thumbnails
     bibata-cursors
     google-chrome

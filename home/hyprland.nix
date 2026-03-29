@@ -201,7 +201,7 @@
         "$mainMod, Q, Open terminal, exec, kitty"
         "$mainMod, C, Close window, killactive,"
         "$mainMod, M, Lock screen, exec, hyprlock"
-        "$mainMod, E, File manager, exec, dolphin"
+        "$mainMod, E, File manager, exec, thunar"
         "$mainMod, Y, Terminal file manager, exec, kitty -e yazi"
         "$mainMod, B, Open browser, exec, google-chrome-stable"
         "$mainMod, V, Toggle floating, togglefloating,"

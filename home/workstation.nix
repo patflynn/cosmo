@@ -13,7 +13,9 @@
   # Essential workstation packages (User Level)
   home.packages = with pkgs; [
     fuzzel # App launcher
-    kdePackages.dolphin # File manager
+    xfce.thunar # File manager
+    xfce.tumbler # Thumbnail service for Thunar
+    ffmpegthumbnailer # Video thumbnails
     bibata-cursors
     google-chrome
     xdg-desktop-portal-gtk # Portal backend for URL opening, file chooser, etc.
@@ -123,7 +125,7 @@
       "audio/mp4" = "mpv.desktop";
 
       # Files & Web
-      "inode/directory" = "org.kde.dolphin.desktop";
+      "inode/directory" = "thunar.desktop";
       "x-scheme-handler/http" = "google-chrome.desktop";
       "x-scheme-handler/https" = "google-chrome.desktop";
       "text/html" = "google-chrome.desktop";

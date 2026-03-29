@@ -92,11 +92,37 @@
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
+      # Images
+      "image/jpeg" = "gthumb.desktop";
+      "image/png" = "gthumb.desktop";
+      "image/gif" = "gthumb.desktop";
+      "image/webp" = "gthumb.desktop";
+      "image/tiff" = "gthumb.desktop";
+      "image/bmp" = "gthumb.desktop";
+      "image/svg+xml" = "gthumb.desktop";
+      "image/heif" = "gthumb.desktop";
+      "image/heic" = "gthumb.desktop";
+      "image/avif" = "gthumb.desktop";
+
+      # Video
       "video/mp4" = "mpv.desktop";
       "video/x-matroska" = "mpv.desktop";
       "video/webm" = "mpv.desktop";
       "video/quicktime" = "mpv.desktop";
-      "image/gif" = "mpv.desktop";
+      "video/x-msvideo" = "mpv.desktop";
+      "video/x-flv" = "mpv.desktop";
+      "video/3gpp" = "mpv.desktop";
+      "video/mp2t" = "mpv.desktop";
+
+      # Audio
+      "audio/mpeg" = "mpv.desktop";
+      "audio/flac" = "mpv.desktop";
+      "audio/ogg" = "mpv.desktop";
+      "audio/wav" = "mpv.desktop";
+      "audio/aac" = "mpv.desktop";
+      "audio/mp4" = "mpv.desktop";
+
+      # Files & Web
       "inode/directory" = "org.kde.dolphin.desktop";
       "x-scheme-handler/http" = "google-chrome.desktop";
       "x-scheme-handler/https" = "google-chrome.desktop";

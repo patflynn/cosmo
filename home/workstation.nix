@@ -93,16 +93,16 @@
     enable = true;
     defaultApplications = {
       # Images
-      "image/jpeg" = "gthumb.desktop";
-      "image/png" = "gthumb.desktop";
-      "image/gif" = "gthumb.desktop";
-      "image/webp" = "gthumb.desktop";
-      "image/tiff" = "gthumb.desktop";
-      "image/bmp" = "gthumb.desktop";
-      "image/svg+xml" = "gthumb.desktop";
-      "image/heif" = "gthumb.desktop";
-      "image/heic" = "gthumb.desktop";
-      "image/avif" = "gthumb.desktop";
+      "image/jpeg" = "org.gnome.gThumb.desktop";
+      "image/png" = "org.gnome.gThumb.desktop";
+      "image/gif" = "org.gnome.gThumb.desktop";
+      "image/webp" = "org.gnome.gThumb.desktop";
+      "image/tiff" = "org.gnome.gThumb.desktop";
+      "image/bmp" = "org.gnome.gThumb.desktop";
+      "image/svg+xml" = "org.gnome.gThumb.desktop";
+      "image/heif" = "org.gnome.gThumb.desktop";
+      "image/heic" = "org.gnome.gThumb.desktop";
+      "image/avif" = "org.gnome.gThumb.desktop";
 
       # Video
       "video/mp4" = "mpv.desktop";

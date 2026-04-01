@@ -49,6 +49,7 @@
         type = "tap";
         id = "vm-reel-0";
         mac = "02:00:00:00:01:01";
+        bridge = "br-reel";
       }
     ];
   };
@@ -81,10 +82,12 @@
   # --------------------------------------------------------------------------
   age.secrets."reel-life-telegram-token" = {
     file = ../../secrets/reel-life-telegram-token.age;
+    owner = "reel-life";
     mode = "0400";
   };
   age.secrets."reel-life-anthropic-key" = {
     file = ../../secrets/reel-life-anthropic-key.age;
+    owner = "reel-life";
     mode = "0400";
   };
 
@@ -96,7 +99,9 @@
     chatBackend = "telegram";
     sonarrUrl = "http://10.100.1.1:8989";
     chatTelegramChatID = 0; # auto-capture from first message
-    chatTelegramAllowedUsers = [ ]; # TODO: set user ID after setup
+    # Empty list permits any user to interact during initial bootstrap.
+    # After setup, populate with Telegram user IDs to restrict access.
+    chatTelegramAllowedUsers = [ ];
     environmentFiles = [
       config.age.secrets."reel-life-telegram-token".path
       config.age.secrets."reel-life-anthropic-key".path

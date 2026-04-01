@@ -27,7 +27,7 @@
   networking.hostName = "classic-laddie";
 
   # Bridge network for klaus microVMs
-  networking.bridges.br-klaus.interfaces = [ ];
+  networking.bridges.br-klaus.interfaces = [ "vm-klaus-0" ];
   networking.interfaces.br-klaus.ipv4.addresses = [
     {
       address = "10.100.0.1";
@@ -36,7 +36,7 @@
   ];
 
   # Bridge network for reel-life microVM
-  networking.bridges.br-reel.interfaces = [ ];
+  networking.bridges.br-reel.interfaces = [ "vm-reel-0" ];
   networking.interfaces.br-reel.ipv4.addresses = [
     {
       address = "10.100.1.1";
@@ -65,6 +65,20 @@
       8080 # qBittorrent
       8085 # SABnzbd
     ];
+  };
+
+  # ---------------------------------------------------------------------------
+  # microVMs
+  # ---------------------------------------------------------------------------
+  microvm.vms = {
+    klaus-worker-0 = {
+      flake = inputs.self;
+      updateFlake = "github:patflynn/cosmo";
+    };
+    reel-life-0 = {
+      flake = inputs.self;
+      updateFlake = "github:patflynn/cosmo";
+    };
   };
 
   # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)

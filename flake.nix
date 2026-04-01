@@ -1,4 +1,4 @@
-# Managed hosts: classic-laddie, johnny-walker, klaus-worker-0, makers-nix, weller
+# Managed hosts: classic-laddie, johnny-walker, klaus-worker-0, makers-nix, reel-life-0, weller
 {
   description = "Cosmo: Fresh Start 2025";
 
@@ -41,6 +41,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    reel-life = {
+      url = "github:patflynn/reel-life";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 
@@ -54,6 +59,7 @@
       pre-commit-hooks,
       klaus,
       microvm,
+      reel-life,
       ...
     }@inputs:
     let
@@ -248,6 +254,18 @@
             { networking.hostName = "klaus-worker-0"; }
           ];
         };
+
+        # Hostname: reel-life-0 (microVM for reel-life media chatops agent)
+        reel-life-0 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            microvm.nixosModules.microvm
+            agenix.nixosModules.default
+            ./modules/reel-life/default.nix
+            { networking.hostName = "reel-life-0"; }
+          ];
+        };
       };
 
       homeConfigurations = {
@@ -286,6 +304,7 @@
         # to avoid registry lookups and devShell hooks.
         zizmor = nixpkgs.legacyPackages.x86_64-linux.zizmor;
         klaus-worker-0 = self.nixosConfigurations.klaus-worker-0.config.microvm.declaredRunner;
+        reel-life-0 = self.nixosConfigurations.reel-life-0.config.microvm.declaredRunner;
         johnny-walker-image = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };

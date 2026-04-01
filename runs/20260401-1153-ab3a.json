@@ -1,0 +1,15 @@
+{
+  "id": "20260401-1153-ab3a",
+  "prompt": "Add 1Password and Zen browser to the NixOS desktop configuration.\n\n## What to do\n\n### 1. Add zen-browser flake input\nIn flake.nix, add a new input:\n  zen-browser.url = \"github:zen-browser/desktop\";\nDo NOT add inputs.nixpkgs.follows for it — the zen-browser flake manages its own nixpkgs pin.\nPass it through to modules via the existing inputs specialArgs pattern (already done via extraSpecialArgs = { inherit inputs; }).\n\n### 2. Add 1Password at the system level\nIn modules/common/desktop.nix, add:\n  programs._1password.enable = true;\n  programs._1password-gui = {\n    enable = true;\n    polkitPolicyOwners = [ config.cosmo.user.default ];\n  };\nThis requires access to config, which is already in the function args.\n\n### 3. Add Zen browser at the home level\nIn home/desktop.nix:\n- The file currently takes { config, pkgs, ... }: — change this to { config, pkgs, inputs, ... }: to access the flake inputs.\n- Add zen-browser to home.packages: inputs.zen-browser.packages.x86_64-linux.default\n- Update MIME associations: change all three google-chrome.desktop entries to use zen.desktop (that is the .desktop file name Zen uses)\n- Remove the chrome-flags.conf xdg.configFile (Zen handles Wayland natively)\n- Keep the electron-flags.conf but make it standalone (not referencing chrome-flags):\n  xdg.configFile.\"electron-flags.conf\".text = literal two single-quotes\n    --ozone-platform=wayland\n    --enable-features=WaylandWindowDecorations\n  literal two single-quotes;\n\n### 4. Update Hyprland browser keybinding\nIn home/hyprland.nix, find the line with mainMod B Open browser exec google-chrome-stable and change google-chrome-stable to zen.\n\n### 5. Do NOT remove google-chrome from packages\nThe user may still want Chrome available — just make Zen the default.\n\n### Important notes\n- Run nix flake check or at minimum nix eval to verify the config parses. If that is too slow, at least run nix flake lock --update-input zen-browser to verify the input resolves.\n- Format all changed .nix files with nixfmt before committing.\n- Do not include Co-Authored-By lines in commits.\n- Do not mention AI/Claude in commit messages or PR description.",
+  "issue": "402",
+  "branch": "agent/20260401-1153-ab3a",
+  "worktree": "/tmp/klaus-sessions/session-20260401-1148-d73d/20260401-1153-ab3a",
+  "tmux_pane": "%7",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260401-1148-d73d/logs/20260401-1153-ab3a.jsonl",
+  "created_at": "2026-04-01T11:53:44-04:00",
+  "cost_usd": 0.633505,
+  "duration_ms": 132289,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/403",
+  "target_repo": "cosmo"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "20260401-1604-9728",
+  "prompt": "CI is failing on PR #405 with: 'MicroVM reel-life-0: interface vm-reel-0 is not of type bridge and therefore should not have a bridge option defined.'\n\nThe previous fix agent incorrectly added 'bridge = \"br-reel\"' to the TAP interface in modules/reel-life/default.nix. The microvm.nix schema does not allow the 'bridge' attribute on type = \"tap\" interfaces — the 'bridge' attribute requires type = \"bridge\".\n\nFix: In modules/reel-life/default.nix, change the interface definition from:\n  type = \"tap\";\n  id = \"vm-reel-0\";\n  mac = \"02:00:00:00:01:01\";\n  bridge = \"br-reel\";\n\nTo:\n  type = \"bridge\";\n  id = \"vm-reel-0\";\n  mac = \"02:00:00:00:01:01\";\n  bridge = \"br-reel\";\n\nThat is the ONLY change needed. Do not modify anything else in the file — the secrets ownership and allowed users comment from the previous commit are correct.\n\nAfter fixing, run 'nix flake check' or 'nix-instantiate --parse modules/reel-life/default.nix' to verify the Nix expression is valid.",
+  "issue": null,
+  "pr": "405",
+  "branch": "agent/20260401-1520-c01e",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260401-1604-9728",
+  "tmux_pane": "%27",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260401-1543-c415/logs/20260401-1604-9728.jsonl",
+  "created_at": "2026-04-01T16:04:13-04:00",
+  "cost_usd": 0.15673399999999998,
+  "duration_ms": 29501,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/405",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

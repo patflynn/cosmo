@@ -17,6 +17,7 @@
     tumbler # Thumbnail service for Thunar
     ffmpegthumbnailer # Video thumbnails
     bibata-cursors
+    arc-browser
     google-chrome
     xdg-desktop-portal-gtk # Portal backend for URL opening, file chooser, etc.
 

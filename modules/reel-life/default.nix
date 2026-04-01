@@ -84,8 +84,13 @@
     owner = "reel-life";
     mode = "0400";
   };
-  age.secrets."reel-life-anthropic-key" = {
-    file = ../../secrets/reel-life-anthropic-key.age;
+  age.secrets."anthropic-key" = {
+    file = ../../secrets/anthropic-key.age;
+    owner = "reel-life";
+    mode = "0400";
+  };
+  age.secrets."reel-life-media-keys" = {
+    file = ../../secrets/reel-life-media-keys.age;
     owner = "reel-life";
     mode = "0400";
   };
@@ -103,7 +108,8 @@
     chatTelegramAllowedUsers = [ ];
     environmentFiles = [
       config.age.secrets."reel-life-telegram-token".path
-      config.age.secrets."reel-life-anthropic-key".path
+      config.age.secrets."anthropic-key".path
+      config.age.secrets."reel-life-media-keys".path
     ];
     monitorEnabled = true;
     monitorInterval = "5m";

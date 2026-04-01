@@ -2,6 +2,7 @@
 # Provides a minimal headless NixOS environment for running klaus workers
 # inside cloud-hypervisor microVMs managed by microvm.nix.
 {
+  config,
   pkgs,
   inputs,
   ...
@@ -72,6 +73,18 @@
   };
 
   # --------------------------------------------------------------------------
+  # Secrets (agenix)
+  # --------------------------------------------------------------------------
+  age.secrets."anthropic-key" = {
+    file = ../../secrets/anthropic-key.age;
+    mode = "0400";
+  };
+  age.secrets."github-token" = {
+    file = ../../secrets/github-token.age;
+    mode = "0400";
+  };
+
+  # --------------------------------------------------------------------------
   # Services & packages
   # --------------------------------------------------------------------------
   services.tailscale.enable = true;
@@ -84,11 +97,22 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
-    git
-    gh
-    tmux
+  environment.systemPackages = [
+    pkgs.git
+    pkgs.gh
+    pkgs.tmux
     inputs.klaus.packages.${pkgs.system}.default
+
+    # Helper script to load secrets into the environment
+    (pkgs.writeShellScriptBin "klaus-env" ''
+      if [ -f "${config.age.secrets."anthropic-key".path}" ]; then
+        export $(grep -v '^#' "${config.age.secrets."anthropic-key".path}" | xargs)
+      fi
+      if [ -f "${config.age.secrets."github-token".path}" ]; then
+        export $(grep -v '^#' "${config.age.secrets."github-token".path}" | xargs)
+      fi
+      exec "$@"
+    '')
   ];
 
   # Import SSH authorized keys so we can log in

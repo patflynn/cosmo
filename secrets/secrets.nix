@@ -12,9 +12,20 @@ in
   "prowlarr-api-key.age".publicKeys = keys.users ++ keys.hosts.main;
   "ha-location.age".publicKeys = keys.users ++ keys.hosts.main;
 
-  # Reel-life specific (Only for the bot and management)
+  # Anthropic API Key (Shared by reel-life and klaus-worker)
+  "anthropic-key.age".publicKeys =
+    keys.users
+    ++ keys.hosts.main
+    ++ [
+      keys.hosts.reel-life-0
+      keys.hosts.klaus-worker-0
+    ];
+
+  # GitHub Token (For klaus-worker)
+  "github-token.age".publicKeys = keys.users ++ keys.hosts.main ++ [ keys.hosts.klaus-worker-0 ];
+
+  # Reel-life specific
   "reel-life-telegram-token.age".publicKeys =
     keys.users ++ keys.hosts.main ++ [ keys.hosts.reel-life-0 ];
-  "reel-life-anthropic-key.age".publicKeys =
-    keys.users ++ keys.hosts.main ++ [ keys.hosts.reel-life-0 ];
+  "reel-life-media-keys.age".publicKeys = keys.users ++ keys.hosts.main ++ [ keys.hosts.reel-life-0 ];
 }

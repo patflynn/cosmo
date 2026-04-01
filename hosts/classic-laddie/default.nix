@@ -290,7 +290,8 @@
     fi
 
     # Add coordinates to the homeassistant section
-    ${pkgs.gnused}/bin/sed -i "/^homeassistant:/a\  elevation: $HA_ELEVATION\n  latitude: $HA_LATITUDE\n  longitude: $HA_LONGITUDE" "$cfgFile"
+    ${pkgs.gnused}/bin/sed "/^homeassistant:/a\  elevation: $HA_ELEVATION\n  latitude: $HA_LATITUDE\n  longitude: $HA_LONGITUDE" "$cfgFile" > "$cfgFile.tmp"
+    mv "$cfgFile.tmp" "$cfgFile"
   '';
 
   # Do not change this unless you reinstall the OS

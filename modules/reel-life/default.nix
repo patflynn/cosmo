@@ -46,7 +46,7 @@
     # TAP network interface
     interfaces = [
       {
-        type = "tap";
+        type = "bridge";
         id = "vm-reel-0";
         mac = "02:00:00:00:01:01";
         bridge = "br-reel";

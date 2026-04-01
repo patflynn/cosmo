@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -18,6 +19,7 @@
     ffmpegthumbnailer # Video thumbnails
     bibata-cursors
     google-chrome
+    inputs.zen-browser.packages.x86_64-linux.default
     xdg-desktop-portal-gtk # Portal backend for URL opening, file chooser, etc.
 
     # IDEs
@@ -126,9 +128,9 @@
 
       # Files & Web
       "inode/directory" = "thunar.desktop";
-      "x-scheme-handler/http" = "google-chrome.desktop";
-      "x-scheme-handler/https" = "google-chrome.desktop";
-      "text/html" = "google-chrome.desktop";
+      "x-scheme-handler/http" = "zen.desktop";
+      "x-scheme-handler/https" = "zen.desktop";
+      "text/html" = "zen.desktop";
     };
   };
 
@@ -136,12 +138,10 @@
     color-scheme = 1; # 1 = prefer dark
   };
 
-  xdg.configFile."chrome-flags.conf".text = ''
+  xdg.configFile."electron-flags.conf".text = ''
     --ozone-platform=wayland
     --enable-features=WaylandWindowDecorations
   '';
-
-  xdg.configFile."electron-flags.conf".text = config.xdg.configFile."chrome-flags.conf".text;
 
   home.pointerCursor = {
     gtk.enable = true;

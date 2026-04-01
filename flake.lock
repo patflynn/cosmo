@@ -352,6 +352,26 @@
         "type": "github"
       }
     },
+    "reel-life": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775070128,
+        "narHash": "sha256-u7LhWmzS8lNsHGQKip85yE25jMpD2inXyGTRcUOjz3Q=",
+        "owner": "patflynn",
+        "repo": "reel-life",
+        "rev": "ac9fc9ec551630dfc70ba4526ba1913f2bae779f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "patflynn",
+        "repo": "reel-life",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -363,6 +383,7 @@
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs",
         "pre-commit-hooks": "pre-commit-hooks",
+        "reel-life": "reel-life",
         "zen-browser": "zen-browser"
       }
     },

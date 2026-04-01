@@ -35,10 +35,36 @@
     }
   ];
 
-  # NAT from br-klaus so microVMs can reach the internet
+  # Bridge network for reel-life microVM
+  networking.bridges.br-reel.interfaces = [ ];
+  networking.interfaces.br-reel.ipv4.addresses = [
+    {
+      address = "10.100.1.1";
+      prefixLength = 24;
+    }
+  ];
+
+  # NAT from microVM bridges so VMs can reach the internet
   networking.nat = {
     enable = true;
-    internalInterfaces = [ "br-klaus" ];
+    internalInterfaces = [
+      "br-klaus"
+      "br-reel"
+    ];
+  };
+
+  # Allow reel-life microVM to reach media services on the host
+  networking.firewall.interfaces."br-reel" = {
+    allowedTCPPorts = [
+      8989 # Sonarr
+      7878 # Radarr
+      9696 # Prowlarr
+      32400 # Plex
+      8096 # Jellyfin
+      5055 # Overseerr
+      8080 # qBittorrent
+      8085 # SABnzbd
+    ];
   };
 
   # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)

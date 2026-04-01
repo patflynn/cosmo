@@ -8,4 +8,6 @@ in
   "radarr-api-key.age".publicKeys = keys.users ++ keys.hosts;
   "prowlarr-api-key.age".publicKeys = keys.users ++ keys.hosts;
   "ha-location.age".publicKeys = keys.users ++ keys.hosts;
+  "reel-life-telegram-token.age".publicKeys = keys.users ++ keys.hosts;
+  "reel-life-anthropic-key.age".publicKeys = keys.users ++ keys.hosts;
 }

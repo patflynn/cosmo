@@ -129,7 +129,7 @@
                   imports = [
                     ./home/server.nix
                     ./home/dev.nix
-                    ./home/workstation.nix
+                    ./home/desktop.nix
                     ./home/identities/personal.nix
                     ./home/monitor-input.nix
                   ];
@@ -192,7 +192,7 @@
                 home-manager.extraSpecialArgs = { inherit inputs; };
                 home-manager.users.${config.cosmo.user.default} = {
                   imports = [
-                    ./home/workstation.nix
+                    ./home/desktop.nix
                     ./home/identities/personal.nix
                   ];
                 };
@@ -227,7 +227,7 @@
                 home-manager.extraSpecialArgs = { inherit inputs; };
                 home-manager.users.${config.cosmo.user.default} = {
                   imports = [
-                    ./home/workstation.nix
+                    ./home/desktop.nix
                     ./home/identities/personal.nix
                   ];
                 };
@@ -300,7 +300,7 @@
                 home-manager.extraSpecialArgs = { inherit inputs; };
                 home-manager.users.${config.cosmo.user.default} = {
                   imports = [
-                    ./home/workstation.nix
+                    ./home/desktop.nix
                     ./home/identities/personal.nix
                   ];
                 };

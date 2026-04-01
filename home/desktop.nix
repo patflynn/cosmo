@@ -10,7 +10,7 @@
     ./hyprland.nix
   ];
 
-  # Essential workstation packages (User Level)
+  # Essential desktop packages (User Level)
   home.packages = with pkgs; [
     fuzzel # App launcher
     thunar # File manager

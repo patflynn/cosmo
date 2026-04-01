@@ -6,7 +6,7 @@
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/guest.nix
-    ../../modules/common/workstation.nix
+    ../../modules/common/desktop.nix
   ];
 
   # VM Specs: 24GB RAM, 24 vCPUs, 100GB Disk

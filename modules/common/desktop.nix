@@ -36,7 +36,8 @@
     NIXOS_OZONE_WL = "1";
     _JAVA_AWT_WM_NONREPARENTING = "1"; # For JetBrains IDE compatibility on Wayland
     XDG_SESSION_TYPE = "wayland";
-  } // lib.optionalAttrs (builtins.elem "nvidia" (config.services.xserver.videoDrivers or [ ])) {
+  }
+  // lib.optionalAttrs (builtins.elem "nvidia" (config.services.xserver.videoDrivers or [ ])) {
     LIBVA_DRIVER_NAME = "nvidia";
     GBM_BACKEND = "nvidia-drm";
     __GLX_VENDOR_LIBRARY_NAME = "nvidia";

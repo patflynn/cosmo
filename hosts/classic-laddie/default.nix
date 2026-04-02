@@ -53,7 +53,14 @@
       config = {
         imports = [
           ../../modules/klaus-worker/default.nix
-          { networking.hostName = "klaus-worker-0"; }
+          {
+            networking.hostName = "klaus-worker-0";
+            klaus.worker = {
+              vsockCid = 3;
+              tapInterface = "vm-klaus-0";
+              macAddress = "02:00:00:00:00:01";
+            };
+          }
         ];
         microvm.shares = [
           {

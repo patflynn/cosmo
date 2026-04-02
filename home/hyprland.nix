@@ -204,7 +204,7 @@
         "$mainMod, E, File manager, exec, thunar"
         "$mainMod, Y, Terminal file manager, exec, kitty -e yazi"
         "$mainMod, B, Open browser, exec, google-chrome-stable"
-        "$mainMod, Z, Open Zen browser, exec, zen"
+        "$mainMod, Z, Open Zen browser, exec, zen-beta"
         "$mainMod, V, Toggle floating, togglefloating,"
         "$mainMod, F, Toggle fullscreen, fullscreen, 1"
         "$mainMod SHIFT, F, True fullscreen, fullscreen, 0"

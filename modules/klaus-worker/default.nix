@@ -4,6 +4,7 @@
 {
   config,
   pkgs,
+  lib,
   inputs,
   ...
 }:
@@ -23,6 +24,13 @@
         tag = "ro-store";
         source = "/nix/store";
         mountPoint = "/nix/.ro-store";
+        proto = "virtiofs";
+      }
+      # Share GitHub CLI configuration from the host for authentication
+      {
+        tag = "gh-config";
+        source = "/home/patrick/.config/gh";
+        mountPoint = "/root/.config/gh";
         proto = "virtiofs";
       }
     ];
@@ -49,6 +57,19 @@
     ];
   };
 
+  # Manually mount the virtiofs shares
+  fileSystems."/root/.config/gh" = {
+    device = "gh-config";
+    fsType = "virtiofs";
+    options = [ "nofail" ];
+  };
+
+  fileSystems."/run/secrets/host" = {
+    device = "secrets";
+    fsType = "virtiofs";
+    options = [ "nofail" ];
+  };
+
   # --------------------------------------------------------------------------
   # Networking
   # --------------------------------------------------------------------------
@@ -73,18 +94,6 @@
   };
 
   # --------------------------------------------------------------------------
-  # Secrets (agenix)
-  # --------------------------------------------------------------------------
-  age.secrets."anthropic-key" = {
-    file = ../../secrets/anthropic-key.age;
-    mode = "0400";
-  };
-  age.secrets."github-token" = {
-    file = ../../secrets/github-token.age;
-    mode = "0400";
-  };
-
-  # --------------------------------------------------------------------------
   # Services & packages
   # --------------------------------------------------------------------------
   services.tailscale.enable = true;
@@ -105,11 +114,20 @@
 
     # Helper script to load secrets into the environment
     (pkgs.writeShellScriptBin "klaus-env" ''
-      if [ -f "${config.age.secrets."anthropic-key".path}" ]; then
-        export $(grep -v '^#' "${config.age.secrets."anthropic-key".path}" | xargs)
+      # Load Anthropic API Key from shared host secret
+      if [ -f /run/secrets/host/anthropic-key ]; then
+        export ANTHROPIC_API_KEY=$(cat /run/secrets/host/anthropic-key)
       fi
-      if [ -f "${config.age.secrets."github-token".path}" ]; then
-        export $(grep -v '^#' "${config.age.secrets."github-token".path}" | xargs)
+
+      # Use shared gh config from host
+      export GH_CONFIG_DIR="/root/.config/gh"
+
+      # Load GitHub Token from shared host secret (optional override)
+      if [ -f /run/secrets/host/github-token ]; then
+        TOKEN=$(cat /run/secrets/host/github-token)
+        if [ "$TOKEN" != "REPLACE_ME" ] && [ -n "$TOKEN" ]; then
+          export GITHUB_TOKEN="$TOKEN"
+        fi
       fi
       exec "$@"
     '')

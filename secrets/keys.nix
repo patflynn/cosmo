@@ -13,8 +13,8 @@ let
   weller = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGEqPYzGOvoeU3mpgBmw9XM/C3IaPETUBJeKtXsCBEBd";
   johnny-walker = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALgjAYCsxF4HUoW9MmsrShmV45Y1ClM37Z7jXY4Fw+G";
   wsl = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICm/0RSHq33ws9IIlzJyXhL0Gh1eudUE3LZEMUOa6PHX";
-  reel-life-0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK/xUUWiElVyPHcfPwJ1DtY/CSElsXbkSdfJFgTm9ujc";
-  klaus-worker-0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILpsTU/QKhfP76td8YR3+SKdkRaavcLyLzB0+IvK+cv9";
+  reel-life-0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMZSX8cGRNhaLy2qtHoDca3Bb/jdTyN4lxZsULreqMul";
+  klaus-worker-0 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINxasgwj3CMigHPUCZ6QmnPrWbmonBKbrWq5gwofqPx/";
 in
 {
   users = patrick;

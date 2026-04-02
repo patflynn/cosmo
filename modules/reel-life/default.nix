@@ -4,6 +4,7 @@
 {
   config,
   pkgs,
+  lib,
   inputs,
   ...
 }:
@@ -53,6 +54,13 @@
     ];
   };
 
+  # Manually mount the host secrets share
+  fileSystems."/run/secrets/host" = {
+    device = "secrets";
+    fsType = "virtiofs";
+    options = [ "nofail" ];
+  };
+
   # --------------------------------------------------------------------------
   # Networking
   # --------------------------------------------------------------------------
@@ -77,25 +85,6 @@
   };
 
   # --------------------------------------------------------------------------
-  # Secrets (agenix)
-  # --------------------------------------------------------------------------
-  age.secrets."reel-life-telegram-token" = {
-    file = ../../secrets/reel-life-telegram-token.age;
-    owner = "reel-life";
-    mode = "0400";
-  };
-  age.secrets."anthropic-key" = {
-    file = ../../secrets/anthropic-key.age;
-    owner = "reel-life";
-    mode = "0400";
-  };
-  age.secrets."reel-life-media-keys" = {
-    file = ../../secrets/reel-life-media-keys.age;
-    owner = "reel-life";
-    mode = "0400";
-  };
-
-  # --------------------------------------------------------------------------
   # Reel-life service
   # --------------------------------------------------------------------------
   services.reel-life = {
@@ -107,14 +96,28 @@
     # After setup, populate with Telegram user IDs to restrict access.
     chatTelegramAllowedUsers = [ ];
     environmentFiles = [
-      config.age.secrets."reel-life-telegram-token".path
-      config.age.secrets."anthropic-key".path
-      config.age.secrets."reel-life-media-keys".path
+      "/run/secrets/host/reel-life-telegram-token"
+      "/run/secrets/host/anthropic-key"
+      "/run/reel-life/media.env"
     ];
     monitorEnabled = true;
     monitorInterval = "5m";
     logLevel = "info";
   };
+
+  # Format the raw secrets into the EnvironmentFile format expected by reel-life
+  # Using ExecStartPre ensures mounts (virtiofs) are ready.
+  # We use a wrapper bash script to ensure path resolution.
+  systemd.services.reel-life.serviceConfig.ExecStartPre = [
+    (pkgs.writeShellScript "reel-life-setup-env" ''
+      mkdir -p /run/reel-life
+      if [ -f /run/secrets/host/sonarr-api-key ]; then
+        echo "SONARR_API_KEY=$(cat /run/secrets/host/sonarr-api-key)" > /run/reel-life/media.env
+        echo "RADARR_API_KEY=$(cat /run/secrets/host/radarr-api-key)" >> /run/reel-life/media.env
+        chmod 0644 /run/reel-life/media.env
+      fi
+    '')
+  ];
 
   # --------------------------------------------------------------------------
   # Services & packages

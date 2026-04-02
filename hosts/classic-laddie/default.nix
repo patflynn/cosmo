@@ -27,7 +27,7 @@
   networking.hostName = "classic-laddie";
 
   # Bridge network for klaus microVMs
-  networking.bridges.br-klaus.interfaces = [ "vm-klaus-0" ];
+  networking.bridges.br-klaus.interfaces = [ ];
   networking.interfaces.br-klaus.ipv4.addresses = [
     {
       address = "10.100.0.1";
@@ -36,7 +36,7 @@
   ];
 
   # Bridge network for reel-life microVM
-  networking.bridges.br-reel.interfaces = [ "vm-reel-0" ];
+  networking.bridges.br-reel.interfaces = [ ];
   networking.interfaces.br-reel.ipv4.addresses = [
     {
       address = "10.100.1.1";
@@ -72,13 +72,51 @@
   # ---------------------------------------------------------------------------
   microvm.vms = {
     klaus-worker-0 = {
-      flake = inputs.self;
-      updateFlake = "github:patflynn/cosmo";
+      specialArgs = { inherit inputs; };
+      config = {
+        imports = [
+          ../../modules/klaus-worker/default.nix
+          { networking.hostName = "klaus-worker-0"; }
+        ];
+        microvm.shares = [
+          {
+            tag = "secrets";
+            source = "/run/agenix";
+            mountPoint = "/run/secrets/host";
+            proto = "virtiofs";
+          }
+        ];
+      };
     };
     reel-life-0 = {
-      flake = inputs.self;
-      updateFlake = "github:patflynn/cosmo";
+      specialArgs = { inherit inputs; };
+      config = {
+        imports = [
+          ../../modules/reel-life/default.nix
+          { networking.hostName = "reel-life-0"; }
+        ];
+        microvm.shares = [
+          {
+            tag = "secrets";
+            source = "/run/agenix";
+            mountPoint = "/run/secrets/host";
+            proto = "virtiofs";
+          }
+        ];
+      };
     };
+  };
+
+  # Assign bridges to microVM interfaces on the host
+  systemd.services."microvm-tap-interfaces@klaus-worker-0" = {
+    wants = [ "br-klaus-netdev.service" ];
+    after = [ "br-klaus-netdev.service" ];
+    postStart = "${pkgs.iproute2}/bin/ip link set vm-klaus-0 master br-klaus";
+  };
+  systemd.services."microvm-tap-interfaces@reel-life-0" = {
+    wants = [ "br-reel-netdev.service" ];
+    after = [ "br-reel-netdev.service" ];
+    postStart = "${pkgs.iproute2}/bin/ip link set vm-reel-0 master br-reel";
   };
 
   # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)
@@ -121,18 +159,28 @@
     mode = "0440";
   };
 
-  # API keys for the *arr stack (used by the media-stack-sync service)
+  # API keys for the *arr stack (used by the media-stack-sync service and reel-life VM)
   age.secrets."sonarr-api-key" = {
     file = ../../secrets/sonarr-api-key.age;
-    mode = "0400";
+    mode = "0444"; # Readable by microvm processes
   };
   age.secrets."radarr-api-key" = {
     file = ../../secrets/radarr-api-key.age;
-    mode = "0400";
+    mode = "0444";
   };
   age.secrets."prowlarr-api-key" = {
     file = ../../secrets/prowlarr-api-key.age;
     mode = "0400";
+  };
+
+  # Shared AI / Chat secrets for microVMs
+  age.secrets."anthropic-key" = {
+    file = ../../secrets/anthropic-key.age;
+    mode = "0444";
+  };
+  age.secrets."reel-life-telegram-token" = {
+    file = ../../secrets/reel-life-telegram-token.age;
+    mode = "0444";
   };
 
   # ---------------------------------------------------------------------------

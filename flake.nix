@@ -250,7 +250,6 @@
           specialArgs = { inherit inputs; };
           modules = [
             microvm.nixosModules.microvm
-            agenix.nixosModules.default
             ./modules/klaus-worker/default.nix
             { networking.hostName = "klaus-worker-0"; }
           ];
@@ -262,7 +261,6 @@
           specialArgs = { inherit inputs; };
           modules = [
             microvm.nixosModules.microvm
-            agenix.nixosModules.default
             ./modules/reel-life/default.nix
             { networking.hostName = "reel-life-0"; }
           ];

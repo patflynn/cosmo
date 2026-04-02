@@ -107,13 +107,15 @@
   # ---------------------------------------------------------------------------
   services.reel-life = {
     enable = true;
+    listenPort = 9090;
     chatBackend = "telegram";
     sonarrUrl = "http://localhost:8989";
     chatTelegramChatID = 0;
-    chatTelegramAllowedUsers = [ ];
+    chatTelegramAllowedUsers = [ 8780088233 ];
     environmentFiles = [
       config.age.secrets.reel-life-telegram-token.path
       config.age.secrets.anthropic-key.path
+      config.age.secrets.sonarr-api-key.path
     ];
     monitorEnabled = true;
     monitorInterval = "5m";
@@ -149,13 +151,11 @@
   # Secrets for reel-life service (decrypted on host, passed via EnvironmentFile)
   age.secrets."anthropic-key" = {
     file = ../../secrets/anthropic-key.age;
-    owner = "reel-life";
-    mode = "0400";
+    mode = "0444";
   };
   age.secrets."reel-life-telegram-token" = {
     file = ../../secrets/reel-life-telegram-token.age;
-    owner = "reel-life";
-    mode = "0400";
+    mode = "0444";
   };
 
   # ---------------------------------------------------------------------------

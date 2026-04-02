@@ -1,0 +1,18 @@
+{
+  "id": "20260401-2042-5ecb",
+  "prompt": "Fix the reel-life microVM service failing to start because it can't find/read env files.\n\n## Context\nBranch: fix/microvms-and-secrets (PR #411)\nThe reel-life app needs these env vars: TELEGRAM_BOT_TOKEN, ANTHROPIC_API_KEY, SONARR_API_KEY, RADARR_API_KEY.\nSecrets are shared from the host via virtiofs at /run/secrets/host/ — these are raw agenix secrets (just the bare value, NOT KEY=VALUE format).\n\n## Problems to fix in modules/reel-life/default.nix\n\n1. **Secret files aren't in EnvironmentFile format.** The files at /run/secrets/host/reel-life-telegram-token and /run/secrets/host/anthropic-key are raw values. systemd EnvironmentFile expects KEY=VALUE lines. The environmentFiles list currently points directly at these raw files.\n\n2. **ExecStartPre can't write /run/reel-life/media.env** because the service uses ProtectSystem=strict with ReadWritePaths=[]. The mkdir and file creation will fail.\n\n3. **The fix:**\n   - Add RuntimeDirectory = \"reel-life\"; to serviceConfig — this creates /run/reel-life owned by the service user, writeable even under ProtectSystem=strict.\n   - Rewrite the ExecStartPre script to convert ALL raw secrets into a single /run/reel-life/env file with proper KEY=VALUE format:\n     TELEGRAM_BOT_TOKEN=$(cat /run/secrets/host/reel-life-telegram-token)\n     ANTHROPIC_API_KEY=$(cat /run/secrets/host/anthropic-key)\n     SONARR_API_KEY=$(cat /run/secrets/host/sonarr-api-key)\n     RADARR_API_KEY=$(cat /run/secrets/host/radarr-api-key)\n   - The sonarr/radarr keys should be conditional (if file exists)\n   - Change environmentFiles to point only at /run/reel-life/env (the generated file).\n   - Remove the separate /run/reel-life/media.env logic — consolidate everything into one env file.\n   - The ExecStartPre script needs the + prefix (runs as root before dropping privileges) so it can read the virtiofs-mounted secrets. Then chmod the generated env file so the DynamicUser can read it.\n\n4. **Keep the virtiofs mount** at /run/secrets/host — that part is correct.\n\n## Files to edit\n- modules/reel-life/default.nix — the main file that needs changes\n\n## Acceptance criteria\n- The ExecStartPre script generates a single /run/reel-life/env with all KEY=VALUE pairs\n- environmentFiles = [ \"/run/reel-life/env\" ]\n- RuntimeDirectory = \"reel-life\" is set in serviceConfig\n- No other functional changes — don't touch networking, microvm settings, etc.\n- The nix code should be syntactically valid",
+  "issue": null,
+  "pr": "411",
+  "branch": "fix/microvms-and-secrets",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260401-2042-5ecb",
+  "tmux_pane": "%21",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260401-2036-cb7c/logs/20260401-2042-5ecb.jsonl",
+  "created_at": "2026-04-01T20:42:05-04:00",
+  "cost_usd": 0.2602115,
+  "duration_ms": 54756,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/411",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

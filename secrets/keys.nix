@@ -3,7 +3,7 @@ let
   patrick = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILc8u2oEFD+sn9vmX0gEbf62V4fmHGSvu10ENPkci3Yd" # makers-mark.ubuntu
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8B2eVhu/TpXZPyOt/6w0ELdtO6X6cTiWz3CvofxDCR" # makers-mark.nixos
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHo0Oc728AfV2EMn30DhTWSqdWhmY8xR6np/qf6U7xvn cloud-ssh" # Chrome
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHo0Oc728AfV2EMn30DhTWSqdWhmY8xR6np/qf6U7xvn" # cloud-ssh (Chrome)
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGCxVUxXoyFYV40QureqqSMSA17CvK9IrFB33BA6UOip" # classic-laddie
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICkzfSlbK9YX3KztdvtgfyJelixdI6QN3c41eme9HOWv" # weller
   ];
@@ -18,26 +18,11 @@ in
 {
   users = patrick;
 
-  hosts = {
-    inherit
-      classic-laddie
-      weller
-      johnny-walker
-      wsl
-      klaus-worker-0
-      ;
-    all = [
-      classic-laddie
-      weller
-      johnny-walker
-      wsl
-      klaus-worker-0
-    ];
-    main = [
-      classic-laddie
-      weller
-      johnny-walker
-      wsl
-    ];
-  };
+  hosts = [
+    classic-laddie
+    weller
+    johnny-walker
+    wsl
+    klaus-worker-0
+  ];
 }

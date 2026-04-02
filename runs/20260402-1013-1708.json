@@ -1,0 +1,16 @@
+{
+  "id": "20260402-1013-1708",
+  "prompt": "Fix the Super+Z keybinding for launching Zen browser in the Hyprland config.\n\n## Problem\nThe keybinding on line 207 of home/hyprland.nix runs `exec, zen` but the zen-browser flake's default package (inputs.zen-browser.packages.x86_64-linux.default) provides the binary `zen-beta`, not `zen`. So pressing Super+Z does nothing.\n\n## Fix\nIn home/hyprland.nix line 207, change:\n\"$mainMod, Z, Open Zen browser, exec, zen\"\nto:\n\"$mainMod, Z, Open Zen browser, exec, zen-beta\"\n\n## That's it\nThis is a one-line fix. Don't change anything else. No tests needed — this is a NixOS config repo.",
+  "issue": null,
+  "branch": "agent/20260402-1013-1708",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260402-1013-1708",
+  "tmux_pane": "%2",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260402-1007-abcb/logs/20260402-1013-1708.jsonl",
+  "created_at": "2026-04-02T10:13:36-04:00",
+  "cost_usd": 0.13801024999999997,
+  "duration_ms": 25513,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/416",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

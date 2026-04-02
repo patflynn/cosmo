@@ -1,0 +1,18 @@
+{
+  "id": "20260401-2050-1e88",
+  "prompt": "Simplify reel-life deployment: remove the microVM and run it as a direct systemd service on classic-laddie instead.\n\n## Context\nPR #411, branch: fix/microvms-and-secrets. The reel-life bot is currently configured as a cloud-hypervisor microVM, but this adds massive complexity for a simple Go binary that already has strong systemd hardening (DynamicUser, ProtectSystem=strict, capability dropping, syscall filtering). We want to run it directly on the host.\n\n## What to change\n\n### 1. flake.nix\n- Remove the reel-life-0 nixosConfiguration entirely (the nixpkgs.lib.nixosSystem block for reel-life-0)\n- Remove the reel-life-0 declaredRunner from packages\n- Keep the reel-life flake input — we still need the NixOS module\n- Keep the microvm input — still used by klaus-worker-0\n\n### 2. hosts/classic-laddie/default.nix\n- Add reel-life NixOS module to imports: inputs.reel-life.nixosModules.default\n- Remove ALL reel-life microVM infrastructure:\n  - Remove br-reel bridge config\n  - Remove br-reel from networking.nat.internalInterfaces (keep br-klaus)\n  - Remove networking.firewall.interfaces.br-reel block\n  - Remove the reel-life-0 entry from microvm.vms (if present)\n  - Remove systemd.services.microvm-tap-interfaces@reel-life-0 (if present)\n- Add agenix secrets for reel-life:\n  age.secrets.reel-life-telegram-token = { file = ../../secrets/reel-life-telegram-token.age; owner = \"reel-life\"; mode = \"0400\"; };\n  age.secrets.anthropic-key = { file = ../../secrets/anthropic-key.age; owner = \"reel-life\"; mode = \"0400\"; };\n- Add reel-life service config:\n  services.reel-life = {\n    enable = true;\n    chatBackend = \"telegram\";\n    sonarrUrl = \"http://localhost:8989\";\n    chatTelegramChatID = 0;\n    chatTelegramAllowedUsers = [ ];\n    environmentFiles = [ config.age.secrets.reel-life-telegram-token.path config.age.secrets.anthropic-key.path ];\n    monitorEnabled = true;\n    monitorInterval = \"5m\";\n    logLevel = \"info\";\n  };\n\n### 3. modules/reel-life/default.nix\n- DELETE this file entirely. It was a microVM-specific wrapper. The reel-life NixOS module from the flake input provides the systemd service definition. All config is now inline in the host.\n\n### 4. secrets/secrets.nix\n- Ensure reel-life-telegram-token.age and anthropic-key.age include classic-laddie host key in publicKeys so it can decrypt them directly\n\n### 5. Keep unchanged\n- klaus-worker-0 microVM — that one stays\n- secrets/keys.nix restructuring from the branch\n- shared anthropic-key.age\n- the sed fix for HA config\n- modules/klaus-worker/ stays as-is\n\n## Acceptance criteria\n- reel-life runs as a direct systemd service on classic-laddie, no microVM\n- Secrets decrypted by agenix on host, passed via EnvironmentFile\n- No bridge networking, NAT, or firewall rules for reel-life (keep klaus ones)\n- klaus-worker-0 microVM still intact\n- modules/reel-life/default.nix is deleted\n- Nix syntax is valid",
+  "issue": null,
+  "pr": "411",
+  "branch": "fix/microvms-and-secrets",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260401-2050-1e88",
+  "tmux_pane": "%22",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260401-2036-cb7c/logs/20260401-2050-1e88.jsonl",
+  "created_at": "2026-04-01T20:50:53-04:00",
+  "cost_usd": 0.71014175,
+  "duration_ms": 115403,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/411",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

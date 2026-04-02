@@ -359,11 +359,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1775094098,
-        "narHash": "sha256-XE6vjJ7Zi+vJ8QXjdRR5n9Q0Wu83LrrDxZNF6+tPyT8=",
+        "lastModified": 1775171286,
+        "narHash": "sha256-mj+GYwgkg/qiafDX+1MMWE7Fusl2AvzltzLlSJO5PAc=",
         "owner": "patflynn",
         "repo": "reel-life",
-        "rev": "ff05cba6c2bebef45aa14cea88a6347cb4267270",
+        "rev": "6e48ac3083ae9161eff995b83be8b6d36dca0cac",
         "type": "github"
       },
       "original": {

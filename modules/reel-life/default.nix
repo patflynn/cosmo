@@ -96,28 +96,36 @@
     # After setup, populate with Telegram user IDs to restrict access.
     chatTelegramAllowedUsers = [ ];
     environmentFiles = [
-      "/run/secrets/host/reel-life-telegram-token"
-      "/run/secrets/host/anthropic-key"
-      "/run/reel-life/media.env"
+      "/run/reel-life/env"
     ];
     monitorEnabled = true;
     monitorInterval = "5m";
     logLevel = "info";
   };
 
-  # Format the raw secrets into the EnvironmentFile format expected by reel-life
-  # Using ExecStartPre ensures mounts (virtiofs) are ready.
-  # We use a wrapper bash script to ensure path resolution.
-  systemd.services.reel-life.serviceConfig.ExecStartPre = [
-    (pkgs.writeShellScript "reel-life-setup-env" ''
-      mkdir -p /run/reel-life
-      if [ -f /run/secrets/host/sonarr-api-key ]; then
-        echo "SONARR_API_KEY=$(cat /run/secrets/host/sonarr-api-key)" > /run/reel-life/media.env
-        echo "RADARR_API_KEY=$(cat /run/secrets/host/radarr-api-key)" >> /run/reel-life/media.env
-        chmod 0644 /run/reel-life/media.env
-      fi
-    '')
-  ];
+  # Convert raw host secrets (bare values via virtiofs) into KEY=VALUE env file.
+  # The + prefix runs the script as root so it can read the virtiofs mount,
+  # then chmod so the DynamicUser can read the result.
+  systemd.services.reel-life.serviceConfig = {
+    RuntimeDirectory = "reel-life";
+    ExecStartPre = [
+      (
+        "+"
+        + pkgs.writeShellScript "reel-life-setup-env" ''
+          env_file=/run/reel-life/env
+          echo "TELEGRAM_BOT_TOKEN=$(cat /run/secrets/host/reel-life-telegram-token)" > "$env_file"
+          echo "ANTHROPIC_API_KEY=$(cat /run/secrets/host/anthropic-key)" >> "$env_file"
+          if [ -f /run/secrets/host/sonarr-api-key ]; then
+            echo "SONARR_API_KEY=$(cat /run/secrets/host/sonarr-api-key)" >> "$env_file"
+          fi
+          if [ -f /run/secrets/host/radarr-api-key ]; then
+            echo "RADARR_API_KEY=$(cat /run/secrets/host/radarr-api-key)" >> "$env_file"
+          fi
+          chmod 0444 "$env_file"
+        ''
+      )
+    ];
+  };
 
   # --------------------------------------------------------------------------
   # Services & packages

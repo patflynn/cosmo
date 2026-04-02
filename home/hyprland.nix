@@ -105,7 +105,7 @@
       # Auto-detect monitors with preferred resolution
       # Format: name, resolution, position, scale
       monitor = [
-        "DP-2, highrr, auto, 1"
+        "desc:Dell Inc. DELL U4025QW 37P0B84, highrr, auto, 1"
         ", preferred, auto, 1"
       ];
 

@@ -1,0 +1,18 @@
+{
+  "id": "20260401-2059-488e",
+  "prompt": "Simplify keys.nix: drop premature main/all grouping, use a single flat host list.\n\n## Context\nPR #411, branch fix/microvms-and-secrets. The current keys.nix has named host keys (good) but splits them into main/all groups that aren't meaningfully used — every secret in secrets.nix uses keys.hosts.main, making the grouping pointless. Simplify to a single list.\n\n## Changes to make\n\n### secrets/keys.nix\nReplace the current structure with:\n\n```nix\nlet\n  # User Keys\n  patrick = [\n    \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILc8u2oEFD+sn9vmX0gEbf62V4fmHGSvu10ENPkci3Yd\" # makers-mark.ubuntu\n    \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8B2eVhu/TpXZPyOt/6w0ELdtO6X6cTiWz3CvofxDCR\" # makers-mark.nixos\n    \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHo0Oc728AfV2EMn30DhTWSqdWhmY8xR6np/qf6U7xvn\" # cloud-ssh (Chrome)\n    \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGCxVUxXoyFYV40QureqqSMSA17CvK9IrFB33BA6UOip\" # classic-laddie\n    \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICkzfSlbK9YX3KztdvtgfyJelixdI6QN3c41eme9HOWv\" # weller\n  ];\n\n  # Host Keys\n  classic-laddie = \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE7/mipW9wcQwVlDmEqBZksGDO3BEG94gb6VBuyDJUgk\";\n  weller = \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGEqPYzGOvoeU3mpgBmw9XM/C3IaPETUBJeKtXsCBEBd\";\n  johnny-walker = \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALgjAYCsxF4HUoW9MmsrShmV45Y1ClM37Z7jXY4Fw+G\";\n  wsl = \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICm/0RSHq33ws9IIlzJyXhL0Gh1eudUE3LZEMUOa6PHX\";\n  klaus-worker-0 = \"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINxasgwj3CMigHPUCZ6QmnPrWbmonBKbrWq5gwofqPx/\";\nin\n{\n  users = patrick;\n\n  hosts = [\n    classic-laddie\n    weller\n    johnny-walker\n    wsl\n    klaus-worker-0\n  ];\n}\n```\n\nKey changes: hosts is now a flat list (no main/all split). Named variables are kept for readability.\n\n### secrets/secrets.nix\nChange all `keys.hosts.main` references back to `keys.hosts`:\n\n```nix\nlet\n  keys = import ./keys.nix;\nin\n{\n  \"user-password.age\".publicKeys = keys.users ++ keys.hosts;\n  \"media-vpn.age\".publicKeys = keys.users ++ keys.hosts;\n  \"sonarr-api-key.age\".publicKeys = keys.users ++ keys.hosts;\n  \"radarr-api-key.age\".publicKeys = keys.users ++ keys.hosts;\n  \"prowlarr-api-key.age\".publicKeys = keys.users ++ keys.hosts;\n  \"ha-location.age\".publicKeys = keys.users ++ keys.hosts;\n  \"anthropic-key.age\".publicKeys = keys.users ++ keys.hosts;\n  \"github-token.age\".publicKeys = keys.users ++ keys.hosts;\n  \"reel-life-telegram-token.age\".publicKeys = keys.users ++ keys.hosts;\n  \"reel-life-media-keys.age\".publicKeys = keys.users ++ keys.hosts;\n}\n```\n\n### Do NOT touch .age files\nDo NOT re-encrypt or modify any .age files. The user will run `agenix --rekey` manually after this change.\n\n### Do NOT touch any other files\nOnly modify secrets/keys.nix and secrets/secrets.nix. Do not touch flake.nix, host configs, or module configs.\n\n## Acceptance criteria\n- keys.nix has named host variables but a single flat hosts list\n- secrets.nix uses keys.users ++ keys.hosts everywhere\n- No .age files modified\n- No other files modified",
+  "issue": null,
+  "pr": "411",
+  "branch": "fix/microvms-and-secrets",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260401-2059-488e",
+  "tmux_pane": "%26",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260401-2036-cb7c/logs/20260401-2059-488e.jsonl",
+  "created_at": "2026-04-01T20:59:50-04:00",
+  "cost_usd": 0.20384925000000004,
+  "duration_ms": 41527,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/411",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

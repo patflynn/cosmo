@@ -15,6 +15,7 @@
   # --------------------------------------------------------------------------
   microvm = {
     hypervisor = "cloud-hypervisor";
+    vsock.cid = 3;
     vcpu = 4;
     mem = 4096;
 
@@ -110,7 +111,7 @@
     pkgs.git
     pkgs.gh
     pkgs.tmux
-    inputs.klaus.packages.${pkgs.system}.default
+    inputs.klaus.packages.${pkgs.stdenv.hostPlatform.system}.default
 
     # Helper script to load secrets into the environment
     (pkgs.writeShellScriptBin "klaus-env" ''

@@ -14,9 +14,10 @@ let
   syncScript = pkgs.writeShellScript "media-stack-sync" ''
     set -euo pipefail
 
-    SONARR_API_KEY=$(cat "${rcfg.sonarrApiKeyPath}")
-    RADARR_API_KEY=$(cat "${rcfg.radarrApiKeyPath}")
-    PROWLARR_API_KEY=$(cat "${rcfg.prowlarrApiKeyPath}")
+    # Secrets may be KEY=VALUE (for EnvironmentFile) or raw values; strip prefix if present
+    SONARR_API_KEY=$(sed 's/^SONARR_API_KEY=//' "${rcfg.sonarrApiKeyPath}")
+    RADARR_API_KEY=$(sed 's/^RADARR_API_KEY=//' "${rcfg.radarrApiKeyPath}")
+    PROWLARR_API_KEY=$(sed 's/^PROWLARR_API_KEY=//' "${rcfg.prowlarrApiKeyPath}")
 
     SONARR_URL="http://localhost:8989"
     RADARR_URL="http://localhost:7878"

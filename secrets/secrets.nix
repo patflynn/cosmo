@@ -3,7 +3,7 @@ let
 in
 {
   # User password needed on all interactive hosts
-  "user-password.age".publicKeys = keys.users ++ keys.hosts.main ++ [ keys.hosts.reel-life-0 ];
+  "user-password.age".publicKeys = keys.users ++ keys.hosts.main;
 
   # Media/Home Infrastructure
   "media-vpn.age".publicKeys = keys.users ++ keys.hosts.main;

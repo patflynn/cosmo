@@ -16,6 +16,7 @@
     ../../modules/common/gaming.nix
     ../../modules/common/ddcci.nix
     ../../modules/media-server/default.nix
+    inputs.reel-life.nixosModules.default
   ];
 
   cosmo.user.default = "patrick";
@@ -35,35 +36,11 @@
     }
   ];
 
-  # Bridge network for reel-life microVM
-  networking.bridges.br-reel.interfaces = [ ];
-  networking.interfaces.br-reel.ipv4.addresses = [
-    {
-      address = "10.100.1.1";
-      prefixLength = 24;
-    }
-  ];
-
   # NAT from microVM bridges so VMs can reach the internet
   networking.nat = {
     enable = true;
     internalInterfaces = [
       "br-klaus"
-      "br-reel"
-    ];
-  };
-
-  # Allow reel-life microVM to reach media services on the host
-  networking.firewall.interfaces."br-reel" = {
-    allowedTCPPorts = [
-      8989 # Sonarr
-      7878 # Radarr
-      9696 # Prowlarr
-      32400 # Plex
-      8096 # Jellyfin
-      5055 # Overseerr
-      8080 # qBittorrent
-      8085 # SABnzbd
     ];
   };
 
@@ -88,23 +65,6 @@
         ];
       };
     };
-    reel-life-0 = {
-      specialArgs = { inherit inputs; };
-      config = {
-        imports = [
-          ../../modules/reel-life/default.nix
-          { networking.hostName = "reel-life-0"; }
-        ];
-        microvm.shares = [
-          {
-            tag = "secrets";
-            source = "/run/agenix";
-            mountPoint = "/run/secrets/host";
-            proto = "virtiofs";
-          }
-        ];
-      };
-    };
   };
 
   # Assign bridges to microVM interfaces on the host
@@ -112,11 +72,6 @@
     wants = [ "br-klaus-netdev.service" ];
     after = [ "br-klaus-netdev.service" ];
     postStart = "${pkgs.iproute2}/bin/ip link set vm-klaus-0 master br-klaus";
-  };
-  systemd.services."microvm-tap-interfaces@reel-life-0" = {
-    wants = [ "br-reel-netdev.service" ];
-    after = [ "br-reel-netdev.service" ];
-    postStart = "${pkgs.iproute2}/bin/ip link set vm-reel-0 master br-reel";
   };
 
   # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)
@@ -147,6 +102,24 @@
   #   cd secrets && agenix -e prowlarr-api-key.age  # paste the API key from Prowlarr UI → Settings → General
   modules.media-server.recyclarr.enable = true;
 
+  # ---------------------------------------------------------------------------
+  # Reel-life media chatops agent (direct systemd service)
+  # ---------------------------------------------------------------------------
+  services.reel-life = {
+    enable = true;
+    chatBackend = "telegram";
+    sonarrUrl = "http://localhost:8989";
+    chatTelegramChatID = 0;
+    chatTelegramAllowedUsers = [ ];
+    environmentFiles = [
+      config.age.secrets.reel-life-telegram-token.path
+      config.age.secrets.anthropic-key.path
+    ];
+    monitorEnabled = true;
+    monitorInterval = "5m";
+    logLevel = "info";
+  };
+
   # VPN Credentials for Gluetun (Mullvad)
   # Run: agenix -e secrets/media-vpn.age
   # Content format:
@@ -159,7 +132,7 @@
     mode = "0440";
   };
 
-  # API keys for the *arr stack (used by the media-stack-sync service and reel-life VM)
+  # API keys for the *arr stack (used by the media-stack-sync service)
   age.secrets."sonarr-api-key" = {
     file = ../../secrets/sonarr-api-key.age;
     mode = "0444"; # Readable by microvm processes
@@ -173,14 +146,16 @@
     mode = "0400";
   };
 
-  # Shared AI / Chat secrets for microVMs
+  # Secrets for reel-life service (decrypted on host, passed via EnvironmentFile)
   age.secrets."anthropic-key" = {
     file = ../../secrets/anthropic-key.age;
-    mode = "0444";
+    owner = "reel-life";
+    mode = "0400";
   };
   age.secrets."reel-life-telegram-token" = {
     file = ../../secrets/reel-life-telegram-token.age;
-    mode = "0444";
+    owner = "reel-life";
+    mode = "0400";
   };
 
   # ---------------------------------------------------------------------------

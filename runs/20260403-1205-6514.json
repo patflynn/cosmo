@@ -1,0 +1,16 @@
+{
+  "id": "20260403-1205-6514",
+  "prompt": "Wire the reel-life weather/location config on classic-laddie using the encrypted location from ha-location.age.\n\n## Context\n\nThe reel-life agent is getting a weather feature (PR in progress on patflynn/reel-life) that reads location from config:\n\n```yaml\nlocation:\n  name: \"Montreal, QC\"\n  latitude: 45.5250\n  longitude: -73.5970\n```\n\nThe latitude/longitude are sensitive and already stored encrypted in `secrets/ha-location.age` with format:\n```\nHA_LATITUDE=45.5250\nHA_LONGITUDE=-73.5970\nHA_ELEVATION=52\n```\n\n## What to do\n\n### 1. Create a new secret file for reel-life location\n\nCreate `secrets/reel-life-location.age` using the same lat/lon but with reel-life env var names. Register it in `secrets/secrets.nix`.\n\nThe content should be:\n```\nREEL_LIFE_LATITUDE=45.5250\nREEL_LIFE_LONGITUDE=-73.5970\nREEL_LIFE_LOCATION_NAME=Montreal, QC\n```\n\n**IMPORTANT**: You cannot create .age files directly — they need to be encrypted via agenix. Instead:\n- Add the entry to `secrets/secrets.nix` \n- Add the `age.secrets` declaration in `hosts/classic-laddie/default.nix` with mode `0400`\n- Add the secret path to the reel-life `environmentFiles` list\n- Leave a comment noting that the user needs to run `cd secrets \u0026\u0026 agenix -e reel-life-location.age` to populate it\n\n### 2. Update classic-laddie reel-life config\n\nIn `hosts/classic-laddie/default.nix`, the reel-life service config (around line 115):\n- Do NOT set `locationLatitude`/`locationLongitude`/`locationName` directly in the Nix config (that would be plaintext in the repo)\n- Instead, add the new secret to `environmentFiles`\n- The reel-life Go binary will need env var overrides for these (that's being handled in the reel-life repo)\n\n### 3. Update the reel-life NixOS module options if needed\n\nCheck `nix/module.nix` in the reel-life repo — if the weather PR hasn't added NixOS module options yet, that's fine. The env var approach bypasses the module config entirely, which is actually cleaner for secrets.\n\n### Key files\n- `secrets/secrets.nix` — register the new secret\n- `hosts/classic-laddie/default.nix` — reel-life service config (line ~115), age.secrets declarations (line ~155)\n\n### Acceptance criteria\n- New secret registered in secrets.nix\n- age.secrets declaration added for reel-life-location\n- Secret path added to reel-life environmentFiles\n- Comment left about running agenix to populate the secret\n- No plaintext coordinates in any file",
+  "issue": null,
+  "branch": "agent/20260403-1205-6514",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260403-1205-6514",
+  "tmux_pane": "%24",
+  "budget": "3",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260402-1833-aabf/logs/20260403-1205-6514.jsonl",
+  "created_at": "2026-04-03T12:05:25-04:00",
+  "cost_usd": 0.30282074999999997,
+  "duration_ms": 110478,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/424",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

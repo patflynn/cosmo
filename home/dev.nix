@@ -49,5 +49,16 @@
     programs.zsh.shellAliases = {
       rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";
     };
+
+    # Klaus agent orchestration config
+    home.file.".klaus/config.json".text = builtins.toJSON {
+      worktree_base = "/tmp/klaus-sessions";
+      clone_base = "/home/${config.home.username}/hack";
+      default_budget = "5.00";
+      data_ref = "refs/klaus/data";
+      default_branch = "main";
+      trusted_reviewers = [ "gemini-code-assist[bot]" ];
+      auto_merge_on_approval = true;
+    };
   };
 }

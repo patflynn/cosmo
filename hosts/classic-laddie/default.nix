@@ -137,8 +137,9 @@
     logLevel = "info";
   };
 
-  # Persistent state directory for reel-life notebook
-  systemd.services.reel-life.serviceConfig.ReadWritePaths = [ "/var/lib/reel-life" ];
+  # Persistent state directory for reel-life notebook (StateDirectory handles
+  # creation, ownership, and persistence for DynamicUser services)
+  systemd.services.reel-life.serviceConfig.StateDirectory = "reel-life";
 
   # VPN Credentials for Gluetun (Mullvad)
   # Run: agenix -e secrets/media-vpn.age
@@ -163,13 +164,14 @@
   };
   age.secrets."prowlarr-api-key" = {
     file = ../../secrets/prowlarr-api-key.age;
-    mode = "0444";
+    mode = "0400";
   };
 
   # Secrets for reel-life service (decrypted on host, passed via EnvironmentFile)
+  # Mode 0400 is sufficient — systemd reads EnvironmentFiles as root before dropping privs
   age.secrets."reel-life-media-keys" = {
     file = ../../secrets/reel-life-media-keys.age;
-    mode = "0444";
+    mode = "0400";
   };
   age.secrets."anthropic-key" = {
     file = ../../secrets/anthropic-key.age;
@@ -267,7 +269,6 @@
 
   systemd.tmpfiles.rules = [
     # Type Path             Mode User    Group   Age Argument
-    "d /var/lib/reel-life   0755 root    root    -   -"
     "d /mnt/media/movies    0775 ${config.cosmo.user.default} media   -   -"
     "d /mnt/media/tv        0775 ${config.cosmo.user.default} media   -   -"
     "d /mnt/media/music     0775 ${config.cosmo.user.default} media   -   -"

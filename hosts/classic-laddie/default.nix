@@ -131,6 +131,7 @@
       config.age.secrets.radarr-api-key.path
       config.age.secrets.prowlarr-api-key.path
       config.age.secrets.reel-life-media-keys.path
+      config.age.secrets.reel-life-location.path
     ];
     monitorEnabled = true;
     monitorInterval = "5m";
@@ -180,6 +181,17 @@
   age.secrets."reel-life-telegram-token" = {
     file = ../../secrets/reel-life-telegram-token.age;
     mode = "0444";
+  };
+
+  # Weather location coordinates for reel-life (latitude, longitude, location name).
+  # Populate with: cd secrets && agenix -e reel-life-location.age
+  # Content format:
+  #   REEL_LIFE_LATITUDE=45.5250
+  #   REEL_LIFE_LONGITUDE=-73.5970
+  #   REEL_LIFE_LOCATION_NAME=Montreal, QC
+  age.secrets."reel-life-location" = {
+    file = ../../secrets/reel-life-location.age;
+    mode = "0400";
   };
 
   # ---------------------------------------------------------------------------

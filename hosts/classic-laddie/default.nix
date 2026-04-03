@@ -139,7 +139,6 @@
 
   # Persistent state directory for reel-life notebook
   systemd.services.reel-life.serviceConfig.ReadWritePaths = [ "/var/lib/reel-life" ];
-  systemd.tmpfiles.rules = [ "d /var/lib/reel-life 0755 root root -" ];
 
   # VPN Credentials for Gluetun (Mullvad)
   # Run: agenix -e secrets/media-vpn.age
@@ -268,6 +267,7 @@
 
   systemd.tmpfiles.rules = [
     # Type Path             Mode User    Group   Age Argument
+    "d /var/lib/reel-life   0755 root    root    -   -"
     "d /mnt/media/movies    0775 ${config.cosmo.user.default} media   -   -"
     "d /mnt/media/tv        0775 ${config.cosmo.user.default} media   -   -"
     "d /mnt/media/music     0775 ${config.cosmo.user.default} media   -   -"

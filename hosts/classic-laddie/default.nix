@@ -117,17 +117,29 @@
     listenPort = 9090;
     chatBackend = "telegram";
     sonarrUrl = "http://localhost:8989";
+    radarrUrl = "http://localhost:7878";
+    prowlarrUrl = "http://localhost:9696";
+    overseerrUrl = "http://localhost:5055";
     chatTelegramChatID = 0;
     chatTelegramAllowedUsers = [ 8780088233 ];
+    notebookEnabled = true;
+    notebookPath = "/var/lib/reel-life/notebook.json";
     environmentFiles = [
       config.age.secrets.reel-life-telegram-token.path
       config.age.secrets.anthropic-key.path
       config.age.secrets.sonarr-api-key.path
+      config.age.secrets.radarr-api-key.path
+      config.age.secrets.prowlarr-api-key.path
+      config.age.secrets.reel-life-media-keys.path
     ];
     monitorEnabled = true;
     monitorInterval = "5m";
     logLevel = "info";
   };
+
+  # Persistent state directory for reel-life notebook
+  systemd.services.reel-life.serviceConfig.ReadWritePaths = [ "/var/lib/reel-life" ];
+  systemd.tmpfiles.rules = [ "d /var/lib/reel-life 0755 root root -" ];
 
   # VPN Credentials for Gluetun (Mullvad)
   # Run: agenix -e secrets/media-vpn.age
@@ -152,10 +164,14 @@
   };
   age.secrets."prowlarr-api-key" = {
     file = ../../secrets/prowlarr-api-key.age;
-    mode = "0400";
+    mode = "0444";
   };
 
   # Secrets for reel-life service (decrypted on host, passed via EnvironmentFile)
+  age.secrets."reel-life-media-keys" = {
+    file = ../../secrets/reel-life-media-keys.age;
+    mode = "0444";
+  };
   age.secrets."anthropic-key" = {
     file = ../../secrets/anthropic-key.age;
     mode = "0444";

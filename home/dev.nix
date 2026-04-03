@@ -52,8 +52,8 @@
 
     # Klaus agent orchestration config
     home.file.".klaus/config.json".text = builtins.toJSON {
-      worktree_base = "/tmp/klaus-sessions";
-      clone_base = "/home/${config.home.username}/hack";
+      worktree_base = "/tmp/klaus-${config.home.username}-sessions";
+      clone_base = "${config.home.homeDirectory}/hack";
       default_budget = "5.00";
       data_ref = "refs/klaus/data";
       default_branch = "main";

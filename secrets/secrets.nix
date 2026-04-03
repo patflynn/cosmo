@@ -12,4 +12,5 @@ in
   "github-token.age".publicKeys = keys.users ++ keys.hosts;
   "reel-life-telegram-token.age".publicKeys = keys.users ++ keys.hosts;
   "reel-life-media-keys.age".publicKeys = keys.users ++ keys.hosts;
+  "reel-life-location.age".publicKeys = keys.users ++ keys.hosts;
 }

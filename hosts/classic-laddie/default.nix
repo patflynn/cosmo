@@ -117,17 +117,29 @@
     listenPort = 9090;
     chatBackend = "telegram";
     sonarrUrl = "http://localhost:8989";
+    radarrUrl = "http://localhost:7878";
+    prowlarrUrl = "http://localhost:9696";
+    overseerrUrl = "http://localhost:5055";
     chatTelegramChatID = 0;
     chatTelegramAllowedUsers = [ 8780088233 ];
+    notebookEnabled = true;
+    notebookPath = "/var/lib/reel-life/notebook.json";
     environmentFiles = [
       config.age.secrets.reel-life-telegram-token.path
       config.age.secrets.anthropic-key.path
       config.age.secrets.sonarr-api-key.path
+      config.age.secrets.radarr-api-key.path
+      config.age.secrets.prowlarr-api-key.path
+      config.age.secrets.reel-life-media-keys.path
     ];
     monitorEnabled = true;
     monitorInterval = "5m";
     logLevel = "info";
   };
+
+  # Persistent state directory for reel-life notebook (StateDirectory handles
+  # creation, ownership, and persistence for DynamicUser services)
+  systemd.services.reel-life.serviceConfig.StateDirectory = "reel-life";
 
   # VPN Credentials for Gluetun (Mullvad)
   # Run: agenix -e secrets/media-vpn.age
@@ -156,6 +168,11 @@
   };
 
   # Secrets for reel-life service (decrypted on host, passed via EnvironmentFile)
+  # Mode 0400 is sufficient — systemd reads EnvironmentFiles as root before dropping privs
+  age.secrets."reel-life-media-keys" = {
+    file = ../../secrets/reel-life-media-keys.age;
+    mode = "0400";
+  };
   age.secrets."anthropic-key" = {
     file = ../../secrets/anthropic-key.age;
     mode = "0444";

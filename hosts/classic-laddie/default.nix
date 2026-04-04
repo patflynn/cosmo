@@ -121,7 +121,9 @@
     prowlarrUrl = "http://localhost:9696";
     overseerrUrl = "http://localhost:5055";
     chatTelegramChatID = 0;
+    chatTelegramAdminChatID = 8780088233;
     chatTelegramAllowedUsers = [ 8780088233 ];
+    agentHistoryPath = "/var/lib/reel-life/history.json";
     notebookEnabled = true;
     notebookPath = "/var/lib/reel-life/notebook.json";
     environmentFiles = [

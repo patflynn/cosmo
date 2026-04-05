@@ -59,6 +59,11 @@
       default_branch = "main";
       trusted_reviewers = [ "gemini-code-assist[bot]" ];
       auto_merge_on_approval = true;
+      webhook = {
+        port = 9800;
+        path = "/webhook/github";
+        poll_fallback = false;
+      };
     };
   };
 }

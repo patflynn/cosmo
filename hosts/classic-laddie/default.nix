@@ -155,7 +155,7 @@
     funnel.enable = true;
 
     consumers = {
-      # Forward PR/CI events to klaus microVM (10.100.0.2 on br-klaus bridge)
+      # Forward PR/CI events to klaus
       klaus = {
         repo = "*";
         events = [
@@ -166,14 +166,14 @@
           "pull_request_review"
         ];
         action = "http";
-        url = "http://10.100.0.2:9800/webhook/github";
+        url = "http://127.0.0.1:9800/webhook/github";
       };
     };
   };
 
   age.secrets."github-webhook-secret" = {
     file = ../../secrets/github-webhook-secret.age;
-    mode = "0400";
+    mode = "0444";
   };
 
   # VPN Credentials for Gluetun (Mullvad)

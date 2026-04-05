@@ -1,0 +1,18 @@
+{
+  "id": "20260405-0948-c0a4",
+  "prompt": "Fix the github-relay deployment to properly support Tailscale Funnel instead of using a tsnsrv stub.\n\n## Problem\nThe current PR adds a stub for services.tsnsrv because classic-laddie doesn't have the tsnsrv module. But we actually want Funnel enabled so GitHub can reach the relay publicly.\n\n## Changes needed\n\n### 1. Add tsnsrv flake input (flake.nix)\ntsnsrv is at github:boinkor-net/tsnsrv. Add it as a flake input:\n```nix\ntsnsrv = {\n  url = \"github:boinkor-net/tsnsrv\";\n  inputs.nixpkgs.follows = \"nixpkgs\";\n};\n```\n\nAlso add tsnsrv to the outputs function parameters.\n\n### 2. Import the tsnsrv NixOS module\nIn the classic-laddie nixosSystem modules list, add:\n```nix\ntsnsrv.nixosModules.default\n```\n\n### 3. Remove the stub module\nDelete the entire stub block that was added:\n```nix\n# Stub: github-relay module references services.tsnsrv for funnel\n# support; declare the option so evaluation succeeds even without\n# the tsnsrv module imported (funnel is not enabled).\n(\n  { lib, ... }:\n  {\n    options.services.tsnsrv = lib.mkOption {\n      ...\n    };\n  }\n)\n```\n\n### 4. Enable funnel on the github-relay config\nIn hosts/classic-laddie/default.nix, add funnel.enable to the github-relay config:\n```nix\nservices.github-relay = {\n  enable = true;\n  port = 8077;\n  webhookSecretFile = config.age.secrets.github-webhook-secret.path;\n  funnel.enable = true;  # ADD THIS\n  consumers = { ... };\n};\n```\n\n### 5. Ensure Tailscale is configured\nCheck if services.tailscale is already enabled on classic-laddie. If not, it needs to be for Funnel to work. Look at the existing config.\n\n### 6. Update flake.lock\nRun: nix flake update tsnsrv\n\n### 7. Verify\nRun: nix flake check or nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --dry-run",
+  "issue": null,
+  "pr": "436",
+  "branch": "agent/20260405-0828-836c",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260405-0948-c0a4",
+  "tmux_pane": "%413",
+  "budget": "4",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260403-1752-e050/logs/20260405-0948-c0a4.jsonl",
+  "created_at": "2026-04-05T09:48:56-04:00",
+  "cost_usd": 0.34423699999999996,
+  "duration_ms": 92527,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/436",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

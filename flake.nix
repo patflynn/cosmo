@@ -139,7 +139,9 @@
               { lib, ... }:
               {
                 options.services.tsnsrv = lib.mkOption {
-                  type = lib.types.anything;
+                  type = lib.types.submodule {
+                    options.enable = lib.mkEnableOption "tsnsrv stub";
+                  };
                   default = { };
                 };
               }

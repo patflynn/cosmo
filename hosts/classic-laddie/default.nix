@@ -154,7 +154,7 @@
     webhookSecretFile = config.age.secrets.github-webhook-secret.path;
 
     consumers = {
-      # Forward PR/CI events to klaus dashboard
+      # Forward PR/CI events to klaus microVM (10.100.0.2 on br-klaus bridge)
       klaus = {
         repo = "*";
         events = [
@@ -165,7 +165,7 @@
           "pull_request_review"
         ];
         action = "http";
-        url = "http://localhost:9800/webhook/github";
+        url = "http://10.100.0.2:9800/webhook/github";
       };
     };
   };

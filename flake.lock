@@ -115,6 +115,26 @@
         "type": "github"
       }
     },
+    "github-relay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775401889,
+        "narHash": "sha256-FKcmTGM9qthJSPdULv7GjdT/Eaw3zgRbh05utaBHX1k=",
+        "owner": "patflynn",
+        "repo": "github-relay",
+        "rev": "a796f1ff38477c664ca3450be8632f5af3540a2e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "patflynn",
+        "repo": "github-relay",
+        "type": "github"
+      }
+    },
     "gitignore": {
       "inputs": {
         "nixpkgs": [
@@ -376,6 +396,7 @@
       "inputs": {
         "agenix": "agenix",
         "disko": "disko",
+        "github-relay": "github-relay",
         "home-manager": "home-manager_2",
         "klaus": "klaus",
         "microvm": "microvm",

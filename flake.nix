@@ -46,6 +46,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    github-relay = {
+      url = "github:patflynn/github-relay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 
@@ -60,6 +65,7 @@
       klaus,
       microvm,
       reel-life,
+      github-relay,
       ...
     }@inputs:
     let

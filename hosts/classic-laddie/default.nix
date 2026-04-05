@@ -152,6 +152,7 @@
     enable = true;
     port = 8077;
     webhookSecretFile = config.age.secrets.github-webhook-secret.path;
+    funnel.enable = true;
 
     consumers = {
       # Forward PR/CI events to klaus microVM (10.100.0.2 on br-klaus bridge)

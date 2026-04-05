@@ -17,6 +17,7 @@
     ../../modules/common/ddcci.nix
     ../../modules/media-server/default.nix
     inputs.reel-life.nixosModules.default
+    inputs.github-relay.nixosModules.default
   ];
 
   cosmo.user.default = "patrick";
@@ -143,6 +144,36 @@
   # Persistent state directory for reel-life notebook (StateDirectory handles
   # creation, ownership, and persistence for DynamicUser services)
   systemd.services.reel-life.serviceConfig.StateDirectory = "reel-life";
+
+  # ---------------------------------------------------------------------------
+  # GitHub Relay (webhook forwarder → klaus)
+  # ---------------------------------------------------------------------------
+  services.github-relay = {
+    enable = true;
+    port = 8077;
+    webhookSecretFile = config.age.secrets.github-webhook-secret.path;
+
+    consumers = {
+      # Forward PR/CI events to klaus dashboard
+      klaus = {
+        repo = "*";
+        events = [
+          "push"
+          "check_run"
+          "check_suite"
+          "pull_request"
+          "pull_request_review"
+        ];
+        action = "http";
+        url = "http://localhost:9800/webhook/github";
+      };
+    };
+  };
+
+  age.secrets."github-webhook-secret" = {
+    file = ../../secrets/github-webhook-secret.age;
+    mode = "0400";
+  };
 
   # VPN Credentials for Gluetun (Mullvad)
   # Run: agenix -e secrets/media-vpn.age

@@ -46,6 +46,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    github-relay = {
+      url = "github:patflynn/github-relay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 
@@ -60,6 +65,7 @@
       klaus,
       microvm,
       reel-life,
+      github-relay,
       ...
     }@inputs:
     let
@@ -126,6 +132,18 @@
             agenix.nixosModules.default
             microvm.nixosModules.host
             home-manager.nixosModules.home-manager
+            # Stub: github-relay module references services.tsnsrv for funnel
+            # support; declare the option so evaluation succeeds even without
+            # the tsnsrv module imported (funnel is not enabled).
+            (
+              { lib, ... }:
+              {
+                options.services.tsnsrv = lib.mkOption {
+                  type = lib.types.anything;
+                  default = { };
+                };
+              }
+            )
             (
               { config, ... }:
               {

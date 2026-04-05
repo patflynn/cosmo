@@ -1,0 +1,16 @@
+{
+  "id": "20260405-0810-769c",
+  "prompt": "Fix zizmor 'secrets-outside-env' failures in GitHub Actions workflows. The nixpkgs update bumped zizmor to a stricter version that now fails on secrets accessed outside a dedicated GitHub environment.\n\n## Problem\nzizmor flags these as medium severity:\n- .github/workflows/update-klaus.yml:17 — secrets.APP_ID outside environment\n- .github/workflows/update-klaus.yml:18 — secrets.APP_PRIVATE_KEY outside environment\n- .github/workflows/update-flake-lock.yml — same pattern (secrets.APP_ID and secrets.APP_PRIVATE_KEY)\n\n## Fix\nAdd `environment: automation` to the jobs that use APP_ID/APP_PRIVATE_KEY secrets in both workflows. This tells GitHub (and zizmor) that these secrets are scoped to a specific environment.\n\n### .github/workflows/update-klaus.yml\nAdd environment to the job:\n```yaml\njobs:\n  update-klaus:\n    runs-on: ubuntu-latest\n    environment: automation    # ADD THIS LINE\n    permissions: {}\n```\n\n### .github/workflows/update-flake-lock.yml\nSame change:\n```yaml\njobs:\n  update-lockfile:\n    runs-on: ubuntu-latest\n    environment: automation    # ADD THIS LINE\n    permissions: {}\n```\n\n## Important\n- The user will need to create a GitHub environment called 'automation' in the repo settings and move the APP_ID and APP_PRIVATE_KEY secrets there (or the jobs will fail to find the secrets). Mention this in the PR description.\n- Do NOT modify any other workflow files\n- Do NOT modify any Nix files\n- Check if there are any other workflows with the same pattern (secrets.APP_* without environment) and fix those too",
+  "issue": null,
+  "branch": "agent/20260405-0810-769c",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260405-0810-769c",
+  "tmux_pane": "%407",
+  "budget": "3",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260403-1752-e050/logs/20260405-0810-769c.jsonl",
+  "created_at": "2026-04-05T08:10:14-04:00",
+  "cost_usd": 0.15511325,
+  "duration_ms": 29880,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/435",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo"
+}

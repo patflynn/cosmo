@@ -173,7 +173,8 @@
 
   age.secrets."github-webhook-secret" = {
     file = ../../secrets/github-webhook-secret.age;
-    mode = "0444";
+    mode = "0400";
+    owner = config.cosmo.user.default;
   };
 
   # VPN Credentials for Gluetun (Mullvad)

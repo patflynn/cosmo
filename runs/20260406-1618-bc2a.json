@@ -1,0 +1,17 @@
+{
+  "id": "20260406-1618-bc2a",
+  "prompt": "Add auto-rebuild on push to main using github-relay.\n\n## Context\ncosmo is a NixOS flake that manages multiple hosts. classic-laddie already runs github-relay (a webhook router) on port 8077 with Tailscale Funnel. Currently it only forwards events to Klaus. We want to add a consumer that triggers a NixOS rebuild when cosmo's main branch is updated.\n\n## What to change\n\n### 1. Add cosmo-rebuild consumer to github-relay config\nIn hosts/classic-laddie/default.nix, the github-relay consumers are defined around line 149-172. Add a new consumer:\n\n```nix\ncosmo-rebuild = {\n  repo = \"patflynn/cosmo\";\n  events = [ \"push\" ];\n  branches = [ \"main\" ];\n  action = \"systemd\";\n  unit = \"cosmo-rebuild\";\n};\n```\n\nKeep the existing klaus consumer unchanged.\n\n### 2. Create a cosmo-rebuild systemd service\nIn hosts/classic-laddie/default.nix (or a new module if cleaner), add a systemd oneshot service:\n\n```nix\nsystemd.services.cosmo-rebuild = {\n  description = \"Rebuild NixOS from cosmo main\";\n  serviceConfig = {\n    Type = \"oneshot\";\n    # Run as root since nixos-rebuild needs it\n  };\n  path = with pkgs; [ git nixos-rebuild nix ];\n  script = ''\n    # Rebuild directly from GitHub, no local clone needed\n    nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo#classic-laddie\n  '';\n};\n```\n\nKey considerations:\n- Use `--flake github:patflynn/cosmo#classic-laddie` to pull directly from GitHub (no need to maintain a local clone)\n- Use `--no-write-lock-file` since we're building from a remote flake\n- Use `--refresh` to ensure nix fetches the latest commit\n- The service runs as root by default (systemd), which is needed for nixos-rebuild\n- Add a 10-minute timeout (TimeoutStartSec=600) so a broken build doesn't hang forever\n- Add a rate limit so rapid pushes don't pile up rebuilds — consider adding StartLimitIntervalSec=300 and StartLimitBurst=3\n- Make sure the service has network access (no network sandboxing)\n\n### 3. Ensure the webhook is configured on GitHub\nAdd a note in the PR description that the GitHub webhook for patflynn/cosmo needs to be configured to point at the Tailscale Funnel URL if not already done. (The relay URL is https://classic-laddie.coin-inconnu.ts.net)\n\n## Constraints\n- Keep changes minimal — only add the consumer and the systemd service\n- Don't modify the existing klaus consumer\n- Run nixfmt on any changed files\n- Run nix flake check if possible (may not work in the worktree without the full system)\n- Make sure the systemd service has sensible defaults (restart limits, timeouts, logging)",
+  "issue": "0",
+  "branch": "agent/20260406-1618-bc2a",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260406-1618-bc2a",
+  "tmux_pane": "%37",
+  "budget": "3",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260406-1550-8a32/logs/20260406-1618-bc2a.jsonl",
+  "created_at": "2026-04-06T16:18:05-04:00",
+  "cost_usd": 0.28571875,
+  "duration_ms": 100251,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/452",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260406-1618-bc2a"
+}

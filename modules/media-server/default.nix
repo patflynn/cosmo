@@ -227,11 +227,19 @@ in
           "8080:8080" # SABnzbd WebUI
           "6881:6881/tcp"
           "6881:6881/udp"
+          "9999:9999" # Gluetun health server
         ];
         volumes = [
           "/var/lib/gluetun:/gluetun"
         ];
-        extraOptions = [ "--device=/dev/net/tun:/dev/net/tun" ];
+        extraOptions = [
+          "--device=/dev/net/tun:/dev/net/tun"
+          "--health-cmd=wget -q -O /dev/null http://localhost:9999 || exit 1"
+          "--health-interval=30s"
+          "--health-retries=3"
+          "--health-start-period=60s"
+          "--health-timeout=10s"
+        ];
       };
 
       # The Torrent Client (Routed through Gluetun)
@@ -267,5 +275,20 @@ in
         ];
       };
     };
+
+    # ---------------------------------------------------------
+    # 6. VPN Health Monitoring & Auto-Recovery
+    # ---------------------------------------------------------
+
+    # Cascade-restart download clients when Gluetun restarts
+    systemd.services.podman-qbittorrent = {
+      bindsTo = [ "podman-gluetun.service" ];
+      after = [ "podman-gluetun.service" ];
+    };
+    systemd.services.podman-sabnzbd = {
+      bindsTo = [ "podman-gluetun.service" ];
+      after = [ "podman-gluetun.service" ];
+    };
+
   };
 }

@@ -171,6 +171,23 @@
     };
   };
 
+  # ---------------------------------------------------------------------------
+  # Ollama (local LLM inference)
+  # ---------------------------------------------------------------------------
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama-cuda;
+    loadModels = [ "gemma4:26b" ];
+  };
+
+  # ---------------------------------------------------------------------------
+  # Open WebUI (LLM chat interface)
+  # ---------------------------------------------------------------------------
+  services.open-webui = {
+    enable = true;
+    openFirewall = true;
+  };
+
   age.secrets."github-webhook-secret" = {
     file = ../../secrets/github-webhook-secret.age;
     mode = "0444";

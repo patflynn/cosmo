@@ -42,7 +42,7 @@
     };
 
     reel-life = {
-      url = "github:patflynn/reel-life";
+      url = "github:gunk-dev/reel-life";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

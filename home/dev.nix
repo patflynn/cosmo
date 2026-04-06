@@ -63,6 +63,8 @@
         port = 9800;
         path = "/webhook/github";
         poll_fallback = false;
+        relay_url = "https://classic-laddie.coin-inconnu.ts.net";
+        secret_file = "/run/agenix/github-webhook-secret";
       };
     };
   };

@@ -1,0 +1,17 @@
+{
+  "id": "20260406-1308-a634",
+  "prompt": "Update reel-life flake input URL after repo transfer.\n\nIn flake.nix line 45, change:\n  url = \"github:patflynn/reel-life\";\nto:\n  url = \"github:gunk-dev/reel-life\";\n\nThen run 'nix flake update reel-life' to update flake.lock with the new URL.\nRun 'nix flake check' to verify everything still works.\n\nThis is a one-line change plus lock file update. Keep the PR minimal.",
+  "issue": null,
+  "branch": "agent/20260406-1308-a634",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260406-1308-a634",
+  "tmux_pane": "%16",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260406-0902-986c/logs/20260406-1308-a634.jsonl",
+  "created_at": "2026-04-06T13:09:04-04:00",
+  "cost_usd": 0.14771474999999998,
+  "duration_ms": 104226,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/451",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260406-1308-a634"
+}

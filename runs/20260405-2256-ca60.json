@@ -1,0 +1,17 @@
+{
+  "id": "20260405-2256-ca60",
+  "prompt": "Fix a port conflict between Caddy and Tailscale Funnel on classic-laddie.\n\n## Problem\n\nCaddy's reverse proxy for media services (Jellyfin, Overseerr) binds to *:443, which\nblocks tailscaled from binding its Funnel listener on 100.111.60.17:443. This causes\nGitHub webhooks routed through Tailscale Funnel to fail with TLS errors.\n\nThe root cause is that Caddy's virtualHosts use bare hostnames with `tls internal`,\nwhich defaults to listening on all interfaces including the Tailscale IP.\n\n## Fix\n\nIn `modules/media-server/default.nix`, add `default_bind 192.168.1.28` to the Caddy\nglobalConfig so Caddy only listens on the LAN interface. This leaves the Tailscale\ninterface (100.111.60.17) free for tailscaled's Funnel.\n\nThe change is at line 173 in the globalConfig:\n\n```nix\nglobalConfig = ''\n  auto_https off\n  default_bind 192.168.1.28\n'';\n```\n\n## Documentation\n\nAdd a comment block above the Caddy config section (around line 169) explaining:\n- Why default_bind is set to the LAN IP\n- That this is required to avoid conflicting with Tailscale Funnel on :443\n- That the LAN IP corresponds to the enp4s0 interface on classic-laddie\n\nAlso update `docs/media-server-configuration.md` if it exists — add a note about the\nCaddy/Tailscale port 443 constraint.\n\n## Acceptance criteria\n- Caddy globalConfig includes `default_bind 192.168.1.28`\n- Comment explains the why (Tailscale Funnel conflict)\n- docs/media-server-configuration.md updated if present\n- No other changes to Caddy behavior (same virtualHosts, same tls internal)",
+  "issue": "0",
+  "branch": "agent/20260405-2256-ca60",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260405-2256-ca60",
+  "tmux_pane": "%3",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260405-2232-fc39/logs/20260405-2256-ca60.jsonl",
+  "created_at": "2026-04-05T22:56:23-04:00",
+  "cost_usd": 0.21070175000000002,
+  "duration_ms": 98678,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/448",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260405-2256-ca60"
+}

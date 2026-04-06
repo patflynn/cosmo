@@ -1,0 +1,17 @@
+{
+  "id": "20260405-2115-eb86",
+  "prompt": "Add Ollama with CUDA support and Open WebUI to classic-laddie for local LLM inference.\n\n## Context\nclassic-laddie has an NVIDIA RTX 4090 with full driver support already configured (hardware.nix has nvidia drivers, modesetting, video/render groups). We want to run Gemma 4 26B MoE locally.\n\n## Changes needed\n\n### 1. Add Ollama service to hosts/classic-laddie/default.nix\n\nAdd an Ollama section following the existing service pattern (see github-relay, reel-life sections for style):\n\n```nix\n# ---------------------------------------------------------------------------\n# Ollama (local LLM inference)\n# ---------------------------------------------------------------------------\nservices.ollama = {\n  enable = true;\n  acceleration = \"cuda\";\n  loadModels = [ \"gemma4:26b\" ];\n};\n```\n\n### 2. Add Open WebUI for a chat interface\n\nCheck if `services.open-webui` is available in nixpkgs. If it is, add:\n\n```nix\n# ---------------------------------------------------------------------------\n# Open WebUI (LLM chat interface)\n# ---------------------------------------------------------------------------\nservices.open-webui = {\n  enable = true;\n  openFirewall = true;\n};\n```\n\nIf the NixOS module isn't available, skip it and note in the PR that it can be added later.\n\n### 3. Firewall considerations\n\nOllama should NOT be exposed on the firewall (only localhost access). Open WebUI should be accessible on the LAN.\n\n## Style guide\n- Follow the existing section comment pattern with dashed separator lines\n- Place the new sections logically near other services (after the github-relay block is fine)\n- Keep it minimal — don't over-configure\n\n## Constraints\n- Do NOT modify hardware.nix — GPU drivers are already configured\n- Do NOT run nixos-rebuild\n- Check that the NixOS options you use actually exist: run `nix eval .#nixosConfigurations.classic-laddie.options.services.ollama.enable 2\u003e\u00261 | head -5` or similar to verify the module is available before committing",
+  "issue": null,
+  "branch": "agent/20260405-2115-eb86",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260405-2115-eb86",
+  "tmux_pane": "%435",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260405-1634-2ee0/logs/20260405-2115-eb86.jsonl",
+  "created_at": "2026-04-05T21:16:04-04:00",
+  "cost_usd": 0.34658175,
+  "duration_ms": 72883,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/445",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260405-2115-eb86"
+}

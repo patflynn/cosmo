@@ -221,11 +221,19 @@ in
           "8080:8080" # SABnzbd WebUI
           "6881:6881/tcp"
           "6881:6881/udp"
+          "9999:9999" # Gluetun health server
         ];
         volumes = [
           "/var/lib/gluetun:/gluetun"
         ];
-        extraOptions = [ "--device=/dev/net/tun:/dev/net/tun" ];
+        extraOptions = [
+          "--device=/dev/net/tun:/dev/net/tun"
+          "--health-cmd=wget -q -O /dev/null http://localhost:9999 || exit 1"
+          "--health-interval=30s"
+          "--health-retries=3"
+          "--health-start-period=60s"
+          "--health-timeout=10s"
+        ];
       };
 
       # The Torrent Client (Routed through Gluetun)
@@ -259,6 +267,71 @@ in
           "/var/lib/sabnzbd/config:/config"
           "/mnt/media/downloads/usenet:/downloads" # Will create 'complete' and 'incomplete' here
         ];
+      };
+    };
+
+    # ---------------------------------------------------------
+    # 6. VPN Health Monitoring & Auto-Recovery
+    # ---------------------------------------------------------
+
+    # Cascade-restart download clients when Gluetun restarts
+    systemd.services.podman-qbittorrent = {
+      bindsTo = [ "podman-gluetun.service" ];
+      after = [ "podman-gluetun.service" ];
+    };
+    systemd.services.podman-sabnzbd = {
+      bindsTo = [ "podman-gluetun.service" ];
+      after = [ "podman-gluetun.service" ];
+    };
+
+    # Watchdog service: checks Gluetun health and restarts the VPN stack on failure
+    systemd.services.vpn-watchdog = {
+      description = "VPN health watchdog for Gluetun + download clients";
+      path = [
+        pkgs.curl
+        pkgs.coreutils
+        pkgs.systemd
+      ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = pkgs.writeShellScript "vpn-watchdog" ''
+          COOLDOWN_FILE="/tmp/vpn-watchdog-last-restart"
+          COOLDOWN_SECONDS=300
+
+          # Check cooldown
+          if [ -f "$COOLDOWN_FILE" ]; then
+            last_restart=$(cat "$COOLDOWN_FILE")
+            now=$(date +%s)
+            elapsed=$((now - last_restart))
+            if [ "$elapsed" -lt "$COOLDOWN_SECONDS" ]; then
+              echo "Cooldown active: last restart was ''${elapsed}s ago (< ''${COOLDOWN_SECONDS}s). Skipping."
+              exit 0
+            fi
+          fi
+
+          # Check Gluetun health endpoint
+          if curl -sf --max-time 10 http://localhost:9999 > /dev/null 2>&1; then
+            echo "VPN health check passed."
+            exit 0
+          fi
+
+          echo "VPN health check FAILED. Restarting Gluetun stack..."
+          date +%s > "$COOLDOWN_FILE"
+
+          # Restart Gluetun first — BindsTo will cascade to qbittorrent and sabnzbd
+          systemctl restart podman-gluetun.service
+          echo "Gluetun stack restart triggered."
+        '';
+      };
+    };
+
+    systemd.timers.vpn-watchdog = {
+      description = "Run VPN watchdog every 60 seconds";
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnBootSec = "120s";
+        OnUnitActiveSec = "60s";
+        AccuracySec = "5s";
       };
     };
   };

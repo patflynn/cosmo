@@ -379,15 +379,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1775401909,
-        "narHash": "sha256-noHu1vNDy4xAiK17p7yFHPAEJzoSqHKbPM31ILYgp4I=",
-        "owner": "patflynn",
+        "lastModified": 1775495230,
+        "narHash": "sha256-6NIDAhvjRD6hp3Xmz280e4kuH+C6ooyYI6ZrjIrQ/4Y=",
+        "owner": "gunk-dev",
         "repo": "reel-life",
-        "rev": "5b811b79088350dd9af812e35fe735bc8d305e49",
+        "rev": "06f431962556b569256f96ca9f4df87cdf4713ed",
         "type": "github"
       },
       "original": {
-        "owner": "patflynn",
+        "owner": "gunk-dev",
         "repo": "reel-life",
         "type": "github"
       }

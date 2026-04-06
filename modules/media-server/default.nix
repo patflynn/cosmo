@@ -167,7 +167,7 @@ in
     # ---------------------------------------------------------
 
     # Caddy reverse proxy for local media services (Jellyfin, Overseerr).
-    # default_bind restricts Caddy to the LAN interface (enp4s0, 192.168.1.28)
+    # default_bind restricts Caddy to the LAN interface (enp4s0, 192.168.1.28) and loopback
     # so it does not conflict with Tailscale Funnel, which needs :443 on the
     # Tailscale interface (100.111.60.17) for inbound webhooks.
     #
@@ -177,7 +177,7 @@ in
       enable = true;
       globalConfig = ''
         auto_https off
-        default_bind 192.168.1.28
+        default_bind 192.168.1.28 127.0.0.1
       '';
       virtualHosts."overseerr".extraConfig = ''
         tls internal

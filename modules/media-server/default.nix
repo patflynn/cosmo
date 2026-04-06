@@ -166,12 +166,18 @@ in
     # 4. Reverse Proxy (Easy Access)
     # ---------------------------------------------------------
 
-    # Allow family to type "http://overseerr" to get to the request portal
-    # Note: Requires a Local DNS record on your router (UDM Pro) pointing "overseerr" to this host's IP.
+    # Caddy reverse proxy for local media services (Jellyfin, Overseerr).
+    # default_bind restricts Caddy to the LAN interface (enp4s0, 192.168.1.28)
+    # so it does not conflict with Tailscale Funnel, which needs :443 on the
+    # Tailscale interface (100.111.60.17) for inbound webhooks.
+    #
+    # Requires a Local DNS record on your router (UDM Pro) pointing
+    # "overseerr" and "jellyfin" to this host's LAN IP.
     services.caddy = {
       enable = true;
       globalConfig = ''
         auto_https off
+        default_bind 192.168.1.28
       '';
       virtualHosts."overseerr".extraConfig = ''
         tls internal

@@ -89,6 +89,7 @@ Since download clients run in containers but Sonarr/Radarr run natively, paths m
 **Overseerr:** `https://overseerr` | **Jellyfin:** `https://jellyfin`
 
 *   **Note on HTTPS:** Accessing via `https://overseerr` or `https://jellyfin` is required because modern browsers (like Chrome) often force HTTPS for local hostnames. Caddy is configured with `tls internal` to provide a self-signed certificate. You may need to click "Advanced" and "Proceed" the first time you visit.
+*   **Port 443 constraint:** Caddy is bound to the LAN interface (`192.168.1.28`) via `default_bind` so it does not occupy `:443` on the Tailscale interface. Tailscale Funnel needs `:443` on `100.111.60.17` for inbound GitHub webhooks. If the LAN IP of classic-laddie changes, update `default_bind` in `modules/media-server/default.nix`.
 *   **UDM Pro:** Ensure Local DNS records exist pointing `overseerr` and `jellyfin` to the host IP.
 *   **Plex:** Connect Overseerr to your Plex server (`plex`, port `32400`).
 *   **Services:**

@@ -168,7 +168,37 @@
         action = "http";
         url = "http://127.0.0.1:9800/webhook/github";
       };
+
+      # Rebuild NixOS when cosmo main is updated
+      cosmo-rebuild = {
+        repo = "patflynn/cosmo";
+        events = [ "push" ];
+        branches = [ "main" ];
+        action = "systemd";
+        unit = "cosmo-rebuild";
+      };
     };
+  };
+
+  # ---------------------------------------------------------------------------
+  # Auto-rebuild on push to cosmo main
+  # ---------------------------------------------------------------------------
+  systemd.services.cosmo-rebuild = {
+    description = "Rebuild NixOS from cosmo main";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutStartSec = 600;
+      StartLimitIntervalSec = 300;
+      StartLimitBurst = 3;
+    };
+    path = with pkgs; [
+      git
+      nixos-rebuild
+      nix
+    ];
+    script = ''
+      nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo#classic-laddie
+    '';
   };
 
   # ---------------------------------------------------------------------------

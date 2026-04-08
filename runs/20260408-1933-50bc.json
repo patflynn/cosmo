@@ -1,0 +1,17 @@
+{
+  "id": "20260408-1933-50bc",
+  "prompt": "Restrict secrets available to the klaus-worker microVM agent sandbox. Currently ALL host secrets are shared via virtiofs, exposing media server keys, VPN creds, Telegram tokens, etc. to the agent sandbox. The agent only needs GitHub credentials.\n\n## Problem\n\nIn `hosts/classic-laddie/default.nix` lines 66-73, the microVM shares ALL of `/run/agenix` (12 secrets) into the VM:\n```nix\nmicrovm.shares = [{\n  tag = \"secrets\";\n  source = \"/run/agenix\";  # ALL secrets!\n  mountPoint = \"/run/secrets/host\";\n  proto = \"virtiofs\";\n}];\n```\n\nIn `modules/klaus-worker/default.nix` lines 137-154, the `klaus-env` script exports `ANTHROPIC_API_KEY` which agents do not need (they use Claude Code subscription auth via OAuth).\n\n## Fix\n\n### 1. Create a scoped secrets directory on the host (`hosts/classic-laddie/default.nix`)\n\nAdd a systemd tmpfiles rule to create `/run/agenix-klaus` and symlink only the github-token secret:\n\n```nix\nsystemd.tmpfiles.rules = [\n  \"d /run/agenix-klaus 0755 root root -\"\n  \"L+ /run/agenix-klaus/github-token - - - - /run/agenix/github-token\"\n];\n```\n\nThen change the microVM virtiofs share source from `/run/agenix` to `/run/agenix-klaus`:\n\n```nix\nmicrovm.shares = [{\n  tag = \"secrets\";\n  source = \"/run/agenix-klaus\";  # only agent-relevant secrets\n  mountPoint = \"/run/secrets/host\";\n  proto = \"virtiofs\";\n}];\n```\n\n### 2. Remove Anthropic API key from klaus-env (`modules/klaus-worker/default.nix`)\n\nIn the `klaus-env` script (lines 137-154), remove the ANTHROPIC_API_KEY block entirely:\n```\n# REMOVE these lines:\nif [ -f /run/secrets/host/anthropic-key ]; then\n  export ANTHROPIC_API_KEY=$(cat /run/secrets/host/anthropic-key)\nfi\n```\n\nKeep the GITHUB_TOKEN block and the GH_CONFIG_DIR export.\n\n### 3. Consider gh-config share\n\nThe `gh-config` virtiofs share (lines 52-57) mounts the host user's entire `~/.config/gh` into the VM. This may contain auth tokens for multiple accounts/scopes. For now leave it — but add a comment noting it should be reviewed for scope.\n\n## Files to change:\n- `hosts/classic-laddie/default.nix` — scoped secrets directory + virtiofs source change\n- `modules/klaus-worker/default.nix` — remove ANTHROPIC_API_KEY from klaus-env\n\n## Constraints:\n- Do NOT change any other secrets, services, or microVM config\n- Do NOT modify secrets.nix or any .age files\n- Keep the GITHUB_TOKEN loading logic\n- Keep the gh-config virtiofs share (but add a TODO comment)\n- Run `nix flake check` if available to validate",
+  "issue": null,
+  "branch": "agent/20260408-1933-50bc",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260408-1933-50bc",
+  "tmux_pane": "%19",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260407-1651-0aa4/logs/20260408-1933-50bc.jsonl",
+  "created_at": "2026-04-08T19:33:30-04:00",
+  "cost_usd": 0.34238925,
+  "duration_ms": 105959,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/463",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260408-1933-50bc"
+}

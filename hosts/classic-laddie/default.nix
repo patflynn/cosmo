@@ -66,7 +66,7 @@
         microvm.shares = [
           {
             tag = "secrets";
-            source = "/run/agenix";
+            source = "/run/agenix-klaus";
             mountPoint = "/run/secrets/host";
             proto = "virtiofs";
           }
@@ -219,6 +219,11 @@
     openFirewall = true;
   };
 
+  age.secrets."github-token" = {
+    file = ../../secrets/github-token.age;
+    mode = "0400";
+  };
+
   age.secrets."github-webhook-secret" = {
     file = ../../secrets/github-webhook-secret.age;
     mode = "0444";
@@ -351,6 +356,21 @@
   # Ensure the patrick group is explicitly defined to avoid resolution errors
   users.groups.family = { };
 
+  # Bind-mount the github-token secret into the scoped directory for the klaus
+  # microVM. A symlink would break inside the VM because virtiofs cannot resolve
+  # absolute symlinks pointing outside the shared root.
+  systemd.mounts = [
+    {
+      what = config.age.secrets."github-token".path;
+      where = "/run/agenix-klaus/github-token";
+      type = "none";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      requires = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+  ];
+
   fileSystems."/mnt/personal" = {
     device = "tank/personal";
     fsType = "zfs";
@@ -362,6 +382,8 @@
   };
 
   systemd.tmpfiles.rules = [
+    # Scoped secrets directory for klaus microVM — only expose agent-relevant secrets
+    "d /run/agenix-klaus 0750 root root -"
     # Type Path             Mode User    Group   Age Argument
     "d /mnt/media/movies    0775 ${config.cosmo.user.default} media   -   -"
     "d /mnt/media/tv        0775 ${config.cosmo.user.default} media   -   -"

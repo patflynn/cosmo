@@ -133,7 +133,7 @@ in
           "clock"
           "custom/weather"
         ];
-        modules-center = [ ];
+        modules-center = [ "custom/screenshare" ];
         modules-right = [
           "mpris"
           "group/cpu-info"
@@ -260,6 +260,12 @@ in
           on-click = "kitty bluetuith";
         };
 
+        "custom/screenshare" = {
+          exec = ''hyprctl clients -j 2>/dev/null | ${pkgs.jq}/bin/jq -re '[.[] | select(.title | test("is sharing your screen"))] | if length > 0 then {"text": "󰍹 Presenting", "tooltip": "Screen is being shared", "class": "active"} else {"text": "", "tooltip": "", "class": ""} end' '';
+          return-type = "json";
+          interval = 3;
+        };
+
         "custom/notification" = {
           exec = ''makoctl mode -l 2>/dev/null | grep -q do-not-disturb && echo '{"text": "󰂛", "tooltip": "Do not disturb", "class": "dnd"}' || echo '{"text": "󰂚", "tooltip": "Notifications", "class": "enabled"}' '';
           return-type = "json";
@@ -329,6 +335,7 @@ in
       #bluetooth,
       #custom-gpu,
       #custom-weather,
+      #custom-screenshare,
       #custom-notification,
       #tray {
         background-color: alpha(@base, 0.85);
@@ -436,6 +443,12 @@ in
       #bluetooth.disabled,
       #bluetooth.off {
         color: @subtext0;
+      }
+
+      #custom-screenshare.active {
+        color: @base;
+        background-color: @red;
+        border-color: @red;
       }
 
       #custom-notification {

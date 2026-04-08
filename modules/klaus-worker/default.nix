@@ -48,7 +48,8 @@ in
           mountPoint = "/nix/.ro-store";
           proto = "virtiofs";
         }
-        # Share GitHub CLI configuration from the host for authentication
+        # TODO: review scope — this shares the full host gh config which may
+        # contain tokens for multiple accounts/scopes.
         {
           tag = "gh-config";
           source = "/home/patrick/.config/gh";
@@ -135,11 +136,6 @@ in
 
       # Helper script to load secrets into the environment
       (pkgs.writeShellScriptBin "klaus-env" ''
-        # Load Anthropic API Key from shared host secret
-        if [ -f /run/secrets/host/anthropic-key ]; then
-          export ANTHROPIC_API_KEY=$(cat /run/secrets/host/anthropic-key)
-        fi
-
         # Use shared gh config from host
         export GH_CONFIG_DIR="/root/.config/gh"
 

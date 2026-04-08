@@ -66,7 +66,7 @@
         microvm.shares = [
           {
             tag = "secrets";
-            source = "/run/agenix";
+            source = "/run/agenix-klaus";
             mountPoint = "/run/secrets/host";
             proto = "virtiofs";
           }
@@ -362,6 +362,9 @@
   };
 
   systemd.tmpfiles.rules = [
+    # Scoped secrets directory for klaus microVM — only expose agent-relevant secrets
+    "d /run/agenix-klaus 0755 root root -"
+    "L+ /run/agenix-klaus/github-token - - - - /run/agenix/github-token"
     # Type Path             Mode User    Group   Age Argument
     "d /mnt/media/movies    0775 ${config.cosmo.user.default} media   -   -"
     "d /mnt/media/tv        0775 ${config.cosmo.user.default} media   -   -"

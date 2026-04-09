@@ -1,0 +1,17 @@
+{
+  "id": "20260408-2008-d6cf",
+  "prompt": "Fix the Hyprland window rule that hides the Google Meet screen-sharing overlay. PR #464 was merged but the rule doesn't work because it matches the wrong window class.\n\n## Problem\nIn home/hyprland.nix around line 183, the rule is:\n  \"match:class ^(google-chrome)$, match:float yes, match:title .*is sharing your screen.*, workspace special:trash silent\"\n\nBut the actual overlay window has an EMPTY class (\"\"), not \"google-chrome\". Proof from hyprctl clients -j:\n  title: \"meet.google.com is sharing your screen.\"\n  class: \"\"\n  floating: true\n\n## Fix\nChange line 183 to drop the class matcher:\n  \"match:float yes, match:title .*is sharing your screen.*, workspace special:trash silent\"\n\n## Waybar indicator\nThe PR also added a custom/screenshare waybar module in home/waybar.nix that detects the overlay via hyprctl clients. Verify that hyprctl clients still shows windows on special:trash workspaces. If it does, the indicator will keep working. If not, switch detection to checking for pipewire screen capture (e.g. pw-cli or /proc/*/fd pointing to pipewire screencast).\n\n## Constraints\n- System is Hyprland 0.54.3-b\n- Run any pre-commit hooks or checks the repo has\n- Keep the change minimal — only fix what's broken",
+  "issue": null,
+  "branch": "agent/20260408-2008-d6cf",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260408-2008-d6cf",
+  "tmux_pane": "%2",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260407-1651-0aa4/logs/20260408-2008-d6cf.jsonl",
+  "created_at": "2026-04-08T20:08:39-04:00",
+  "cost_usd": 0.23508750000000006,
+  "duration_ms": 72593,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/468",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260408-2008-d6cf"
+}

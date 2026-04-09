@@ -88,6 +88,7 @@ let
           --arg tooltip "$tooltip" \
           '{"text": $text, "tooltip": $tooltip}'
   '';
+
 in
 {
   home.packages = with pkgs; [
@@ -133,7 +134,7 @@ in
           "clock"
           "custom/weather"
         ];
-        modules-center = [ "custom/screenshare" ];
+        modules-center = [ "privacy" ];
         modules-right = [
           "mpris"
           "group/cpu-info"
@@ -260,10 +261,16 @@ in
           on-click = "kitty bluetuith";
         };
 
-        "custom/screenshare" = {
-          exec = ''hyprctl clients -j 2>/dev/null | ${pkgs.jq}/bin/jq -re '[.[] | select(.title | test("is sharing your screen"))] | if length > 0 then {"text": "󰍹 Presenting", "tooltip": "Screen is being shared", "class": "active"} else {"text": "", "tooltip": "", "class": ""} end' '';
-          return-type = "json";
-          interval = 3;
+        privacy = {
+          icon-size = 18;
+          transition-duration = 250;
+          modules = [
+            {
+              type = "screenshare";
+              tooltip = true;
+              tooltip-icon-size = 24;
+            }
+          ];
         };
 
         "custom/notification" = {
@@ -335,7 +342,6 @@ in
       #bluetooth,
       #custom-gpu,
       #custom-weather,
-      #custom-screenshare,
       #custom-notification,
       #tray {
         background-color: alpha(@base, 0.85);
@@ -445,10 +451,20 @@ in
         color: @subtext0;
       }
 
-      #custom-screenshare.active {
+      #privacy {
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      #privacy-item.screenshare {
         color: @base;
         background-color: @red;
-        border-color: @red;
+        padding: 0 12px;
+        margin: 2px 3px;
+        border: 2px solid @red;
+        border-radius: 12px;
       }
 
       #custom-notification {

@@ -1,0 +1,17 @@
+{
+  "id": "20260414-0643-5ef9",
+  "prompt": "Make the klaus-worker-0 microVM on-demand instead of always-on.\n\n## Context\nThe microVM starts and stops with every NixOS rebuild/reboot on classic-laddie, adding significant time. The user wants it to be a manual on-demand thing they start/stop when needed.\n\n## Files to modify\n- `hosts/classic-laddie/default.nix` lines 48-84: defines `microvm.vms.klaus-worker-0`\n- `modules/klaus-worker/default.nix`: the microVM module itself (hypervisor, vcpus, memory, shares, volumes, networking)\n\n## What to do\n1. Set `microvm.vms.klaus-worker-0.autostart = false;` (or the equivalent in microvm.nix) so the VM doesn't start automatically on boot or rebuild\n2. The systemd service `microvm@klaus-worker-0` should still exist, just not be enabled/wanted by multi-user.target\n3. Verify the TAP interface service (`microvm-tap-interfaces@klaus-worker-0`, lines 78-83) still works correctly when the VM is started manually — it depends on `br-klaus-netdev.service`\n4. Optionally add a small shell script or note in the commit message about how to manually start/stop: `sudo systemctl start microvm@klaus-worker-0` / `sudo systemctl stop microvm@klaus-worker-0`\n\n## Acceptance criteria\n- `microvm@klaus-worker-0` does NOT auto-start on boot\n- The VM can still be started manually via systemctl\n- Networking (bridge, TAP interface) still works when started manually\n- No other services are broken by this change\n- Build with `nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel` to verify it compiles",
+  "issue": null,
+  "branch": "agent/20260414-0643-5ef9",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260414-0643-5ef9",
+  "tmux_pane": "%13",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260407-1651-0aa4/logs/20260414-0643-5ef9.jsonl",
+  "created_at": "2026-04-14T06:43:10-04:00",
+  "cost_usd": 0.406904,
+  "duration_ms": 5638,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/488",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260414-0643-5ef9"
+}

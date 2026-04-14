@@ -88,9 +88,11 @@ in
     };
 
     # EasyAudioEncoder child process ignores SIGTERM and hangs for the full
-    # default 90s TimeoutStopSec.  The main Plex process exits in < 1s on
-    # SIGQUIT, so 10s is plenty before SIGKILL cleans up stragglers.
+    # default 90s TimeoutStopSec.  Send SIGQUIT instead — the main Plex
+    # process exits in < 1s on that signal — and allow 10s before SIGKILL
+    # cleans up stragglers.
     systemd.services.plex.serviceConfig.TimeoutStopSec = 10;
+    systemd.services.plex.serviceConfig.KillSignal = "SIGQUIT";
 
     services.sonarr = {
       enable = true;

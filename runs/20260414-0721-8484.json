@@ -1,0 +1,19 @@
+{
+  "id": "20260414-0721-8484",
+  "prompt": "PR #489 in cosmo has review comments from a trusted reviewer that need to be addressed. Check the review comments with: gh api repos/cosmo/pulls/489/comments",
+  "issue": null,
+  "pr": "489",
+  "branch": "agent/20260414-0644-5206",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260414-0721-8484",
+  "tmux_pane": "%16",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260407-1651-0aa4/logs/20260414-0721-8484.jsonl",
+  "created_at": "2026-04-14T07:21:10-04:00",
+  "cost_usd": 0.17081350000000003,
+  "duration_ms": 141520,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/489",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260414-0721-8484"
+}

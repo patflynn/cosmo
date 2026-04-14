@@ -1,0 +1,17 @@
+{
+  "id": "20260414-0644-5206",
+  "prompt": "Add a systemd override to fix Plex's slow shutdown on classic-laddie.\n\n## Problem\nDuring system shutdown/rebuild, the main Plex process exits immediately on SIGQUIT, but the child process 'EasyAudioEncode' (Plex EAE Service) ignores SIGTERM and hangs for the full 90-second TimeoutStopSec until systemd SIGKILLs it.\n\n## Fix\nIn `modules/media-server/default.nix`, add a systemd override near the existing plex config (around lines 85-88 where `services.plex` is defined):\n\n```nix\nsystemd.services.plex.serviceConfig.TimeoutStopSec = 10;\n```\n\nThis gives Plex 10 seconds to clean up (the main process exits in under 1 second), then SIGKILLs any remaining child processes like EAE.\n\n## Acceptance criteria\n- The override is added in the media-server module\n- Build with `nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel` to verify it compiles\n- No other changes needed — this is a one-line fix",
+  "issue": null,
+  "branch": "agent/20260414-0644-5206",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260414-0644-5206",
+  "tmux_pane": "%14",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260407-1651-0aa4/logs/20260414-0644-5206.jsonl",
+  "created_at": "2026-04-14T06:44:42-04:00",
+  "cost_usd": 0.32099999999999995,
+  "duration_ms": 5497,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/489",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260414-0644-5206"
+}

@@ -103,9 +103,9 @@
           email ? "big.pat@gmail.com",
         }:
         nixpkgs.lib.nixosSystem {
-          inherit system;
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.hostPlatform = system; }
             hardware
             (if disk != null then disk else { })
             (if disk != null then inputs.disko.nixosModules.disko else { })
@@ -125,9 +125,9 @@
       nixosConfigurations = {
         # Hostname: classic-laddie
         classic-laddie = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.hostPlatform = "x86_64-linux"; }
             ./hosts/classic-laddie/default.nix
             agenix.nixosModules.default
             microvm.nixosModules.host
@@ -164,9 +164,9 @@
 
         # Hostname: makers-nix
         makers-nix = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.hostPlatform = "x86_64-linux"; }
             ./hosts/makers-nix/default.nix
             inputs.nixos-wsl.nixosModules.wsl
             agenix.nixosModules.default
@@ -191,9 +191,9 @@
 
         # Hostname: johnny-walker
         johnny-walker = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.hostPlatform = "x86_64-linux"; }
             ./hosts/johnny-walker/default.nix
             agenix.nixosModules.default
             home-manager.nixosModules.home-manager
@@ -224,9 +224,9 @@
 
         # Hostname: weller (dual-boot Windows 11 + NixOS workstation)
         weller = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.hostPlatform = "x86_64-linux"; }
             ./hosts/weller/default.nix
             ./hosts/weller/disk-config.nix
             inputs.disko.nixosModules.disko
@@ -252,9 +252,9 @@
 
         # Hostname: klaus-worker-0 (microVM worker for klaus agent)
         klaus-worker-0 = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            { nixpkgs.hostPlatform = "x86_64-linux"; }
             microvm.nixosModules.microvm
             ./modules/klaus-worker/default.nix
             {

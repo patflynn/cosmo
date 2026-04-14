@@ -76,8 +76,11 @@
     };
   };
 
-  # Assign bridges to microVM interfaces on the host
+  # Assign bridges to microVM interfaces on the host.
+  # bindsTo + wantedBy ensure the TAP interface is brought up/down with the VM.
   systemd.services."microvm-tap-interfaces@klaus-worker-0" = {
+    wantedBy = [ "microvm@klaus-worker-0.service" ];
+    bindsTo = [ "microvm@klaus-worker-0.service" ];
     wants = [ "br-klaus-netdev.service" ];
     after = [ "br-klaus-netdev.service" ];
     postStart = "${pkgs.iproute2}/bin/ip link set vm-klaus-0 master br-klaus";

@@ -50,6 +50,7 @@
   # ---------------------------------------------------------------------------
   microvm.vms = {
     klaus-worker-0 = {
+      autostart = false;
       specialArgs = { inherit inputs; };
       config = {
         imports = [

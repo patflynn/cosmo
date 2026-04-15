@@ -226,11 +226,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1776129656,
-        "narHash": "sha256-6qpFYhu90xPQC4BW7sVUHYNaDBGasYx/ljfoUQ2nj0M=",
+        "lastModified": 1776214854,
+        "narHash": "sha256-j2wCk/dAnhBJz60L4vXmR+kAexj2zhJwRMMvmJq/emw=",
         "owner": "patflynn",
         "repo": "klaus",
-        "rev": "dbcfdfbc459367804ea6b4d63492cb8ad3f27f91",
+        "rev": "df3ce7ac728e4f54dbee9b6e55c819db3adc6001",
         "type": "github"
       },
       "original": {

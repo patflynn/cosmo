@@ -55,9 +55,6 @@
     user = config.cosmo.user.default;
   };
 
-  # Enable CUDA support for Sunshine
-  # services.sunshine.package = pkgs.sunshine.override { cudaSupport = true; };
-
   # ---------------------------------------------------------------------------
   # Gaming
   # ---------------------------------------------------------------------------

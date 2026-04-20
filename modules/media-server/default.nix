@@ -111,8 +111,7 @@ in
       openFirewall = true;
     };
 
-    # SABnzbd (Moved to container for VPN)
-    # services.sabnzbd removed.
+    # SABnzbd runs as a container below (routed through Gluetun for VPN)
 
     services.overseerr = {
       enable = true;
@@ -255,9 +254,9 @@ in
         dependsOn = [ "gluetun" ];
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
-          PUID = "1000"; # ${config.cosmo.user.default}
-          PGID = "991"; # media
-          TZ = "America/New_York";
+          PUID = "${toString config.users.users.${config.cosmo.user.default}.uid}";
+          PGID = "${toString config.users.groups.media.gid}";
+          TZ = config.time.timeZone;
           WEBUI_PORT = "8081";
         };
         volumes = [
@@ -272,9 +271,9 @@ in
         dependsOn = [ "gluetun" ];
         extraOptions = [ "--network=container:gluetun" ];
         environment = {
-          PUID = "1000"; # ${config.cosmo.user.default}
-          PGID = "991"; # media
-          TZ = "America/New_York";
+          PUID = "${toString config.users.users.${config.cosmo.user.default}.uid}";
+          PGID = "${toString config.users.groups.media.gid}";
+          TZ = config.time.timeZone;
         };
         volumes = [
           "/var/lib/sabnzbd/config:/config"

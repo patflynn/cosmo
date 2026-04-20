@@ -256,7 +256,7 @@ in
         environment = {
           PUID = "${toString config.users.users.${config.cosmo.user.default}.uid}";
           PGID = "${toString config.users.groups.media.gid}";
-          TZ = "America/New_York";
+          TZ = config.time.timeZone;
           WEBUI_PORT = "8081";
         };
         volumes = [
@@ -273,7 +273,7 @@ in
         environment = {
           PUID = "${toString config.users.users.${config.cosmo.user.default}.uid}";
           PGID = "${toString config.users.groups.media.gid}";
-          TZ = "America/New_York";
+          TZ = config.time.timeZone;
         };
         volumes = [
           "/var/lib/sabnzbd/config:/config"

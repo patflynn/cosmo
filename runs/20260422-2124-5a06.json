@@ -1,0 +1,19 @@
+{
+  "id": "20260422-2124-5a06",
+  "prompt": "PR #503 in cosmo has review comments from a trusted reviewer that need to be addressed. Check the review comments with: gh api repos/cosmo/pulls/503/comments",
+  "issue": null,
+  "pr": "503",
+  "branch": "hyprland-workspace-fade",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260422-2124-5a06",
+  "tmux_pane": "%20",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260418-2142-1950/logs/20260422-2124-5a06.jsonl",
+  "created_at": "2026-04-22T21:24:54-04:00",
+  "cost_usd": 0.21728899999999998,
+  "duration_ms": 26206,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/503",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260422-2124-5a06"
+}

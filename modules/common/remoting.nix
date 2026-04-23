@@ -80,7 +80,7 @@ in
       wants = [ "hyprland-session.target" ];
       environment = {
         WAYLAND_DISPLAY = "wayland-1";
-        XDG_RUNTIME_DIR = "/run/user/1000"; # FIXME: Assumes default user UID is 1000
+        XDG_RUNTIME_DIR = "/run/user/${toString config.users.users.${config.cosmo.user.default}.uid}";
         LD_LIBRARY_PATH = "/run/opengl-driver/lib";
       };
     };

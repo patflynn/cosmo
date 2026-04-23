@@ -165,6 +165,14 @@
         };
       };
 
+      # --- Animations ---
+      animations = {
+        enabled = true;
+        animation = [
+          "workspaces, 1, 2, default, fade"
+        ];
+      };
+
       # --- Cursor ---
       cursor = {
         no_hardware_cursors = true;

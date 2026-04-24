@@ -138,7 +138,7 @@
       set -g base-index 1
       set-window-option -g mode-keys emacs
       unbind-key C-b
-      set-option -ga update-environment ' WAYLAND_DISPLAY'
+      set-option -ga update-environment ' WAYLAND_DISPLAY HYPRLAND_INSTANCE_SIGNATURE XDG_SESSION_TYPE'
     '';
   };
 

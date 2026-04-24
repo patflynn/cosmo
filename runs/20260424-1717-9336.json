@@ -1,0 +1,17 @@
+{
+  "id": "20260424-1717-9336",
+  "prompt": "Add WAYLAND_DISPLAY to tmux's update-environment so Wayland-aware tools (like wl-paste) work correctly inside tmux panes on NixOS.\n\nFile: home/common.nix\nLocation: lines 128-142, inside programs.tmux.extraConfig\n\nCurrent extraConfig block:\n\n    extraConfig = ''\n      set-option -g status-style fg=white,bg=colour23\n      set -g base-index 1\n      set-window-option -g mode-keys emacs\n      unbind-key C-b\n    '';\n\nChange: append this line inside the extraConfig string (after 'unbind-key C-b'):\n\n      set-option -ga update-environment ' WAYLAND_DISPLAY'\n\nNote the '-ga' flag (append) and the leading space inside the quoted string — tmux's update-environment is a space-separated list, so we append with a leading space to avoid concatenating with the previous entry.\n\nWhy: on Wayland systems, WAYLAND_DISPLAY is not in tmux's default update-environment list, so new shells spawned inside tmux have an empty WAYLAND_DISPLAY. This breaks clipboard tools like wl-paste/wl-copy that need to know which Wayland socket to use. The user runs NixOS on Wayland and noticed wl-paste failing to read the clipboard inside tmux.\n\nAcceptance criteria:\n- home/common.nix modified with the one-line addition\n- Verify the flake still evaluates: run 'nix flake check' or at minimum 'nix eval .#homeConfigurations --apply builtins.attrNames' to make sure the config parses. If there's a more appropriate check for this repo, use that.\n- Do not modify any other files or configuration\n- PR title: 'tmux: pass WAYLAND_DISPLAY into tmux env'\n- PR body should briefly explain the why (wl-paste/clipboard tools inside tmux on Wayland)\n\nDo not kill the user's running tmux server or rebuild the system — that's on the user to do after merging.",
+  "issue": null,
+  "branch": "agent/20260424-1717-9336",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260424-1717-9336",
+  "tmux_pane": "%30",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260424-1649-723e/logs/20260424-1717-9336.jsonl",
+  "created_at": "2026-04-24T17:17:16-04:00",
+  "cost_usd": 0.27542350000000004,
+  "duration_ms": 52477,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/508",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260424-1717-9336"
+}

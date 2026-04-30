@@ -79,14 +79,18 @@
     boot.kernel.sysctl."vm.swappiness" = lib.mkDefault 10;
 
     # Let systemd-oomd kill runaway system services before the kernel's own OOM
-    # path leaves user sessions stuck waiting on swap-in.
+    # path leaves user sessions stuck waiting on swap-in. `enable` skips
+    # mkDefault on purpose: nixos-wsl ships `oomd.enable = lib.mkDefault false`
+    # for older WSL kernels lacking PSI, and two mkDefaults would collide.
+    # Modern WSL2 kernels do support oomd, so we override to true everywhere.
     systemd.oomd = {
       enable = true;
-      enableSystemSlice = true;
+      enableSystemSlice = lib.mkDefault true;
     };
 
-    # Backstop: hard memory ceiling on nix-daemon so a single build can't eat
-    # the whole machine during the nightly auto-upgrade window.
-    systemd.services.nix-daemon.serviceConfig.MemoryHigh = lib.mkDefault "20G";
+    # Backstop: cap nix-daemon at a fraction of host RAM so a single build can't
+    # eat the whole machine during the nightly auto-upgrade window. Percentage
+    # keeps this portable across hosts with very different memory sizes.
+    systemd.services.nix-daemon.serviceConfig.MemoryHigh = lib.mkDefault "80%";
   };
 }

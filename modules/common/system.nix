@@ -54,6 +54,14 @@
       cores = lib.mkDefault 4;
     };
 
+    # Run nix-daemon (and its build children) at SCHED_IDLE / IO class "idle"
+    # so they only get CPU and disk bandwidth when nothing interactive wants
+    # them. Complements the memory caps above: those bound how much; these
+    # bound when. Together they make the nightly auto-upgrade essentially
+    # invisible to a live desktop session.
+    nix.daemonCPUSchedPolicy = lib.mkDefault "idle";
+    nix.daemonIOSchedClass = lib.mkDefault "idle";
+
     # Automate Maintenance
     # Update the system daily from the upstream repo and clean up old generations
     system.autoUpgrade = {

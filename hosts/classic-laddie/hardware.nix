@@ -38,6 +38,18 @@
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
+  # Force-load NVIDIA display modules in initrd so the GPU drives the
+  # framebuffer from boot. Without this, hardware.nvidia.modesetting.enable
+  # wasn't enough on driver 595.58.03 + linux-zen 6.19.12 — the kernel
+  # command line set nvidia-drm.modeset=1 but nothing actually loaded
+  # nvidia_drm, leaving Hyprland stuck on EFI fb at 1024x768.
+  boot.initrd.kernelModules = [
+    "nvidia"
+    "nvidia_modeset"
+    "nvidia_uvm"
+    "nvidia_drm"
+  ];
+
   # Allow qemu-libvirtd to access the GPU
   users.groups.video.members = [ "qemu-libvirtd" ];
   users.groups.render.members = [ "qemu-libvirtd" ];

@@ -1,0 +1,19 @@
+{
+  "id": "20260429-2207-74b0",
+  "prompt": "Add two more nix-daemon resource-yielding knobs to PR #515. These are NixOS-native options purpose-built for the exact problem this PR addresses (heavy nix builds competing with an interactive desktop session for CPU/disk).\n\n## Change to make\nIn `modules/common/system.nix`, alongside the existing `nix.settings` block (or wherever fits the file's structure best), add:\n\n```nix\n# Run nix-daemon (and its build children) at SCHED_IDLE / IO class \"idle\"\n# so they only get CPU and disk bandwidth when nothing interactive wants\n# them. Complements the memory caps above: those bound how much; these\n# bound when. Together they make the nightly auto-upgrade essentially\n# invisible to a live desktop session.\nnix.daemonCPUSchedPolicy = lib.mkDefault \"idle\";\nnix.daemonIOSchedClass   = lib.mkDefault \"idle\";\n```\n\nUse `lib.mkDefault` for both, same reasoning as the existing changes — `klaus-worker-0` (microVM build worker) shouldn't yield to anything because there's no interactive workload to yield to.\n\n## Why this is safe\n- These set systemd `CPUSchedulingPolicy=idle` and `IOSchedulingClass=idle` on `nix-daemon.service`; the daemon's build subprocesses inherit.\n- SCHED_IDLE tasks only run when no other runnable task wants the CPU. On an idle box, nix-daemon gets the whole CPU. On a busy box, it yields. This is exactly the desired behavior for a nightly maintenance task.\n- \"idle\" IO class means daemon I/O only happens when no other process wants the disk. Eliminates the swap-in stall path on NVMe with mq-deadline.\n- The only practical downside: an *interactive* `nix build` invocation will be slower if the user is simultaneously doing other heavy work. Acceptable — matches user preference (\"I don't care how long the nightly build takes\").\n\n## CRITICAL: same no-local-build discipline as the rest of this PR\n- No `nixos-rebuild`, no `nix build`, no `nix flake check`, no `nix eval`.\n- CI (`.github/workflows/ci.yml`) does dry-run builds on a runner; that's the validation gate.\n- Verifying locally is what wedged the original agent on this very change.\n\n## Steps\n1. Read `modules/common/system.nix` to see the current state on the PR branch.\n2. Add the two options with the comment block. Place them with the other `nix.` settings so the section reads coherently.\n3. Read the file back to sanity-check syntax (matched braces, no typos).\n4. Commit with a message like \"system: yield nix-daemon to interactive workloads via SCHED_IDLE\".\n5. Push to the existing PR branch.\n6. Update the PR description (`gh pr edit 515 --body ...`) to add a section describing these two new knobs and what they protect against, alongside the existing four mitigations. Don't lose the existing description content.\n\n## Acceptance\n- Two options added under `lib.mkDefault`\n- Pushed to the existing PR branch (no new PR)\n- PR description updated to cover all six mitigations now\n- CI green (pipeline tracks this)",
+  "issue": null,
+  "pr": "515",
+  "branch": "agent/20260429-2152-8aa4",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260429-2207-74b0",
+  "tmux_pane": "%4",
+  "budget": "2",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260429-0935-cfb5/logs/20260429-2207-74b0.jsonl",
+  "created_at": "2026-04-29T22:07:37-04:00",
+  "cost_usd": 0.4005242499999999,
+  "duration_ms": 66541,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/515",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260429-2207-74b0"
+}

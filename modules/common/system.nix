@@ -45,11 +45,11 @@
 
       # Interactive rebuild wrapper
       (writeShellScriptBin "cosmo-rebuild" ''
-        exec sudo systemd-run --scope --slice=cosmo-rebuild.slice \
-          -p MemoryHigh=20G \
+        exec sudo ${pkgs.systemd}/bin/systemd-run --scope --slice=cosmo-rebuild.slice \
+          -p MemoryHigh=80% \
           -p CPUSchedulingPolicy=idle \
           -p IOSchedulingClass=idle \
-          nixos-rebuild "$@"
+          ${pkgs.nixos-rebuild}/bin/nixos-rebuild "$@"
       '')
     ];
 

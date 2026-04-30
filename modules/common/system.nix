@@ -48,7 +48,19 @@
       ];
       # Increase buffer to 64MB to fix "download buffer is full" warnings
       download-buffer-size = 67108864;
+      # Cap build parallelism so the nightly auto-upgrade can't saturate RAM
+      # and wedge a live desktop session (see classic-laddie 2026-04-28 hang).
+      max-jobs = lib.mkDefault 2;
+      cores = lib.mkDefault 4;
     };
+
+    # Run nix-daemon (and its build children) at SCHED_IDLE / IO class "idle"
+    # so they only get CPU and disk bandwidth when nothing interactive wants
+    # them. Complements the memory caps above: those bound how much; these
+    # bound when. Together they make the nightly auto-upgrade essentially
+    # invisible to a live desktop session.
+    nix.daemonCPUSchedPolicy = lib.mkDefault "idle";
+    nix.daemonIOSchedClass = lib.mkDefault "idle";
 
     # Automate Maintenance
     # Update the system daily from the upstream repo and clean up old generations
@@ -69,5 +81,24 @@
       dates = "daily";
       options = "--delete-older-than 7d";
     };
+
+    # Prefer reclaiming page cache over swapping anonymous pages; mitigates the
+    # swap-thrash D-state hang seen when a heavy build runs alongside a desktop.
+    boot.kernel.sysctl."vm.swappiness" = lib.mkDefault 10;
+
+    # Let systemd-oomd kill runaway system services before the kernel's own OOM
+    # path leaves user sessions stuck waiting on swap-in. `enable` skips
+    # mkDefault on purpose: nixos-wsl ships `oomd.enable = lib.mkDefault false`
+    # for older WSL kernels lacking PSI, and two mkDefaults would collide.
+    # Modern WSL2 kernels do support oomd, so we override to true everywhere.
+    systemd.oomd = {
+      enable = true;
+      enableSystemSlice = lib.mkDefault true;
+    };
+
+    # Backstop: cap nix-daemon at a fraction of host RAM so a single build can't
+    # eat the whole machine during the nightly auto-upgrade window. Percentage
+    # keeps this portable across hosts with very different memory sizes.
+    systemd.services.nix-daemon.serviceConfig.MemoryHigh = lib.mkDefault "80%";
   };
 }

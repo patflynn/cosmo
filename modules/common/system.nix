@@ -48,6 +48,10 @@
       ];
       # Increase buffer to 64MB to fix "download buffer is full" warnings
       download-buffer-size = 67108864;
+      # Cap build parallelism so the nightly auto-upgrade can't saturate RAM
+      # and wedge a live desktop session (see classic-laddie 2026-04-28 hang).
+      max-jobs = lib.mkDefault 2;
+      cores = lib.mkDefault 4;
     };
 
     # Automate Maintenance
@@ -69,5 +73,20 @@
       dates = "daily";
       options = "--delete-older-than 7d";
     };
+
+    # Prefer reclaiming page cache over swapping anonymous pages; mitigates the
+    # swap-thrash D-state hang seen when a heavy build runs alongside a desktop.
+    boot.kernel.sysctl."vm.swappiness" = lib.mkDefault 10;
+
+    # Let systemd-oomd kill runaway system services before the kernel's own OOM
+    # path leaves user sessions stuck waiting on swap-in.
+    systemd.oomd = {
+      enable = true;
+      enableSystemSlice = true;
+    };
+
+    # Backstop: hard memory ceiling on nix-daemon so a single build can't eat
+    # the whole machine during the nightly auto-upgrade window.
+    systemd.services.nix-daemon.serviceConfig.MemoryHigh = lib.mkDefault "20G";
   };
 }

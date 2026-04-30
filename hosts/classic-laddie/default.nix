@@ -194,6 +194,13 @@
       TimeoutStartSec = 600;
       StartLimitIntervalSec = 300;
       StartLimitBurst = 3;
+      # Build subprocesses inherit this unit's cgroup, so the caps actually
+      # constrain the rebuild — unlike daemon-targeted limits, which don't
+      # apply when nixos-rebuild runs the build directly in its own process
+      # tree (see PR #515 follow-up).
+      MemoryHigh = "80%";
+      CPUSchedulingPolicy = "idle";
+      IOSchedulingClass = "idle";
     };
     path = with pkgs; [
       git

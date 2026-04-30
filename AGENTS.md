@@ -52,6 +52,10 @@ We prefer **Jujutsu (jj)** for local development, especially for managing stacke
 ### 4. Common Tasks
 
 #### Rebuild System
-Apply changes to the current system:
+Apply changes to the current system. Prefer the `cosmo-rebuild` wrapper for
+interactive rebuilds — it runs `nixos-rebuild` inside a memory-bounded,
+idle-scheduled transient scope so heavy builds (e.g. `rusty-v8`,
+`home-assistant`) can't wedge the desktop session.
 ```bash
-sudo nixos-rebuild switch --flake .
+cosmo-rebuild switch --flake .
+```

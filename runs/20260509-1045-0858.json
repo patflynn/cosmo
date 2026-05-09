@@ -1,0 +1,20 @@
+{
+  "id": "20260509-1045-0858",
+  "prompt": "CI is failing on PR #529. Diagnose the failures and push fixes. Check `gh pr checks 529` for details and `gh run view \u003crun-id\u003e --log-failed` for error output.",
+  "issue": null,
+  "pr": "529",
+  "branch": "agent/20260509-1008-38fc",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260509-1045-0858",
+  "tmux_pane": "%40",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260429-0935-cfb5/logs/20260509-1045-0858.jsonl",
+  "created_at": "2026-05-09T10:45:41-04:00",
+  "cost_usd": null,
+  "duration_ms": null,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/529",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260509-1045-0858",
+  "original_run_id": "20260509-1028-414e"
+}

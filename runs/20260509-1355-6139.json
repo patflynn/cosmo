@@ -1,0 +1,20 @@
+{
+  "id": "20260509-1355-6139",
+  "prompt": "PR #529 has merge conflicts with the base branch. Rebase onto main, resolve all conflicts, and push. Run tests after resolving.",
+  "issue": null,
+  "pr": "529",
+  "branch": "agent/20260509-1008-38fc",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260509-1355-6139",
+  "tmux_pane": "%44",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260429-0935-cfb5/logs/20260509-1355-6139.jsonl",
+  "created_at": "2026-05-09T13:55:10-04:00",
+  "cost_usd": null,
+  "duration_ms": null,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/529",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260509-1355-6139",
+  "original_run_id": "20260509-1045-0858"
+}

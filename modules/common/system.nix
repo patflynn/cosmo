@@ -104,44 +104,29 @@
     # swap-thrash D-state hang seen when a heavy build runs alongside a desktop.
     boot.kernel.sysctl."vm.swappiness" = lib.mkDefault 10;
 
-    # zram-backed compressed swap. Swap-in becomes in-memory zstd
-    # decompression instead of NVMe I/O, eliminating the shmem_swapin_folio
-    # D-state hang that wedged classic-laddie 2026-04-29 / 2026-04-29 (hung_task_timeout
-    # fires after 122s of disk swap-in queueing; zram swap-in is microseconds).
+    # zram-backed compressed swap. Universally beneficial: on desktops it
+    # eliminates the shmem_swapin_folio D-state hang that wedged classic-laddie
+    # 2026-04-29 (hung_task_timeout fires after 122s of NVMe swap-in queueing;
+    # zram swap-in is microseconds). On build workers it lets more concurrent
+    # work fit in RAM via zstd compression.
     zramSwap = {
       enable = lib.mkDefault true;
       algorithm = "zstd";
       memoryPercent = lib.mkDefault 50;
     };
 
-    # Reserve a memory floor for the interactive session. Builds, services,
-    # and containers (in system.slice) can be reclaimed before user.slice
-    # pages are. Soft reservation — user.slice can still use more than this.
-    systemd.slices."user".sliceConfig.MemoryMin = lib.mkDefault "8G";
-
     # Let systemd-oomd kill runaway system services before the kernel's own OOM
     # path leaves user sessions stuck waiting on swap-in. `enable` skips
     # mkDefault on purpose: nixos-wsl ships `oomd.enable = lib.mkDefault false`
     # for older WSL kernels lacking PSI, and two mkDefaults would collide.
     # Modern WSL2 kernels do support oomd, so we override to true everywhere.
+    # Aggressive per-slice tuning (kill thresholds, pressure duration, user
+    # MemoryMin) lives in modules/common/desktop.nix — those are interactive-
+    # session protections that would actively harm a headless build worker
+    # whose workload IS system.slice.
     systemd.oomd = {
       enable = true;
       enableSystemSlice = lib.mkDefault true;
-      # Make systemd-oomd's response to system.slice memory pressure aggressive
-      # enough to actually kill runaway builds before the box wedges. The 5s
-      # averaging window means transient spikes don't trigger kills.
-      extraConfig.DefaultMemoryPressureDurationSec = lib.mkDefault "5s";
-    };
-
-    # Aggressive OOM-kill policy targeted at system.slice only, so the
-    # offender (a runaway build, container, or service) gets killed while
-    # user.slice — games, Chrome, the compositor — is never touched by
-    # this rule. mkForce on the limit because upstream nixos oomd.nix sets
-    # it to "80%" at the same mkDefault priority — string options can't
-    # merge two equal-priority defaults, so we have to take precedence.
-    systemd.slices."system".sliceConfig = {
-      ManagedOOMMemoryPressure = lib.mkDefault "kill";
-      ManagedOOMMemoryPressureLimit = lib.mkForce "70%";
     };
   };
 }

@@ -58,6 +58,15 @@
   # ---------------------------------------------------------------------------
   boot.supportedFilesystems = [ "zfs" ];
 
+  # TEMPORARY UNBLOCK: ZFS 2.4.1 in current nixpkgs is marked broken against
+  # the linux-zen kernel we run (see modules/common/gaming.nix). Both
+  # `pkgs.zfs` (= zfs_2_4) and `pkgs.zfs_unstable` cap at
+  # kernelMaxSupportedMajorMinor = "6.19", and our zen kernel is past that,
+  # so switching packages doesn't help — the broken check fires on both.
+  # Tracked upstream: https://github.com/NixOS/nixpkgs/issues/510485
+  # Remove once nixpkgs ships a ZFS release that supports the running kernel.
+  nixpkgs.config.problems.handlers.zfs.broken = "warn";
+
   # ---------------------------------------------------------------------------
   # USB stability
   # ---------------------------------------------------------------------------

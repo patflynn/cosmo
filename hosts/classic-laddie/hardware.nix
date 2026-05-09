@@ -58,14 +58,20 @@
   # ---------------------------------------------------------------------------
   boot.supportedFilesystems = [ "zfs" ];
 
-  # TEMPORARY UNBLOCK: ZFS 2.4.1 in current nixpkgs is marked broken against
-  # the linux-zen kernel we run (see modules/common/gaming.nix). Both
-  # `pkgs.zfs` (= zfs_2_4) and `pkgs.zfs_unstable` cap at
-  # kernelMaxSupportedMajorMinor = "6.19", and our zen kernel is past that,
-  # so switching packages doesn't help — the broken check fires on both.
-  # Tracked upstream: https://github.com/NixOS/nixpkgs/issues/510485
-  # Remove once nixpkgs ships a ZFS release that supports the running kernel.
-  nixpkgs.config.problems.handlers.zfs.broken = "warn";
+  # ZFS upstream's kernelMaxSupportedMajorMinor = "6.19"; the linux-zen
+  # kernel pulled in by recent flake.lock updates (7.0.3 as of #528) is past
+  # that, so ZFS 2.4.1 won't compile (configure-time "Cannot build against
+  # kernel version 7.0.3-zen1"). Pin to stable until nixpkgs ships a ZFS
+  # release with a higher kernel cap. PR #531 tried setting the broken flag
+  # to "warn" instead — that silenced eval but didn't fix the actual build,
+  # since CI dry-run doesn't compile kmods.
+  #
+  # sched-ext is upstream in 6.12+, so services.scx still works on stable.
+  #
+  # mkOverride 60 wins against the default-priority assignment in
+  # modules/common/gaming.nix while still losing to the mkForce inside
+  # the stable-kernel specialisation, preserving that fallback.
+  boot.kernelPackages = lib.mkOverride 60 pkgs.linuxPackages;
 
   # ---------------------------------------------------------------------------
   # USB stability

@@ -136,10 +136,12 @@
     # Aggressive OOM-kill policy targeted at system.slice only, so the
     # offender (a runaway build, container, or service) gets killed while
     # user.slice — games, Chrome, the compositor — is never touched by
-    # this rule.
+    # this rule. mkForce on the limit because upstream nixos oomd.nix sets
+    # it to "80%" at the same mkDefault priority — string options can't
+    # merge two equal-priority defaults, so we have to take precedence.
     systemd.slices."system".sliceConfig = {
       ManagedOOMMemoryPressure = lib.mkDefault "kill";
-      ManagedOOMMemoryPressureLimit = lib.mkDefault "70%";
+      ManagedOOMMemoryPressureLimit = lib.mkForce "70%";
     };
   };
 }

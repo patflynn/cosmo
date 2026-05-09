@@ -104,11 +104,26 @@
     # swap-thrash D-state hang seen when a heavy build runs alongside a desktop.
     boot.kernel.sysctl."vm.swappiness" = lib.mkDefault 10;
 
+    # zram-backed compressed swap. Universally beneficial: on desktops it
+    # eliminates the shmem_swapin_folio D-state hang that wedged classic-laddie
+    # 2026-04-29 (hung_task_timeout fires after 122s of NVMe swap-in queueing;
+    # zram swap-in is microseconds). On build workers it lets more concurrent
+    # work fit in RAM via zstd compression.
+    zramSwap = {
+      enable = lib.mkDefault true;
+      algorithm = "zstd";
+      memoryPercent = lib.mkDefault 50;
+    };
+
     # Let systemd-oomd kill runaway system services before the kernel's own OOM
     # path leaves user sessions stuck waiting on swap-in. `enable` skips
     # mkDefault on purpose: nixos-wsl ships `oomd.enable = lib.mkDefault false`
     # for older WSL kernels lacking PSI, and two mkDefaults would collide.
     # Modern WSL2 kernels do support oomd, so we override to true everywhere.
+    # Aggressive per-slice tuning (kill thresholds, pressure duration, user
+    # MemoryMin) lives in modules/common/desktop.nix — those are interactive-
+    # session protections that would actively harm a headless build worker
+    # whose workload IS system.slice.
     systemd.oomd = {
       enable = true;
       enableSystemSlice = lib.mkDefault true;

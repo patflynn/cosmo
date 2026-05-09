@@ -88,4 +88,32 @@
       xdg-document-portal = restartPolicy;
       xdg-permission-store = restartPolicy;
     };
+
+  # --- Interactive-session memory protection ---
+  # Keep a heavy build (sudo'd, agent-launched, or manual) from wedging the
+  # live desktop session. Scoped to desktop.nix because these settings only
+  # make sense when system.slice is *background* work and user.slice is the
+  # interactive session worth protecting. On a headless build worker the
+  # opposite is true — system.slice IS the workload — so build hosts must
+  # not import this module.
+
+  # Reserve a memory floor for the interactive session. Builds, services,
+  # and containers (in system.slice) can be reclaimed before user.slice
+  # pages are. Soft reservation — user.slice can still use more than this.
+  systemd.slices."user".sliceConfig.MemoryMin = lib.mkDefault "8G";
+
+  # Make systemd-oomd's response to memory pressure aggressive enough to
+  # actually kill runaway builds before the box wedges. The 5s averaging
+  # window means transient spikes don't trigger kills.
+  systemd.oomd.extraConfig.DefaultMemoryPressureDurationSec = lib.mkDefault "5s";
+
+  # Aggressive OOM-kill policy targeted at system.slice only, so the
+  # offender (a runaway build, container, or service) gets killed while
+  # user.slice — games, Chrome, the compositor — is never touched by this
+  # rule. mkForce because upstream nixos oomd.nix sets the limit to "80%"
+  # at mkDefault priority — string options can't merge two equal-priority
+  # defaults, so we have to take precedence. The "kill" mode itself is
+  # already set as a plain assignment by upstream when enableSystemSlice
+  # is true (see common/system.nix), so we don't need to repeat it.
+  systemd.slices."system".sliceConfig.ManagedOOMMemoryPressureLimit = lib.mkForce "70%";
 }

@@ -1,0 +1,19 @@
+{
+  "id": "20260509-1042-4cef",
+  "prompt": "Strip the kernel pin out of PR #530, leaving only the xdg portal restart policy.\n\n## Context\nPR #530 was scoped to add Restart=on-failure to xdg-desktop-portal user services (the actual purpose, in modules/common/desktop.nix). The agent that wrote it ALSO added an unrelated kernel pin to `hosts/classic-laddie/hardware.nix`:\n```nix\nboot.kernelPackages = lib.mkOverride 60 pkgs.linuxPackages_6_18;\n```\nThe agent did this to fix the trunk-red ZFS-vs-zen-kernel CI failure. We're solving that problem differently in PR #531 (`zfs.broken = \\\"warn\\\"` override, preserves the zen kernel). #530 should not also pin the kernel — it would compete with #531 and would change the kernel away from zen, losing gaming optimizations.\n\n## Steps\n1. Check out the PR branch (`agent/20260509-1025-5b02`).\n2. Revert the changes to `hosts/classic-laddie/hardware.nix` entirely. The kernel pin and its accompanying comment block (lines around the `boot.supportedFilesystems = [ \\\"zfs\\\" ]` declaration that #530 added before/after) should be removed. Confirm `git diff origin/main -- hosts/classic-laddie/hardware.nix` is empty after the revert.\n3. Leave `modules/common/desktop.nix` alone — that's the actual content of this PR.\n4. Verify the diff: only `modules/common/desktop.nix` should be changed. If anything else (e.g. `flake.lock`) was incidentally touched, leave it as-is unless it's clearly part of the kernel pin.\n5. Commit with a clear message — something like \"drop kernel pin; ZFS unblock handled by #531\".\n6. Force-push to the PR branch.\n7. Update the PR description to remove any references to the kernel pin / ZFS unblock — this PR is portal restart only. Reference #531 as 'companion ZFS unblock landing separately.'\n\n## CRITICAL: no local nix tooling\n- No `nixos-rebuild`, no `nix build`, no `nix flake check`, no `nix eval`. PR #529 (OS-level memory protection) hasn't merged yet, so the running system isn't protected against build-induced wedges. CI does dry-run validation on a runner; that's the gate.\n- After the strip, CI will still fail on classic-laddie because trunk is red on ZFS — that's expected and is fixed by #531 landing first. Don't try to make CI green from this PR.\n\n## Acceptance\n- `hosts/classic-laddie/hardware.nix` matches main (no diff)\n- `modules/common/desktop.nix` retains the portal restart policy\n- PR description scoped to portal restart only\n- Force-pushed to existing branch\n- (CI on classic-laddie will still fail until #531 merges; ignore)",
+  "issue": null,
+  "pr": "530",
+  "branch": "agent/20260509-1025-5b02",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260509-1042-4cef",
+  "tmux_pane": "%38",
+  "budget": "2",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260429-0935-cfb5/logs/20260509-1042-4cef.jsonl",
+  "created_at": "2026-05-09T10:42:38-04:00",
+  "cost_usd": 0.28374475000000005,
+  "duration_ms": 50079,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/530",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260509-1042-4cef"
+}

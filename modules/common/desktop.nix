@@ -105,7 +105,7 @@
   # Make systemd-oomd's response to memory pressure aggressive enough to
   # actually kill runaway builds before the box wedges. The 5s averaging
   # window means transient spikes don't trigger kills.
-  systemd.oomd.extraConfig.DefaultMemoryPressureDurationSec = lib.mkDefault "5s";
+  systemd.oomd.settings.OOM.DefaultMemoryPressureDurationSec = lib.mkDefault "5s";
 
   # Aggressive OOM-kill policy targeted at system.slice only, so the
   # offender (a runaway build, container, or service) gets killed while

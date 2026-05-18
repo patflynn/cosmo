@@ -100,6 +100,7 @@
 
   wayland.windowManager.hyprland = {
     enable = true;
+    configType = "hyprlang";
     settings = {
       # --- Monitors ---
       # Auto-detect monitors with preferred resolution

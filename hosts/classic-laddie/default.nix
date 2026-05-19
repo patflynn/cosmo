@@ -17,24 +17,7 @@
     ../../modules/common/ddcci.nix
     ../../modules/media-server/default.nix
     inputs.reel-life.nixosModules.default
-    # Wrap github-relay's nixos module to shadow `pkgs.system` (deprecated
-    # alias that prints "renamed to stdenv.hostPlatform.system" on every
-    # eval). The upstream module reads `pkgs.system` at module-level let-
-    # binding time, so we substitute a pkgs that has `system` resolved to
-    # its non-aliased value before the upstream module sees it. Drop this
-    # wrapper once patflynn/github-relay fixes module.nix to use
-    # `pkgs.stdenv.hostPlatform.system`.
-    (
-      moduleArgs@{ pkgs, ... }:
-      inputs.github-relay.nixosModules.default (
-        moduleArgs
-        // {
-          pkgs = pkgs // {
-            system = pkgs.stdenv.hostPlatform.system;
-          };
-        }
-      )
-    )
+    inputs.github-relay.nixosModules.default
   ];
 
   cosmo.user.default = "patrick";

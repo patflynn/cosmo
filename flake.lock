@@ -122,11 +122,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1775409789,
-        "narHash": "sha256-teH1aIFAqCdL4JWBEM+UVQNAi6AhrHeYFVselzsL6+A=",
+        "lastModified": 1779149081,
+        "narHash": "sha256-jEvQ9KRZhO94205r15XBHlC73KzSmp1Sue2SwkJbNn4=",
         "owner": "patflynn",
         "repo": "github-relay",
-        "rev": "12f4008ea747159a067a7391e9e613c744042d64",
+        "rev": "7d019e9dd9c3512853f45ebe98bdf89cdc2b8aff",
         "type": "github"
       },
       "original": {

@@ -58,6 +58,10 @@
   # ---------------------------------------------------------------------------
   boot.supportedFilesystems = [ "zfs" ];
 
+  # Explicitly opt into the safer 26.11+ default. Forced root pool import
+  # masks real problems (split-brain, missed exports) and risks data loss.
+  boot.zfs.forceImportRoot = false;
+
   # ZFS upstream's kernelMaxSupportedMajorMinor = "6.19"; the linux-zen
   # kernel pulled in by recent flake.lock updates (7.0.3 as of #528) is past
   # that, so ZFS 2.4.1 won't compile (configure-time "Cannot build against

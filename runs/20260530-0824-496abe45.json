@@ -1,0 +1,19 @@
+{
+  "id": "20260530-0824-496abe45",
+  "prompt": "PR #550 in cosmo has review comments from a trusted reviewer that need to be addressed. Fetch the review comments with: gh api repos/cosmo/pulls/550/comments\nAddress each comment in the code, then push your fixes.\nAfter pushing, reply to EACH review comment that you haven't already replied to with a concise (1-2 sentence) explanation of what you changed. If a comment was intentionally not addressed, reply explaining why it was discounted.\nUse this exact command to reply, substituting the comment id and your explanation:\n  gh api repos/cosmo/pulls/550/comments/{commentId}/replies -f body='\u003cexplanation\u003e'",
+  "issue": null,
+  "pr": "550",
+  "branch": "agent/20260530-0820-3d715870",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260530-0824-496abe45",
+  "tmux_pane": "%33",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260530-0808-f07cafaf/logs/20260530-0824-496abe45.jsonl",
+  "created_at": "2026-05-30T08:24:29-04:00",
+  "cost_usd": 0.3204275,
+  "duration_ms": 67359,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/550",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260530-0824-496abe45"
+}

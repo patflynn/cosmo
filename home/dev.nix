@@ -15,6 +15,17 @@
     description = "Whether to install the public gemini-cli package.";
   };
 
+  options.cosmo.klaus.pollFallback = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = ''
+      Whether klaus should fall back to GitHub API polling for pipeline events.
+      Default false relies on the Tailscale webhook relay (classic-laddie).
+      Set true on hosts that cannot reach the relay (e.g. corp machines with no
+      Tailscale), otherwise the pipeline receives no events.
+    '';
+  };
+
   config = {
     # Development Tools
     home.packages =
@@ -62,7 +73,7 @@
       webhook = {
         port = 9800;
         path = "/webhook/github";
-        poll_fallback = false;
+        poll_fallback = config.cosmo.klaus.pollFallback;
         relay_url = "https://classic-laddie.coin-inconnu.ts.net";
         secret_file = "/run/agenix/github-webhook-secret";
       };

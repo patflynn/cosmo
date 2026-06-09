@@ -26,6 +26,29 @@
     '';
   };
 
+  options.cosmo.autoUpdate = {
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Whether to install a systemd *user* timer that rebuilds this home-manager
+        configuration from cosmo upstream once a day. This is the home-manager
+        equivalent of NixOS `system.autoUpgrade`, for non-NixOS hosts (e.g. the
+        corp Debian box) where there is no system-level rebuild.
+      '';
+    };
+    flakeRef = lib.mkOption {
+      type = lib.types.str;
+      default = "github:patflynn/cosmo";
+      description = "Flake reference to rebuild from. The home config is selected as <flakeRef>#<username>@<short-hostname>.";
+    };
+    onCalendar = lib.mkOption {
+      type = lib.types.str;
+      default = "daily";
+      description = "systemd OnCalendar schedule for the daily rebuild.";
+    };
+  };
+
   config = {
     # Development Tools
     home.packages =
@@ -78,5 +101,41 @@
         secret_file = "/run/agenix/github-webhook-secret";
       };
     };
+
+    # Daily home-manager rebuild from cosmo upstream (home-manager equivalent of
+    # NixOS `system.autoUpgrade`, for non-NixOS hosts). Uses a systemd *user*
+    # timer; the rebuild pulls the latest flake from GitHub (--refresh), so no
+    # local clone is required, mirroring the `update` shell alias.
+    systemd.user = lib.mkIf config.cosmo.autoUpdate.enable (
+      let
+        target = "${config.cosmo.autoUpdate.flakeRef}#${config.home.username}@$(hostname -s)";
+        updateScript = pkgs.writeShellScript "cosmo-autoupdate" ''
+          set -euo pipefail
+          # systemd user services start with a minimal PATH; make nix + the
+          # home-manager wrapper (installed in the user's nix profile) reachable.
+          export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:$PATH"
+          echo "cosmo-autoupdate: rebuilding from ${target}"
+          exec home-manager switch --no-write-lock-file --refresh --flake "${target}"
+        '';
+      in
+      {
+        services.cosmo-autoupdate = {
+          Unit.Description = "Rebuild home-manager from cosmo upstream";
+          Service = {
+            Type = "oneshot";
+            ExecStart = "${updateScript}";
+          };
+        };
+        timers.cosmo-autoupdate = {
+          Unit.Description = "Daily home-manager rebuild from cosmo upstream";
+          Timer = {
+            OnCalendar = config.cosmo.autoUpdate.onCalendar;
+            Persistent = true; # catch up if the machine was off at the scheduled time
+            RandomizedDelaySec = "30m";
+          };
+          Install.WantedBy = [ "timers.target" ];
+        };
+      }
+    );
   };
 }

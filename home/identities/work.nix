@@ -6,6 +6,10 @@
   # relay, so klaus must poll GitHub for pipeline events instead.
   cosmo.klaus.pollFallback = true;
 
+  # Non-NixOS hosts have no system.autoUpgrade, so use a home-manager user timer
+  # to rebuild from cosmo upstream daily (keeps bushmills/work crostini current).
+  cosmo.autoUpdate.enable = true;
+
   programs.zsh.initContent = lib.mkBefore ''
     # Source corporate configuration if it exists (e.g. from Piper/CitC)
     if [ -f "$HOME/.corp.zsh" ]; then

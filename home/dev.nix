@@ -26,15 +26,22 @@
     '';
   };
 
-  options.cosmo.autoUpdate = {
+  options.cosmo.standaloneHomeManager.autoUpgrade = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = false;
       description = ''
-        Whether to install a systemd *user* timer that rebuilds this home-manager
-        configuration from cosmo upstream once a day. This is the home-manager
-        equivalent of NixOS `system.autoUpgrade`, for non-NixOS hosts (e.g. the
-        corp Debian box) where there is no system-level rebuild.
+        Whether to install a systemd *user* timer that rebuilds this standalone
+        home-manager configuration from cosmo upstream once a day. This is the
+        standalone-home-manager analogue of NixOS `system.autoUpgrade`, for
+        home-manager installs on non-NixOS hosts (e.g. the corp Debian box /
+        Crostini) where there is no system-level rebuild.
+
+        Do NOT enable this where NixOS `system.autoUpgrade` applies: on NixOS the
+        system rebuild already manages home-manager, and a standalone
+        `home-manager switch` from a user timer would create a competing,
+        NixOS-unmanaged generation. (The service also hard-guards against this at
+        runtime by no-opping when `/etc/NIXOS` exists.)
       '';
     };
     flakeRef = lib.mkOption {
@@ -102,34 +109,59 @@
       };
     };
 
-    # Daily home-manager rebuild from cosmo upstream (home-manager equivalent of
-    # NixOS `system.autoUpgrade`, for non-NixOS hosts). Uses a systemd *user*
-    # timer; the rebuild pulls the latest flake from GitHub (--refresh), so no
-    # local clone is required, mirroring the `update` shell alias.
-    systemd.user = lib.mkIf config.cosmo.autoUpdate.enable (
+    # Daily standalone home-manager rebuild from cosmo upstream (the
+    # standalone-home-manager analogue of NixOS `system.autoUpgrade`, for
+    # non-NixOS hosts). Uses a systemd *user* timer; the rebuild pulls the latest
+    # flake from GitHub (--refresh), so no local clone is required, mirroring the
+    # `update` shell alias.
+    systemd.user = lib.mkIf config.cosmo.standaloneHomeManager.autoUpgrade.enable (
       let
-        target = "${config.cosmo.autoUpdate.flakeRef}#${config.home.username}@$(hostname -s)";
-        updateScript = pkgs.writeShellScript "cosmo-autoupdate" ''
+        upgradeScript = pkgs.writeShellScript "cosmo-home-autoupgrade" ''
           set -euo pipefail
-          # systemd user services start with a minimal PATH; make nix + the
-          # home-manager wrapper (installed in the user's nix profile) reachable.
-          export PATH="$HOME/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:$PATH"
-          echo "cosmo-autoupdate: rebuilding from ${target}"
-          exec home-manager switch --no-write-lock-file --refresh --flake "${target}"
+
+          # Belt-and-suspenders: never run on NixOS. There `system.autoUpgrade`
+          # already manages home-manager; a standalone switch here would create a
+          # competing, NixOS-unmanaged generation. No-op cleanly if enabled by
+          # mistake.
+          if [ -e /etc/NIXOS ]; then
+            echo "cosmo-home-autoupgrade: running on NixOS — use system.autoUpgrade instead; skipping."
+            exit 0
+          fi
+
+          # Resolve the target inside the script so $(hostname -s) is not baked
+          # into the Nix store path. PATH and NIX_SSL_CERT_FILE are supplied by
+          # the unit's Environment= (see below) — systemd user services do not
+          # source the shell profile, so we set them declaratively rather than
+          # probing for them at runtime.
+          HOSTNAME=$(hostname -s)
+          TARGET="${config.cosmo.standaloneHomeManager.autoUpgrade.flakeRef}#${config.home.username}@$HOSTNAME"
+          echo "cosmo-home-autoupgrade: rebuilding from $TARGET"
+          exec home-manager switch --no-write-lock-file --refresh --flake "$TARGET"
         '';
       in
       {
-        services.cosmo-autoupdate = {
-          Unit.Description = "Rebuild home-manager from cosmo upstream";
+        services.cosmo-home-autoupgrade = {
+          Unit.Description = "Rebuild standalone home-manager from cosmo upstream";
           Service = {
             Type = "oneshot";
-            ExecStart = "${updateScript}";
+            # systemd *user* services start with a minimal environment and do NOT
+            # source the shell profile / /etc/profile.d/nix.sh, so the Nix env the
+            # installer wires into the shell is absent. Supply it declaratively:
+            #   PATH               so `nix`/`home-manager` (in the user profile) resolve
+            #   NIX_SSL_CERT_FILE  so client-side TLS works when fetching the flake
+            #                      from GitHub (pkgs.cacert is the same CA bundle
+            #                      nixpkgs uses everywhere; %h is systemd's $HOME).
+            Environment = [
+              "PATH=%h/.nix-profile/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin"
+              "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+            ];
+            ExecStart = "${upgradeScript}";
           };
         };
-        timers.cosmo-autoupdate = {
-          Unit.Description = "Daily home-manager rebuild from cosmo upstream";
+        timers.cosmo-home-autoupgrade = {
+          Unit.Description = "Daily standalone home-manager rebuild from cosmo upstream";
           Timer = {
-            OnCalendar = config.cosmo.autoUpdate.onCalendar;
+            OnCalendar = config.cosmo.standaloneHomeManager.autoUpgrade.onCalendar;
             Persistent = true; # catch up if the machine was off at the scheduled time
             RandomizedDelaySec = "30m";
           };

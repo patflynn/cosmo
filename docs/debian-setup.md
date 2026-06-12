@@ -68,6 +68,36 @@ Then, reload your shell:
 source ~/.bashrc
 ```
 
+## Daily Auto-Upgrade (`cosmo.standaloneHomeManager.autoUpgrade`)
+
+Standalone home-manager installs (non-NixOS hosts) have no `system.autoUpgrade`, so this flake provides `cosmo.standaloneHomeManager.autoUpgrade` — the standalone-home-manager analogue of NixOS `system.autoUpgrade`.
+
+When enabled it installs a systemd **user** timer + oneshot service that runs `home-manager switch --refresh` daily, pulling the latest flake from cosmo upstream (no local clone required). It is enabled automatically by the **work identity** (covers bushmills + work Crostini).
+
+It **no-ops on NixOS**: the service bails out cleanly if `/etc/NIXOS` exists, since there `system.autoUpgrade` already manages home-manager.
+
+After bootstrapping, run the one-time live check to confirm the user service can rebuild in the minimal systemd user environment:
+
+```bash
+systemctl --user start cosmo-home-autoupgrade.service && journalctl --user -u cosmo-home-autoupgrade -e
+```
+
+## Host-Local / Private Shell Customisation (`~/.corp.zsh`)
+
+Machine-specific or otherwise private shell customisation that must **not** be committed to this public repo (for example, aliases that point at internal-only tooling paths) belongs in `~/.corp.zsh`, which the work identity already sources at shell init:
+
+```sh
+# home/identities/work.nix sources this if present
+if [ -f "$HOME/.corp.zsh" ]; then source "$HOME/.corp.zsh"; fi
+```
+
+This file is uncommitted and host-local, so it survives the daily auto-upgrade and is never pushed publicly. Put any private aliases or environment there, for example:
+
+```sh
+# ~/.corp.zsh (uncommitted, host-local — never committed)
+alias mytool=/path/to/internal/tool
+```
+
 ## Troubleshooting
 
 *   **"experimental Nix feature 'nix-command' is disabled"**: Ensure you have `experimental-features = nix-command flakes` in your `nix.conf`.

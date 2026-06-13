@@ -49,6 +49,14 @@
     "nvidia_drm"
   ];
 
+  # Load the CUDA/compute module (nvidia_uvm) explicitly at boot. It only
+  # matters at runtime, so boot.kernelModules (not initrd) is correct. We had
+  # been relying on udev / nvidia-modprobe to auto-load it on demand, but that
+  # path regressed after the 595.80 driver bump (udev failed to mknod
+  # /dev/nvidia*), so nvidia_uvm never loaded and CUDA silently broke while the
+  # display modules above kept working.
+  boot.kernelModules = [ "nvidia_uvm" ];
+
   # Allow qemu-libvirtd to access the GPU
   users.groups.video.members = [ "qemu-libvirtd" ];
   users.groups.render.members = [ "qemu-libvirtd" ];

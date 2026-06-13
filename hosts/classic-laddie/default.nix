@@ -218,7 +218,19 @@
   services.ollama = {
     enable = true;
     package = pkgs.ollama-cuda;
-    loadModels = [ "gemma4:26b" ];
+    loadModels = [
+      "gemma4:26b"
+      "qwen3:32b"
+      "qwen2.5-coder:32b"
+    ];
+    environmentVariables = {
+      # Cap the default context so the 32B dense models (qwen3, qwen2.5-coder)
+      # stay fully resident in the 4090's 24GB VRAM. At Ollama's auto-selected
+      # 32K context the KV cache overflowed VRAM and spilled ~23% of the model
+      # to the CPU, badly hurting throughput. 8192 is a safe default for every
+      # model here; override per request with options.num_ctx when more is needed.
+      OLLAMA_CONTEXT_LENGTH = "8192";
+    };
   };
 
   # ---------------------------------------------------------------------------

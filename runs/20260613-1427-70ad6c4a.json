@@ -1,0 +1,17 @@
+{
+  "id": "20260613-1427-70ad6c4a",
+  "prompt": "Add two local models to the declarative Ollama config and set a safe default context length on host classic-laddie.\n\n## Context\n`hosts/classic-laddie/default.nix` configures Ollama declaratively. The current block (~line 218) is:\n\n    services.ollama = {\n      enable = true;\n      package = pkgs.ollama-cuda;\n      loadModels = [ \"gemma4:26b\" ];\n    };\n\nThis host has an RTX 4090 (24GB VRAM). We want two more models managed declaratively, plus a context-length cap. The cap matters because when Ollama auto-selects a 32K context for a ~20GB 32B model, the KV cache overflows 24GB VRAM and spills ~23% of the model onto the CPU, which tanks throughput (and previously contributed to an out-of-RAM hard lock). Capping the default context keeps the 32B dense models fully GPU-resident.\n\n## Change (only this block, in hosts/classic-laddie/default.nix)\nUpdate the services.ollama block to:\n\n    services.ollama = {\n      enable = true;\n      package = pkgs.ollama-cuda;\n      loadModels = [\n        \"gemma4:26b\"\n        \"qwen3:32b\"\n        \"qwen2.5-coder:32b\"\n      ];\n      environmentVariables = {\n        # Cap the default context so the 32B dense models (qwen3, qwen2.5-coder)\n        # stay fully resident in the 4090's 24GB VRAM. At Ollama's auto-selected\n        # 32K context the KV cache overflowed VRAM and spilled ~23% of the model\n        # to the CPU, badly hurting throughput. 8192 is a safe default for every\n        # model here; override per request with options.num_ctx when more is needed.\n        OLLAMA_CONTEXT_LENGTH = \"8192\";\n      };\n    };\n\nDo not change anything else (open-webui, package, etc.).\n\n## Verify the option name\n`services.ollama.environmentVariables` is the correct NixOS option (attrset of string env vars). Confirm it evaluates — if for some reason this nixpkgs revision names it differently, find the correct option via `nixos-option` or the nixpkgs ollama module and use that, but prefer environmentVariables.\n\n## Acceptance criteria\n- The classic-laddie configuration evaluates and builds. Verify with the project's canonical check (look in .github/workflows or any justfile first); otherwise:\n  `nix build --no-link .#nixosConfigurations.classic-laddie.config.system.build.toplevel --dry-run`\n  Report exactly what you ran and the result.\n- Diff is limited to the services.ollama block.\n\n## Constraints\n- Follow the repo CLAUDE.md: NO Co-Authored-By lines, and do NOT mention Claude/AI/LLM anywhere in the commit message or PR body.\n- PR description: explain that this adds qwen3:32b and qwen2.5-coder:32b to declaratively-managed models and pins OLLAMA_CONTEXT_LENGTH=8192 to keep 32B models from spilling out of the 4090's VRAM.",
+  "issue": null,
+  "branch": "agent/20260613-1427-70ad6c4a",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260613-1427-70ad6c4a",
+  "tmux_pane": "%2",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260613-1331-fd68be85/logs/20260613-1427-70ad6c4a.jsonl",
+  "created_at": "2026-06-13T14:28:05-04:00",
+  "cost_usd": 0.3772809999999999,
+  "duration_ms": 107659,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/566",
+  "target_repo": "cosmo",
+  "session_name": "20260613-1427-70ad6c4a",
+  "claude_session_id": "612ed4e2-6123-4e0e-95fd-ab39655891db"
+}

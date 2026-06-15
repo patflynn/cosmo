@@ -15,6 +15,16 @@
     description = "Whether to install the public gemini-cli package.";
   };
 
+  options.cosmo.antigravity.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = ''
+      Whether to install the native (non-FHS) Antigravity IDE
+      (pkgs.antigravity, autoPatchelf-based). Unfree; requires
+      nixpkgs.config.allowUnfree on the host.
+    '';
+  };
+
   options.cosmo.klaus.pollFallback = lib.mkOption {
     type = lib.types.bool;
     default = false;
@@ -71,9 +81,6 @@
         gcc
         openssl
 
-        # IDEs
-        antigravity
-
         # CLIs
         claude-code # Anthropic's CLI
         github-cli # GitHub CLI (gh)
@@ -85,7 +92,8 @@
         # Agent orchestration
         inputs.klaus.packages."${pkgs.stdenv.hostPlatform.system}".default
       ]
-      ++ lib.optional config.cosmo.gemini.enable pkgs.gemini-cli;
+      ++ lib.optional config.cosmo.gemini.enable pkgs.gemini-cli
+      ++ lib.optional config.cosmo.antigravity.enable pkgs.antigravity;
 
     programs.zsh.shellAliases = {
       rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";

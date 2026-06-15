@@ -1,0 +1,20 @@
+{
+  "id": "20260614-2121-02be8bdb",
+  "prompt": "CI is failing on PR #568. Diagnose the failures and push fixes. Check `gh pr checks 568` for details and `gh run view \u003crun-id\u003e --log-failed` for error output.",
+  "issue": null,
+  "pr": "568",
+  "branch": "feat/antigravity-native",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260614-2121-02be8bdb",
+  "tmux_pane": "%4",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260614-0022-f61e19ff/logs/20260614-2121-02be8bdb.jsonl",
+  "created_at": "2026-06-14T21:21:29-04:00",
+  "cost_usd": 0.74592575,
+  "duration_ms": 245132,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/568",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260614-2121-02be8bdb",
+  "claude_session_id": "3de8ae95-1f04-4120-84d6-9d160c03f376"
+}

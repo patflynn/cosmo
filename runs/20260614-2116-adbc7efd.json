@@ -1,0 +1,20 @@
+{
+  "id": "20260614-2116-adbc7efd",
+  "prompt": "On this same PR branch, ALSO remove the gemini-cli package from the home-manager config. This is a small, surgical change in home/dev.nix:\n\nREMOVE these two things:\n1. The option definition `options.cosmo.gemini.enable` (the lib.mkOption block, around lines 12-15, description 'Whether to install the public gemini-cli package.').\n2. The line that installs the package in home.packages: `++ lib.optional config.cosmo.gemini.enable pkgs.gemini-cli;` (around line 88). Remove the whole `++ lib.optional ...` line cleanly so the surrounding list/expression still parses correctly.\n\nDO NOT TOUCH:\n- Line ~101: `trusted_reviewers = [ \"gemini-code-assist[bot]\" ];`. This is the klaus pipeline's PR-review-bot config, NOT gemini-cli. It is unrelated and must stay exactly as-is (it's what reviews this very PR). Do not remove or alter it.\n\nVERIFY:\n- Grep the whole repo to confirm nothing else references `cosmo.gemini.enable` or `pkgs.gemini-cli` (nothing should — these are the only two usages). If some other file DOES reference `cosmo.gemini.enable`, stop and report rather than breaking eval.\n- Run `nix flake check` (or `nix eval .#nixosConfigurations.classic-laddie.config.system.build.toplevel.drvPath`) and confirm the config still evaluates with no errors after removing the option and package.\n\nThis builds on the existing PR #568 (which adds the native Antigravity IDE). Keep your commit focused: `feat(home): remove gemini-cli` or `chore(home): remove gemini-cli`. Follow repo conventions: 2-space indent; do NOT add any 'Co-Authored-By' line and do NOT mention Claude, AI, LLM, or assistant in the commit message or PR. Update the PR description to also note gemini-cli was removed if appropriate.",
+  "issue": null,
+  "pr": "568",
+  "branch": "feat/antigravity-native",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260614-2116-adbc7efd",
+  "tmux_pane": "%3",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260614-0022-f61e19ff/logs/20260614-2116-adbc7efd.jsonl",
+  "created_at": "2026-06-14T21:16:28-04:00",
+  "cost_usd": 0.2579475,
+  "duration_ms": 65240,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/568",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260614-2116-adbc7efd",
+  "claude_session_id": "a42ca59c-6a5e-469d-bc5b-ea601b598987"
+}

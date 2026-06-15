@@ -9,12 +9,6 @@
 {
   imports = [ ./common.nix ];
 
-  options.cosmo.gemini.enable = lib.mkOption {
-    type = lib.types.bool;
-    default = true;
-    description = "Whether to install the public gemini-cli package.";
-  };
-
   options.cosmo.antigravity.enable = lib.mkOption {
     type = lib.types.bool;
     default = false;
@@ -92,7 +86,6 @@
         # Agent orchestration
         inputs.klaus.packages."${pkgs.stdenv.hostPlatform.system}".default
       ]
-      ++ lib.optional config.cosmo.gemini.enable pkgs.gemini-cli
       ++ lib.optional config.cosmo.antigravity.enable pkgs.antigravity;
 
     programs.zsh.shellAliases = {

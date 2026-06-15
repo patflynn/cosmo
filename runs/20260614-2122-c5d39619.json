@@ -1,0 +1,20 @@
+{
+  "id": "20260614-2122-c5d39619",
+  "prompt": "CI fix for PR #568. The build-home jobs (paflynn@bushmills, paflynn@crostini, patrick@crostini, personal) fail with:\n\n    error: The option `cosmo.gemini' does not exist. Definition values:\n    - In '.../home/identities/work.nix': { enable = false; }\n\nCAUSE: This PR removed the `cosmo.gemini.enable` option from home/dev.nix, but `home/identities/work.nix` still ASSIGNS it. Line 3 of home/identities/work.nix contains:\n\n    cosmo.gemini.enable = false;\n\nThis orphaned assignment now references a non-existent option, breaking evaluation of every home config that imports the work identity (the work/standalone home-manager hosts). The nixos hosts use the personal identity and don't set it, which is why only build-home failed.\n\nFIX (surgical):\n1. Remove the line `cosmo.gemini.enable = false;` from home/identities/work.nix. Remove just that line cleanly; leave the rest of the file intact and valid (make sure the surrounding attrset still parses — if it leaves an empty/awkward block, tidy it minimally).\n2. Re-grep the ENTIRE repo to be sure nothing else references `cosmo.gemini` or `gemini-cli` (git grep -nE 'cosmo\\\\.gemini|gemini-cli'). The only remaining 'gemini' hit anywhere should be the unrelated `gemini-code-assist[bot]` trusted-reviewer line in home/dev.nix — leave that alone.\n3. Validate it evaluates now. Importantly, the failing configs are the standalone homeConfigurations, so check one of those specifically, e.g.:\n     nix eval .#homeConfigurations.\"paflynn@bushmills\".activationPackage.drvPath\n   (and/or `nix flake check`). Confirm no 'cosmo.gemini' error remains.\n\nCommit on the SAME branch (feat/antigravity-native) with a focused message like `fix(home): drop orphaned cosmo.gemini assignment in work identity`. Follow repo conventions: 2-space indent; do NOT add any 'Co-Authored-By' line and do NOT mention Claude, AI, LLM, or assistant in the commit message or PR.",
+  "issue": null,
+  "pr": "568",
+  "branch": "feat/antigravity-native",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260614-2122-c5d39619",
+  "tmux_pane": "%5",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260614-0022-f61e19ff/logs/20260614-2122-c5d39619.jsonl",
+  "created_at": "2026-06-14T21:22:13-04:00",
+  "cost_usd": 0.1659515,
+  "duration_ms": 28796,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/568",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260614-2122-c5d39619",
+  "claude_session_id": "0e3cebda-3deb-4e35-9c5d-8b5301b3d804"
+}

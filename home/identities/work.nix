@@ -1,7 +1,5 @@
 { lib, ... }:
 {
-  cosmo.gemini.enable = false;
-
   # Corp hosts (bushmills, work crostini) can't reach the Tailscale webhook
   # relay, so klaus must poll GitHub for pipeline events instead.
   cosmo.klaus.pollFallback = true;

@@ -77,7 +77,7 @@
       # Build the new generation and set it as the boot default WITHOUT
       # activating it live. Switching on a running session reloads the NVIDIA
       # driver/nvidia_drm, which drops the DRM connector and crashes Hyprland.
-      operation = "boot";
+      operation = lib.mkDefault "boot";
       flags = [
         "-L" # print build logs
         "--no-write-lock-file"

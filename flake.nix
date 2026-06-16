@@ -147,6 +147,9 @@
                     ./home/identities/personal.nix
                     ./home/monitor-input.nix
                   ];
+                  # Native (non-FHS) Antigravity IDE; unfree, allowed on this
+                  # GPU host (hardware.nix sets nixpkgs.config.allowUnfree).
+                  cosmo.antigravity.enable = true;
                   # Lock screen immediately on session start (auto-login is enabled)
                   wayland.windowManager.hyprland.settings.exec-once = [ "hyprlock" ];
                 };

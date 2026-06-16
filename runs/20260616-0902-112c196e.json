@@ -1,0 +1,18 @@
+{
+  "id": "20260616-0902-112c196e",
+  "prompt": "Change the NixOS auto-upgrade to build-for-next-boot instead of activating live, to stop nightly rebuilds from crashing the Hyprland session.\n\nBACKGROUND (for the PR description): On classic-laddie (NVIDIA RTX 4090, Wayland/Hyprland), the nightly `system.autoUpgrade` runs `nixos-rebuild switch`. When a build includes an NVIDIA driver bump, switching activates it live and reloads the nvidia_drm kernel module, which drops the DRM connector out from under the running compositor. Hyprland then SEGVs during the monitor disconnect→headless-output transition (crash chain: CSession::dispatchUdevEvents → CDRMBackend::recheckOutputs → SDRMConnector::disconnect → CMonitor::onDisconnect → enterUnsafeState → onConnect → sendFrameEventsToWorkspace → Desktop::View::getViewsForWorkspace, null workspace deref). Two crash reports captured (2026-06-14 02:59 and 2026-06-15 23:04), both at rebuild-activation time. Building for next boot avoids reloading the GPU driver on a live session.\n\nEXACT CHANGE:\n- File: modules/common/system.nix, in the `system.autoUpgrade = { ... }` block (currently around lines 74-84: enable=true; flake=\"github:patflynn/cosmo\"; flags=[...]; dates=\"02:00\"; randomizedDelaySec=\"45min\";).\n- Add the line: `operation = \"boot\";` to that attrset (place it logically, e.g. right after `flake = ...` or before `dates`). This makes the nightly upgrade set the new generation as the boot default WITHOUT activating it on the running system. Do NOT change enable/flake/flags/dates/randomizedDelaySec, and do NOT touch the `systemd.services.nixos-upgrade.serviceConfig` block below it.\n- This module is imported by all hosts, which is the intended scope.\n\nVALIDATE before opening the PR:\n- Run `nix flake check` (or at minimum `nix eval .#nixosConfigurations.classic-laddie.config.system.build.toplevel.drvPath`) and confirm it evaluates with no errors.\n- Confirm `system.autoUpgrade.operation` resolves to \"boot\" for a host, e.g. `nix eval .#nixosConfigurations.classic-laddie.config.system.autoUpgrade.operation` -\u003e \"boot\".\n\nCONVENTIONS (AGENTS.md / CLAUDE.md, follow strictly):\n- 2-space indentation.\n- NEVER commit to main. Create a feature branch like `fix/autoupgrade-operation-boot` and open a PR.\n- Commit message: `fix(system): set autoUpgrade operation to boot` (conventional commits).\n- Do NOT include any 'Co-Authored-By' line and do NOT mention Claude, AI, LLM, or assistant anywhere in the commit message or PR description.\n- PR description should briefly explain the Hyprland-crash-on-nvidia-reload rationale above and that this defers activation to next reboot.",
+  "issue": null,
+  "branch": "agent/20260616-0902-112c196e",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260616-0902-112c196e",
+  "tmux_pane": "%11",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260614-0022-f61e19ff/logs/20260616-0902-112c196e.jsonl",
+  "created_at": "2026-06-16T09:02:27-04:00",
+  "cost_usd": 0.22915725000000003,
+  "duration_ms": 68786,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/571",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260616-0902-112c196e",
+  "claude_session_id": "e2212a65-e61b-4b3a-b64d-9bc04338f639"
+}

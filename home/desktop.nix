@@ -25,6 +25,7 @@
     # IDEs
     android-studio
     jetbrains.idea
+    zed-editor
 
     # Media
     mpv # Video player

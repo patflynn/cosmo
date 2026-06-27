@@ -24,7 +24,8 @@
 
     # IDEs
     android-studio
-    jetbrains.idea
+    jetbrains.idea # Unified IntelliJ IDEA distribution (Ultimate)
+    zed-editor
 
     # Media
     mpv # Video player

@@ -24,7 +24,7 @@
 
     # IDEs
     android-studio
-    jetbrains.idea
+    jetbrains.idea-ultimate
     zed-editor
 
     # Media

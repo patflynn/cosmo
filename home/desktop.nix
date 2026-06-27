@@ -24,7 +24,7 @@
 
     # IDEs
     android-studio
-    jetbrains.idea-ultimate
+    jetbrains.idea # Unified IntelliJ IDEA distribution (Ultimate)
     zed-editor
 
     # Media

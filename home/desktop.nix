@@ -25,7 +25,7 @@
     # IDEs
     android-studio
     jetbrains.idea # Unified IntelliJ IDEA distribution (Ultimate)
-    zed-editor
+    # Zed is installed declaratively via programs.zed-editor below.
 
     # Media
     mpv # Video player
@@ -90,6 +90,105 @@
       border = {
         width = 2;
         radius = 10;
+      };
+    };
+  };
+
+  programs.zed-editor = {
+    enable = true;
+
+    # Auto-installed on first launch. catppuccin resolves the theme below;
+    # nix/toml add language support.
+    extensions = [
+      "catppuccin"
+      "nix"
+      "toml"
+    ];
+
+    userSettings = {
+      theme = "Catppuccin Mocha"; # matches kitty/gtk/fuzzel Catppuccin Mocha
+
+      # Vim mode with learning-friendly aids (Emacs user picking up vim).
+      # Relative line numbers make vim motion counts easy to read off.
+      vim_mode = true;
+      relative_line_numbers = true;
+
+      # Editor defaults. JetBrainsMono Nerd Font is installed system-wide via
+      # home/waybar.nix (nerd-fonts.jetbrains-mono).
+      buffer_font_family = "JetBrainsMono Nerd Font";
+      buffer_font_size = 14;
+      format_on_save = "on";
+      tab_size = 2;
+      minimap = {
+        show = "never";
+      };
+
+      telemetry = {
+        diagnostics = false;
+        metrics = false;
+      };
+
+      git = {
+        inline_blame = {
+          enabled = true;
+        };
+      };
+
+      # Use the already-installed nixd (home/dev.nix) as the Nix LSP and
+      # nixfmt (the flake formatter) for formatting.
+      lsp = {
+        nix = {
+          binary = {
+            path_lookup = true;
+          };
+        };
+      };
+      languages = {
+        Nix = {
+          language_servers = [ "nixd" ];
+          formatter = {
+            external = {
+              command = "nixfmt";
+            };
+          };
+        };
+      };
+
+      # AI assistant (agent panel) wired to Anthropic Claude. The Anthropic API
+      # key is NOT set here — the Nix store is world-readable. Zed reads it from
+      # the ANTHROPIC_API_KEY environment variable, or you sign in through Zed's
+      # UI at runtime.
+      language_models = {
+        anthropic = {
+          version = "1";
+          available_models = [
+            {
+              name = "claude-opus-4-8";
+              display_name = "Claude Opus 4.8";
+              max_tokens = 1000000;
+              max_output_tokens = 128000;
+            }
+            {
+              name = "claude-sonnet-4-6";
+              display_name = "Claude Sonnet 4.6";
+              max_tokens = 1000000;
+              max_output_tokens = 64000;
+            }
+            {
+              name = "claude-haiku-4-5";
+              display_name = "Claude Haiku 4.5";
+              max_tokens = 200000;
+              max_output_tokens = 64000;
+            }
+          ];
+        };
+      };
+      agent = {
+        version = "2";
+        default_model = {
+          provider = "anthropic";
+          model = "claude-opus-4-8";
+        };
       };
     };
   };

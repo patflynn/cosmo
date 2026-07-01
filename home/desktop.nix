@@ -154,42 +154,14 @@
         };
       };
 
-      # AI assistant (agent panel) wired to Anthropic Claude. The Anthropic API
-      # key is NOT set here — the Nix store is world-readable. Zed reads it from
-      # the ANTHROPIC_API_KEY environment variable, or you sign in through Zed's
-      # UI at runtime.
-      language_models = {
-        anthropic = {
-          version = "1";
-          available_models = [
-            {
-              name = "claude-opus-4-8";
-              display_name = "Claude Opus 4.8";
-              max_tokens = 1000000;
-              max_output_tokens = 128000;
-            }
-            {
-              name = "claude-sonnet-4-6";
-              display_name = "Claude Sonnet 4.6";
-              max_tokens = 1000000;
-              max_output_tokens = 64000;
-            }
-            {
-              name = "claude-haiku-4-5";
-              display_name = "Claude Haiku 4.5";
-              max_tokens = 200000;
-              max_output_tokens = 64000;
-            }
-          ];
-        };
-      };
-      agent = {
-        version = "2";
-        default_model = {
-          provider = "anthropic";
-          model = "claude-opus-4-8";
-        };
-      };
+      # AI: this runs on the user's Claude Pro/Max *subscription*, not a
+      # pay-per-token console API key. Zed 1.8 ships first-class built-in
+      # Claude Code support (agent id "claude-acp", sourced from the ACP
+      # registry): it auto-detects the `claude` binary on PATH — provided
+      # here by home/dev.nix (pkgs.claude-code) and already logged in via
+      # OAuth — so no `language_models.anthropic` API-key config or
+      # `default_model` is needed. Open the agent panel, pick "Claude Code"
+      # from the New Thread menu, and it uses the CLI's subscription login.
     };
   };
 
@@ -233,6 +205,13 @@
       "text/html" = "zen.desktop";
     };
   };
+
+  # xdg-desktop-portal-gtk reports the color scheme to portal-aware apps
+  # (e.g. Zed) from the GNOME interface GSettings key below — NOT from the
+  # org/freedesktop/appearance dconf path. The freedesktop block is kept as a
+  # harmless hint, but "prefer-dark" here is what the portal actually reads and
+  # maps to color-scheme=1 (dark).
+  dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 
   dconf.settings."org/freedesktop/appearance" = {
     color-scheme = 1; # 1 = prefer dark

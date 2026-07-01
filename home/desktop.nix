@@ -9,6 +9,7 @@
   imports = [
     ./dev.nix
     ./hyprland.nix
+    ./zed.nix
   ];
 
   # Essential desktop packages (User Level)
@@ -25,7 +26,7 @@
     # IDEs
     android-studio
     jetbrains.idea # Unified IntelliJ IDEA distribution (Ultimate)
-    zed-editor
+    # Zed is configured declaratively in ./zed.nix
 
     # Media
     mpv # Video player
@@ -135,9 +136,10 @@
     };
   };
 
-  dconf.settings."org/freedesktop/appearance" = {
-    color-scheme = 1; # 1 = prefer dark
-  };
+  # org/gnome/desktop/interface color-scheme is the GSettings key
+  # xdg-desktop-portal-gtk reads and maps to the freedesktop appearance
+  # color-scheme (dark) exposed to portal-aware apps (e.g. Zed).
+  dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
 
   xdg.configFile."electron-flags.conf".text = ''
     --ozone-platform=wayland

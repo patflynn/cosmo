@@ -136,16 +136,10 @@
     };
   };
 
-  # xdg-desktop-portal-gtk reports the color scheme to portal-aware apps
-  # (e.g. Zed) from the GNOME interface GSettings key below — NOT from the
-  # org/freedesktop/appearance dconf path. The freedesktop block is kept as a
-  # harmless hint, but "prefer-dark" here is what the portal actually reads and
-  # maps to color-scheme=1 (dark).
+  # org/gnome/desktop/interface color-scheme is the GSettings key
+  # xdg-desktop-portal-gtk reads and maps to the freedesktop appearance
+  # color-scheme (dark) exposed to portal-aware apps (e.g. Zed).
   dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
-
-  dconf.settings."org/freedesktop/appearance" = {
-    color-scheme = 1; # 1 = prefer dark
-  };
 
   xdg.configFile."electron-flags.conf".text = ''
     --ozone-platform=wayland

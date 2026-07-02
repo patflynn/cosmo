@@ -163,5 +163,12 @@
     enable = true;
   };
 
+  # Emacs is the default editor everywhere. `emacsclient -t` attaches to the
+  # daemon above for instant startup; `-a ''` spins one up if it isn't running.
+  home.sessionVariables = {
+    EDITOR = "emacsclient -t -a ''";
+    VISUAL = "emacsclient -t -a ''";
+  };
+
   home.stateVersion = "25.11";
 }

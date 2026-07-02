@@ -23,8 +23,10 @@
         };
       };
 
-      # Mode-aware theme: Ayu Dark when the system is in dark mode, One
-      # Light otherwise. Both are bundled with Zed (no extension needed).
+      # Always use the dark theme (Ayu Dark), regardless of the system's
+      # light/dark setting. The `light`/`dark` keys name the theme for each
+      # mode; `mode = "dark"` pins the active one. Both themes are bundled
+      # with Zed (no extension needed).
       theme = {
         mode = "dark";
         light = "One Light";

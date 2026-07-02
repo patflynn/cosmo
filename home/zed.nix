@@ -4,16 +4,37 @@
   programs.zed-editor = {
     enable = true;
 
-    # Auto-installed on first launch. catppuccin resolves the theme below;
-    # nix/toml add language support.
+    # Auto-installed on first launch. nix/toml add language support.
+    # The Ayu and One theme families are bundled with Zed, so no theme
+    # extension is needed for the theme below.
     extensions = [
-      "catppuccin"
       "nix"
       "toml"
     ];
 
     userSettings = {
-      theme = "Catppuccin Mocha"; # matches kitty/gtk/fuzzel Catppuccin Mocha
+      # Claude Code is registered as an ACP agent server ("claude-acp",
+      # sourced from the registry). It runs on the user's Claude
+      # subscription via the `claude` CLI (home/dev.nix), not a
+      # pay-per-token API key.
+      agent_servers = {
+        claude-acp = {
+          type = "registry";
+        };
+      };
+
+      # Always use the dark theme (Ayu Dark), regardless of the system's
+      # light/dark setting. The `light`/`dark` keys name the theme for each
+      # mode; `mode = "dark"` pins the active one. Both themes are bundled
+      # with Zed (no extension needed).
+      theme = {
+        mode = "dark";
+        light = "One Light";
+        dark = "Ayu Dark";
+      };
+
+      # JetBrains-style keybindings (muscle memory from IntelliJ/PyCharm).
+      base_keymap = "JetBrains";
 
       # Vim mode with learning-friendly aids (Emacs user picking up vim).
       # Relative line numbers make vim motion counts easy to read off.
@@ -23,7 +44,8 @@
       # Editor defaults. JetBrainsMono Nerd Font is installed system-wide via
       # home/waybar.nix (nerd-fonts.jetbrains-mono).
       buffer_font_family = "JetBrainsMono Nerd Font";
-      buffer_font_size = 14;
+      buffer_font_size = 15;
+      ui_font_size = 16;
       format_on_save = "on";
       tab_size = 2;
       minimap = {
@@ -60,15 +82,6 @@
           };
         };
       };
-
-      # AI: this runs on the user's Claude Pro/Max *subscription*, not a
-      # pay-per-token console API key. Zed 1.8 ships first-class built-in
-      # Claude Code support (agent id "claude-acp", sourced from the ACP
-      # registry): it auto-detects the `claude` binary on PATH — provided
-      # here by home/dev.nix (pkgs.claude-code) and already logged in via
-      # OAuth — so no `language_models.anthropic` API-key config or
-      # `default_model` is needed. Open the agent panel, pick "Claude Code"
-      # from the New Thread menu, and it uses the CLI's subscription login.
     };
   };
 }

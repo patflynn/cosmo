@@ -16,6 +16,7 @@
     ../../modules/common/gaming.nix
     ../../modules/common/ddcci.nix
     ../../modules/media-server/default.nix
+    ../../modules/git-hosting/default.nix
     inputs.reel-life.nixosModules.default
     inputs.github-relay.nixosModules.default
   ];
@@ -113,6 +114,19 @@
   #   cd secrets && agenix -e radarr-api-key.age   # paste the API key from Radarr UI → Settings → General
   #   cd secrets && agenix -e prowlarr-api-key.age  # paste the API key from Prowlarr UI → Settings → General
   modules.media-server.recyclarr.enable = true;
+
+  # ---------------------------------------------------------------------------
+  # Git hosting (canonical origin for personal repos — source hosting Phase 0)
+  # ---------------------------------------------------------------------------
+  # Clone/push over the tailnet: git clone git@classic-laddie:the-valley.git
+  # One-time host prep: sudo zfs create -o mountpoint=legacy tank/git
+  # See docs/git-hosting.md.
+  services.git-hosting = {
+    enable = true;
+    dataDir = "/mnt/git";
+    repos = [ "the-valley" ];
+    authorizedKeys = (import ../../secrets/keys.nix).users;
+  };
 
   # ---------------------------------------------------------------------------
   # Reel-life media chatops agent (direct systemd service)
@@ -401,6 +415,11 @@
 
   fileSystems."/mnt/media" = {
     device = "tank/media";
+    fsType = "zfs";
+  };
+
+  fileSystems."/mnt/git" = {
+    device = "tank/git";
     fsType = "zfs";
   };
 

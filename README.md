@@ -26,3 +26,4 @@ See [AGENTS.md](./AGENTS.md) for common administrative commands.
 * [Secrets Management](./docs/secrets-management.md): How to add, edit, and rekey encrypted secrets (Agenix).
 * [Generic VM Setup](./docs/vm-setup.md): How to build and deploy NixOS VMs (e.g., `johnny-walker`).
 * [Crostini Setup](./docs/crostini-setup.md): Setup guide for the standalone Home Manager configuration on Crostini.
+* [Git Hosting](./docs/git-hosting.md): Self-hosted bare git repositories on `classic-laddie` (adding repos, cloning over the tailnet, hooks).

@@ -1,0 +1,18 @@
+{
+  "id": "20260704-1610-459448fa",
+  "prompt": "Read AGENTS.md first — it has mandatory workflow constraints and PR requirements for this repo.\n\nTask: add declarative bare-git hosting to the classic-laddie host (hosts/classic-laddie) so it can become the canonical origin for the owner's repos. This is Phase 0 of a source-hosting migration off GitHub; the pilot repo is called \"the-valley\". Hosting only — no web UI, no CI, no event bus.\n\nWhat to build:\n1. A reusable NixOS module (under modules/, following this repo's module conventions — look at modules/klaus-worker and modules/media-server for the house style) providing:\n   - A dedicated git user with git-shell (no interactive login), SSH-key auth only. Identity stays deliberately thin: the box is on the tailnet, so Tailscale ACLs plus SSH keys are the whole identity story for now.\n   - Bare repositories under a dedicated directory on the host's ZFS pool (check hosts/classic-laddie for existing dataset/mount conventions and follow them).\n   - A declarative list of repos (e.g. services.git-hosting.repos = [ \"the-valley\" ]) — the module ensures \u003cname\u003e.git exists as a bare repo with correct ownership on activation. It must never delete or overwrite an existing repo; removing a name from the list leaves the data in place.\n   - A per-repo hook mechanism (a hooks directory or templated post-receive) so a replication hook can be dropped in later. The actual offsite mirror (a Hetzner VPS that does not exist yet) is a follow-up — scaffold the hook wiring, do not invent remote endpoints.\n2. Enable the module on classic-laddie with the-valley as the first repo.\n3. Docs: a short docs/git-hosting.md covering how to add a repo, how to clone/push (ssh to the git user on classic-laddie over the tailnet), and where the hooks live.\n\nAcceptance:\n- nix flake check passes and the classic-laddie system config builds (match however AGENTS.md / this repo's CI builds host configs).\n- The module is enabled in hosts/classic-laddie with repos = [ \"the-valley\" ].\n- No secrets committed. If something genuinely needs a secret, note it in the PR description instead of inventing agenix plumbing.\n\nDo NOT deploy anything — this is a config PR only; the owner deploys. Open a PR; do not merge. Lead the PR description with the module's option surface (the options and their defaults) so the owner can review the shape quickly.",
+  "issue": null,
+  "branch": "agent/20260704-1610-459448fa",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260704-1610-459448fa",
+  "tmux_pane": "%8",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260704-1520-419865ef/logs/20260704-1610-459448fa.jsonl",
+  "created_at": "2026-07-04T16:11:01-04:00",
+  "cost_usd": 3.4186929999999998,
+  "duration_ms": 530588,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/601",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260704-1610-459448fa",
+  "claude_session_id": "858fbcc9-2ab6-4deb-9897-ca4b9fe1db8d"
+}

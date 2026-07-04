@@ -26,6 +26,7 @@ let
     hook_dir="$(dirname "$0")/post-receive.d"
     [ -d "$hook_dir" ] || exit 0
     updates="$(cat)"
+    [ -n "$updates" ] || exit 0
     for hook in "$hook_dir"/*; do
       [ -x "$hook" ] || continue
       printf '%s\n' "$updates" | "$hook" "$@"
@@ -99,14 +100,16 @@ in
 
     services.openssh.enable = lib.mkDefault true;
 
-    # Belt-and-braces hardening for the git user; goes at the end of
-    # sshd_config so the Match block doesn't leak into other directives.
+    # Belt-and-braces hardening for the git user. The trailing `Match All`
+    # closes the block so it can't scope directives appended to sshd_config
+    # after this snippet.
     services.openssh.extraConfig = ''
       Match User ${cfg.user}
         AllowTcpForwarding no
         AllowAgentForwarding no
         X11Forwarding no
         PermitTunnel no
+      Match All
     '';
 
     # git-shell spawns git-receive-pack/git-upload-pack from PATH
@@ -130,9 +133,12 @@ in
       };
       path = [ pkgs.git ];
       script = ''
-        for name in ${lib.escapeShellArgs cfg.repos}; do
+        repos=( ${lib.escapeShellArgs cfg.repos} )
+        for name in "''${repos[@]}"; do
           repo="${cfg.dataDir}/$name.git"
-          if [ ! -d "$repo" ]; then
+          # Check HEAD rather than the directory itself so a pre-existing
+          # empty directory still gets initialized.
+          if [ ! -e "$repo/HEAD" ]; then
             git init --bare --initial-branch=main "$repo"
           fi
 

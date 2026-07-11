@@ -17,6 +17,11 @@ let
   # heat, a runaway load, or swap thrash?", which is exactly the data we lacked
   # when classic-laddie locked up mid-stream on 2026-07-08.
   telemetryScript = pkgs.writeShellScript "crash-telemetry" ''
+    # Force the C locale so `free`, `sensors`, `ps`, etc. emit their canonical
+    # English output. Under a localized LC_* the field labels and decimal
+    # separators can differ, which would silently break the awk parsing below.
+    export LC_ALL=C
+
     # Restricted PATH of cheap sampling tools (all already pulled in by
     # modules/common/health.nix, so no new closure cost). /run/current-system/sw/bin
     # is appended so the system-wide `nvidia-smi` — shipped by the NVIDIA driver's
@@ -60,7 +65,10 @@ let
     swap=$(free -h | awk '/^Swap:/ {print $3 "/" $2}')
 
     # --- Single top CPU-consuming process (cheap ps snapshot, no sampling window) ---
-    top=$(ps -eo comm=,pcpu= --sort=-pcpu 2>/dev/null | head -1 | awk '{print $1 "(" $2 "%)"}')
+    # pcpu first so $1 is always the CPU percentage; the rest of the line is the
+    # process name, reconstructed after stripping the leading gap. Ordering comm
+    # first would misalign $2 whenever a process name contains spaces.
+    top=$(ps -eo pcpu=,comm= --sort=-pcpu 2>/dev/null | head -1 | awk '{pcpu=$1; $1=""; sub(/^[ \t]+/, ""); print $0 "(" pcpu "%)"}')
 
     echo "cpu[$cpu] gpu[$gpu] load=$load mem=$mem swap=$swap top=$top"
   '';
@@ -79,6 +87,13 @@ in
     # days after the 2026-07-08 freeze). This list merges with the existing
     # `boot.kernelParams = [ "usbcore.autosuspend=-1" ]` in
     # hosts/classic-laddie/hardware.nix — NixOS concatenates kernelParams, no conflict.
+    #
+    # NOTE: intentionally NOT wrapped in lib.mkDefault. kernelParams is a list
+    # option: definitions concatenate at equal override priority, but a plain
+    # (priority-100) definition from a host wins outright over a mkDefault
+    # (priority-1000) one, DROPPING it entirely rather than merging. Since
+    # classic-laddie's hardware.nix already sets kernelParams plainly, mkDefault
+    # here would silently delete "panic=20" on exactly the host this targets.
     boot.kernelParams = [ "panic=20" ];
 
     # Convert the failure modes we CAN detect into panics, so panic=20 can recover
@@ -86,12 +101,12 @@ in
     boot.kernel.sysctl = {
       # An oops is already-corrupted kernel state; continuing risks silent damage.
       # Panic instead so we reboot cleanly and leave a trace.
-      "kernel.panic_on_oops" = 1;
+      "kernel.panic_on_oops" = lib.mkDefault 1;
 
       # softlockup: a CPU stuck in kernel mode >20s without scheduling. The soft
       # watchdog already detects it; this makes it panic-and-reboot instead of
       # only logging a warning into a journal nothing will ever read post-freeze.
-      "kernel.softlockup_panic" = 1;
+      "kernel.softlockup_panic" = lib.mkDefault 1;
 
       # hardlockup: a CPU wedged with interrupts disabled, caught by the NMI
       # watchdog (already enabled — nmi_watchdog=1). This is the single most
@@ -99,7 +114,7 @@ in
       # what the NMI detector is for. Without this it only WARNs; with it the box
       # panics and — via panic=20 — reboots itself instead of hanging until a
       # human power-cycles it.
-      "kernel.hardlockup_panic" = 1;
+      "kernel.hardlockup_panic" = lib.mkDefault 1;
 
       # DELIBERATELY OMITTED: kernel.hung_task_panic.
       # hung_task fires on tasks stuck in uninterruptible D-state on I/O — which is
@@ -172,7 +187,7 @@ in
     # path in (2) is already a solid reboot-surviving capture, and netconsole to
     # an always-on LAN host is the recommended follow-up for guaranteed hard-hang
     # capture (see PR description, Track B).
-    environment.etc."systemd/pstore.conf".text = ''
+    environment.etc."systemd/pstore.conf".text = lib.mkDefault ''
       [PStore]
       Storage=external
       Unlink=yes

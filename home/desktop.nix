@@ -149,38 +149,8 @@
   home.pointerCursor = {
     gtk.enable = true;
     # x11.enable = true;
-    # Hyprland 0.55 uses hyprcursor by default, but bibata-cursors ships only an
-    # XCursor theme, so Hyprland can't resolve Bibata and falls back to a generic
-    # default cursor. Enabling hyprcursor here exports HYPRCURSOR_THEME/SIZE so
-    # Hyprland looks for a hyprcursor theme named "Bibata-Modern-Ice" (this
-    # home-manager version only sets the env vars; the theme itself is generated
-    # from the XCursor theme in the xdg.dataFile entry below).
-    hyprcursor.enable = true;
     package = pkgs.bibata-cursors;
     name = "Bibata-Modern-Ice";
     size = 24;
   };
-
-  # bibata-cursors is XCursor-only, so convert it to hyprcursor format for
-  # Hyprland 0.55 (which defaults to hyprcursor). hyprcursor-util --extract
-  # decompiles the XCursor theme (needs xcur2png) and --create compiles a
-  # hyprcursor theme. The manifest name is set to "Bibata-Modern-Ice" so
-  # Hyprland resolves HYPRCURSOR_THEME to this theme (hyprcursor matches on the
-  # manifest name or the directory stem). Installed under ~/.local/share/icons,
-  # which libhyprcursor searches; the XCursor theme keeps its own dir untouched.
-  xdg.dataFile."icons/Bibata-Modern-Ice-hyprcursor".source =
-    pkgs.runCommand "bibata-modern-ice-hyprcursor"
-      {
-        nativeBuildInputs = [
-          pkgs.hyprcursor
-          pkgs.xcur2png
-        ];
-      }
-      ''
-        hyprcursor-util --extract ${pkgs.bibata-cursors}/share/icons/Bibata-Modern-Ice --output .
-        substituteInPlace extracted_Bibata-Modern-Ice/manifest.hl \
-          --replace-fail "name = Extracted Theme" "name = Bibata-Modern-Ice"
-        hyprcursor-util --create extracted_Bibata-Modern-Ice --output .
-        cp -r theme_Bibata-Modern-Ice "$out"
-      '';
 }

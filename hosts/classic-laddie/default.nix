@@ -216,6 +216,39 @@ in
     };
   };
 
+  # The relay's systemd action execs `systemctl start <unit>` as the service
+  # user, which needs polkit's org.freedesktop.systemd1.manage-units. The
+  # upstream module runs with DynamicUser, whose UID is allocated at service
+  # start — polkit rules can't reliably match it — so pin a static system
+  # user here and grant it exactly one verb on exactly one unit below. The
+  # module's explicit sandboxing (ProtectSystem=strict, NoNewPrivileges, ...)
+  # is unaffected.
+  users.users.github-relay = {
+    isSystemUser = true;
+    group = "github-relay";
+  };
+  users.groups.github-relay = { };
+  systemd.services.github-relay.serviceConfig = {
+    DynamicUser = lib.mkForce false;
+    User = "github-relay";
+    Group = "github-relay";
+  };
+
+  # Least-privilege grant for the rebuild dispatch: github-relay may start
+  # cosmo-rebuild.service and nothing else. Without this, polkit denies
+  # manage-units to unprivileged callers ("interactive authentication
+  # required") and every push dispatch fails.
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.systemd1.manage-units" &&
+          action.lookup("unit") == "cosmo-rebuild.service" &&
+          action.lookup("verb") == "start" &&
+          subject.user == "github-relay") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
+
   # ---------------------------------------------------------------------------
   # Valley host: bare-git hosting (the-valley oc-9949561, Phase 0)
   # ---------------------------------------------------------------------------
@@ -256,11 +289,15 @@ in
   # ---------------------------------------------------------------------------
   systemd.services.cosmo-rebuild = {
     description = "Rebuild NixOS from cosmo main";
+    # StartLimit* are [Unit] keys; in [Service] systemd ignores them and the
+    # rate limit silently never applies.
+    unitConfig = {
+      StartLimitIntervalSec = 300;
+      StartLimitBurst = 3;
+    };
     serviceConfig = {
       Type = "oneshot";
       TimeoutStartSec = 600;
-      StartLimitIntervalSec = 300;
-      StartLimitBurst = 3;
       # Build subprocesses inherit this unit's cgroup, so the caps actually
       # constrain the rebuild — unlike daemon-targeted limits, which don't
       # apply when nixos-rebuild runs the build directly in its own process

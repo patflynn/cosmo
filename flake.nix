@@ -51,6 +51,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Bare-git hosting module (valley-host) consumed by classic-laddie.
+    the-valley = {
+      url = "github:gunk-dev/the-valley";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 

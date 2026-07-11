@@ -6,6 +6,24 @@
   ...
 }:
 
+let
+  # SSH client setup for the valley git user's mirror pushes. Lives in the
+  # git user's home (= services.valley.dataDir) because the post-receive
+  # mirror hook runs as that user. github.com's ed25519 host key is pinned
+  # (https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints)
+  # — no ssh-keyscan at runtime, unknown hosts hard-fail.
+  valleySshConfig = pkgs.writeText "valley-ssh-config" ''
+    Host github.com
+      User git
+      IdentityFile ${config.age.secrets."valley-git-ssh-key".path}
+      IdentitiesOnly yes
+      BatchMode yes
+      StrictHostKeyChecking yes
+  '';
+  valleyKnownHosts = pkgs.writeText "valley-known-hosts" ''
+    github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+  '';
+in
 {
   imports = [
     ./hardware.nix
@@ -17,8 +35,10 @@
     ../../modules/common/ddcci.nix
     ../../modules/common/crash-capture.nix
     ../../modules/media-server/default.nix
+    ./valley-backup.nix
     inputs.reel-life.nixosModules.default
     inputs.github-relay.nixosModules.default
+    inputs.the-valley.nixosModules.valley-host
   ];
 
   cosmo.user.default = "patrick";
@@ -194,6 +214,41 @@
         unit = "cosmo-rebuild";
       };
     };
+  };
+
+  # ---------------------------------------------------------------------------
+  # Valley host: bare-git hosting (the-valley oc-9949561, Phase 0)
+  # ---------------------------------------------------------------------------
+  # classic-laddie is the primary for the projects declared in ./valley.cue;
+  # GitHub stays on as a transitional push mirror (best-effort post-receive
+  # hook from the valley-host module). Clone URLs: git@classic-laddie:<name>.git
+  # over the tailnet, key-only, git-shell.
+  services.valley = {
+    enable = true;
+    config = ./valley.cue;
+    # Host-level access by design: the same user keys that can decrypt
+    # secrets can push/fetch every project.
+    authorizedKeys = (import ../../secrets/keys.nix).users;
+    # dataDir stays at the default /srv/git (root fs) for now. Moving it to a
+    # dedicated tank/git ZFS dataset (as PR #601 planned) is a follow-up: the
+    # dataset doesn't exist yet and the first deploy must not depend on it.
+  };
+
+  # SSH identity for the git user's mirror pushes (the valley-host module
+  # deliberately leaves credentials to the consumer). Human steps to activate
+  # the GitHub mirror:
+  #   1. ssh-keygen -t ed25519 -N "" -C valley-mirror@classic-laddie -f valley-mirror
+  #   2. cd secrets && agenix -e valley-git-ssh-key.age   # paste the PRIVATE key
+  #   3. Add the PUBLIC key as a deploy key WITH WRITE ACCESS on
+  #      github.com/gunk-dev/the-valley (Settings → Deploy keys).
+  # Until then the placeholder key makes every mirror push fail-log to the
+  # journal (tag: valley-mirror) — harmless by design, pushes still land on
+  # the primary.
+  age.secrets."valley-git-ssh-key" = {
+    file = ../../secrets/valley-git-ssh-key.age;
+    owner = config.services.valley.user;
+    group = config.services.valley.group;
+    mode = "0400";
   };
 
   # ---------------------------------------------------------------------------
@@ -427,6 +482,12 @@
     "d /mnt/personal/videos 0750 ${config.cosmo.user.default} family -   -"
     # PXE Boot directory
     "d /srv/tftp            0755 root    root    -   -"
+    # Valley git user's SSH client config for mirror pushes (store symlinks:
+    # root-owned read-only targets, which ssh accepts; with StrictHostKeyChecking
+    # ssh never needs to write known_hosts)
+    "d ${config.services.valley.dataDir}/.ssh 0700 ${config.services.valley.user} ${config.services.valley.group} - -"
+    "L+ ${config.services.valley.dataDir}/.ssh/config - - - - ${valleySshConfig}"
+    "L+ ${config.services.valley.dataDir}/.ssh/known_hosts - - - - ${valleyKnownHosts}"
   ];
 
   # Host-specific user configuration

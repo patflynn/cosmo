@@ -43,7 +43,7 @@ jobs:
           extra_nix_config: |
             accept-flake-config = true
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      
+
       # We use --dry-run to verify the derivation can be calculated and dependencies resolved.
       # Full builds might be too heavy for standard GitHub Runners without caching.
       - name: Build ${{ matrix.host }} (Dry Run)
@@ -84,7 +84,7 @@ jobs:
           extra_nix_config: |
             accept-flake-config = true
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-    
+
       - name: Flake Check
         run: nix flake check
         env:

@@ -383,6 +383,7 @@
         "nixpkgs": "nixpkgs",
         "pre-commit-hooks": "pre-commit-hooks",
         "reel-life": "reel-life",
+        "the-valley": "the-valley",
         "zen-browser": "zen-browser"
       }
     },
@@ -428,6 +429,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "the-valley": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783795094,
+        "narHash": "sha256-k5WGHSpPYdmJV04p48eTkJNJiehlgaLHjcvIHQnRMBE=",
+        "owner": "gunk-dev",
+        "repo": "the-valley",
+        "rev": "3343c1d9e29150c2ee66372d09a62a25a621fc8c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gunk-dev",
+        "repo": "the-valley",
         "type": "github"
       }
     },

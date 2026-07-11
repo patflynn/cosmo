@@ -14,4 +14,10 @@ in
   "reel-life-media-keys.age".publicKeys = keys.users ++ keys.hosts;
   "reel-life-location.age".publicKeys = keys.users ++ keys.hosts;
   "github-webhook-secret.age".publicKeys = keys.users ++ keys.hosts;
+  # Valley git hosting (classic-laddie). The committed files are encrypted
+  # placeholders so evaluation works before the real values exist; populate
+  # with agenix -e (see hosts/classic-laddie/default.nix and valley-backup.nix).
+  "valley-git-ssh-key.age".publicKeys = keys.users ++ keys.hosts;
+  "valley-restic-repo.age".publicKeys = keys.users ++ keys.hosts;
+  "valley-restic-password.age".publicKeys = keys.users ++ keys.hosts;
 }

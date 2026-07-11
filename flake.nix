@@ -51,6 +51,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Bare-git hosting module (valley-host) consumed by classic-laddie.
+    # NOTE: this repo is currently PRIVATE — fetching it needs a GitHub token
+    # (CI mints one from the cosmo-automation app; classic-laddie's
+    # cosmo-rebuild uses the github-token agenix secret).
+    the-valley = {
+      url = "github:gunk-dev/the-valley";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
   };
 

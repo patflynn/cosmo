@@ -34,6 +34,19 @@ jobs:
       matrix:
         host: [classic-laddie, makers-nix, johnny-walker]
     steps:
+      # The workflow-scoped GITHUB_TOKEN cannot read the private flake input
+      # github:gunk-dev/the-valley; mint a read-only cosmo-automation app
+      # token for it (the app must be installed on gunk-dev with access to
+      # the-valley).
+      - name: Generate the-valley read token
+        id: valley-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: gunk-dev
+          repositories: the-valley
+          permission-contents: read
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
@@ -43,13 +56,13 @@ jobs:
           extra_nix_config: |
             accept-flake-config = true
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      
+
       # We use --dry-run to verify the derivation can be calculated and dependencies resolved.
       # Full builds might be too heavy for standard GitHub Runners without caching.
       - name: Build ${{ matrix.host }} (Dry Run)
         run: nix build .#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel --dry-run
         env:
-          NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
+          NIX_CONFIG: "access-tokens = github.com=${{ steps.valley-token.outputs.token }}"
 
   build-home:
     runs-on: ubuntu-latest
@@ -75,6 +88,16 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      # See build-nixos: needed to fetch the private the-valley flake input.
+      - name: Generate the-valley read token
+        id: valley-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: gunk-dev
+          repositories: the-valley
+          permission-contents: read
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
@@ -84,8 +107,8 @@ jobs:
           extra_nix_config: |
             accept-flake-config = true
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-    
+
       - name: Flake Check
         run: nix flake check
         env:
-          NIX_CONFIG: "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}"
+          NIX_CONFIG: "access-tokens = github.com=${{ steps.valley-token.outputs.token }}"

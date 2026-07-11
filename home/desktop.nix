@@ -181,7 +181,6 @@
         substituteInPlace extracted_Bibata-Modern-Ice/manifest.hl \
           --replace-fail "name = Extracted Theme" "name = Bibata-Modern-Ice"
         hyprcursor-util --create extracted_Bibata-Modern-Ice --output .
-        mkdir -p "$out"
-        cp -r "theme_Bibata-Modern-Ice/." "$out/"
+        cp -r theme_Bibata-Modern-Ice "$out"
       '';
 }

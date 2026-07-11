@@ -1,0 +1,22 @@
+{
+  "id": "20260711-1648-3d5e4df4",
+  "prompt": "gunk-dev/the-valley has just been made PUBLIC, so PR #612's private-repo token plumbing is now unnecessary and is the only thing making CI fail (the cosmo-automation app was never installed on gunk-dev, so the 'Generate the-valley read token' steps fail at mint). Revert exactly that plumbing from this PR's branch (agent/20260711-1621-a15cae31); change nothing else about the PR.\n\nTHE REVERTS:\n1. .github/workflows/ci.yml: remove the two 'Generate the-valley read token' steps (build-nixos and check jobs) and restore the step-level NIX_CONFIG env lines to their pre-PR value: NIX_CONFIG: \"access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}\". Keep the PR's incidental whitespace cleanups if reverting them would be more churn.\n2. .github/workflows/update-flake-lock.yml: remove the 'Generate the-valley read token' step and the NIX_CONFIG env it added to the Update flake.lock step (restore that step to its pre-PR form).\n3. hosts/classic-laddie/default.nix: in the cosmo-rebuild script, remove the 'export NIX_CONFIG=...' line and its private-repo comment — the input is public; nixos-rebuild needs no token for it. Restore the script to the plain nixos-rebuild invocation.\n4. Sweep the PR's other additions for now-stale private-repo mentions: docs/valley-git-hosting.md and any README addition — if they document the private-repo/app-token requirement, update to state the input is a public repo (keep it to a one-line touch).\n\nVerify against the actual pre-PR file contents (git show origin/main:.github/workflows/ci.yml etc.) so the reverted hunks match main exactly — the goal is that the remaining PR diff contains zero workflow changes unless a whitespace cleanup remains, and zero token plumbing.\n\nTESTS before pushing: nix flake check; nix eval .#nixosConfigurations.classic-laddie.config.system.build.toplevel.drvPath (should now work with no special access-tokens config since the input is public — if your sandbox has no network for flake input fetch, note that instead of faking it); zizmor if the workflows still differ from main. Push to the PR branch and leave a PR comment: the-valley is now public, token plumbing reverted, checklist items about the cosmo-automation app install no longer apply.",
+  "issue": null,
+  "pr": "612",
+  "branch": "agent/20260711-1621-a15cae31",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260711-1648-3d5e4df4",
+  "tmux_pane": "%11",
+  "budget": "5",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260711-1019-4102bc2b/logs/20260711-1648-3d5e4df4.jsonl",
+  "created_at": "2026-07-11T16:48:09-04:00",
+  "cost_usd": 2.5319149999999997,
+  "duration_ms": 340467,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/612",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "approved": true,
+  "approved_at": "2026-07-11T20:52:52Z",
+  "session_name": "20260711-1648-3d5e4df4",
+  "claude_session_id": "440c4e28-bc0a-48cc-86ed-c67ee65adbd4"
+}

@@ -1,8 +1,8 @@
 # Valley Git Hosting (classic-laddie)
 
 classic-laddie serves bare git repositories via the `valley-host` NixOS module
-from [gunk-dev/the-valley](https://github.com/gunk-dev/the-valley) (a private
-repo — see "Private flake input" below). This implements the infra half of
+from [gunk-dev/the-valley](https://github.com/gunk-dev/the-valley) (a public
+repo, so fetching the flake input needs no token). This implements the infra half of
 the-valley's outcome `oc-9949561` with the mechanism decided in
 `dcr-db1acbb`: push-triggered git mirroring plus nightly restic backups.
 
@@ -42,18 +42,6 @@ Mirror pushes fail-log until the git user has a real identity:
    (the committed file is an encrypted placeholder).
 3. Add the public key as a deploy key **with write access** on
    `github.com/gunk-dev/the-valley`.
-
-## Private flake input
-
-`github:gunk-dev/the-valley` is private, so every `nix` invocation that
-fetches it needs a GitHub token:
-
-- **CI / update-flake-lock** mint a read-only token from the
-  `cosmo-automation` GitHub App — the app must be installed on `gunk-dev`
-  with access to `the-valley`.
-- **classic-laddie's `cosmo-rebuild`** reads the `github-token` agenix
-  secret — that token must be able to read `gunk-dev/the-valley`.
-- **Manually**: `nix ... --option access-tokens "github.com=$(gh auth token)"`.
 
 ## Offsite backups (pending)
 

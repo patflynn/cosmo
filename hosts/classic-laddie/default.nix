@@ -275,10 +275,6 @@ in
       nix
     ];
     script = ''
-      # the-valley flake input is a private GitHub repo; give nix a token
-      # that can read it. If the token can't, the fetch fails before any
-      # switch happens and the running system is untouched.
-      export NIX_CONFIG="access-tokens = github.com=$(cat ${config.age.secrets."github-token".path})"
       nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo#classic-laddie
     '';
   };

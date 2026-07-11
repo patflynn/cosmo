@@ -26,26 +26,12 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           persist-credentials: false
 
-      # Re-locking the private the-valley input needs a token that can read
-      # it; the repo-scoped app-token above cannot (different owner).
-      - name: Generate the-valley read token
-        id: valley-token
-        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
-        with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          owner: gunk-dev
-          repositories: the-valley
-          permission-contents: read
-
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
 
       - name: Update flake.lock
         id: update
         uses: DeterminateSystems/update-flake-lock@a2bbe0274e3a0c4194390a1e445f734c597ebc37 # v24
-        env:
-          NIX_CONFIG: "access-tokens = github.com=${{ steps.valley-token.outputs.token }}"
         with:
           pr-title: "chore: update flake.lock"
           pr-labels: |

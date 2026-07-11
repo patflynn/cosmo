@@ -15,6 +15,7 @@
     ../../modules/common/desktop.nix
     ../../modules/common/gaming.nix
     ../../modules/common/ddcci.nix
+    ../../modules/common/crash-capture.nix
     ../../modules/media-server/default.nix
     inputs.reel-life.nixosModules.default
     inputs.github-relay.nixosModules.default
@@ -95,6 +96,17 @@
   modules.ddcci.enable = true;
 
   modules.gaming.enable = true;
+
+  # ---------------------------------------------------------------------------
+  # Crash capture / hang recovery (Track A of the silent-freeze diagnosis)
+  # ---------------------------------------------------------------------------
+  # Enabled ONLY on classic-laddie: this box has a chronic history of silent hard
+  # lockups (27 unclean reboots since 2026-03, across 12 kernel versions). The
+  # module turns detectable lockups into panic+reboot (so the machine self-
+  # recovers instead of sitting dead), logs high-frequency thermal/load telemetry
+  # to the persistent journal, and archives any pstore panic record on next boot.
+  # Left OFF everywhere else (build workers / microVMs must never self-panic).
+  modules.crashCapture.enable = true;
 
   # Auto-login to desktop session
   services.displayManager.autoLogin = {

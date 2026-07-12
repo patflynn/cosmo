@@ -17,6 +17,14 @@ projects: {
 	"the-valley": {
 		mirrors: ["git@github.com:gunk-dev/the-valley.git"]
 	}
+
+	// The gunk-dev valley *instance* repo — this instance's own declaration,
+	// runbook, and operational outcomes. Born sovereign: canonical origin is
+	// this host, deliberately no mirrors yet — a GitHub mirror gets declared
+	// once cosmo consumes the instance declaration as a flake input and CI
+	// needs a fetchable copy. Named for Qinling, the valley range associated
+	// with the Tao Te Ching's origin.
+	"qinling": {}
 }
 
 // The host's durability policy (the-valley's #Backup): nightly restic to

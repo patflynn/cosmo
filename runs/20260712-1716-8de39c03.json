@@ -1,0 +1,18 @@
+{
+  "id": "20260712-1716-8de39c03",
+  "prompt": "Make classic-laddie's cosmo-rebuild level-triggered instead of edge-triggered. Real failure today: a push landed on main while a rebuild (triggered by the previous push) was running; the relay's re-dispatch was killed ('systemctl start: signal: killed' — start blocks on an active unit until the relay's exec timeout) and the event was lost, leaving main ahead of the deployed system with nothing scheduled to reconcile. Fix in hosts/classic-laddie/default.nix (systemd.services.cosmo-rebuild):\n\nRESTRUCTURE THE SCRIPT into a converge-to-tip loop:\n1. Resolve the remote tip: rev=$(git ls-remote https://github.com/patflynn/cosmo.git refs/heads/main | cut -f1).\n2. Compare against the last successfully deployed rev, recorded in a state file (use serviceConfig.StateDirectory = \"cosmo-rebuild\"; file e.g. /var/lib/cosmo-rebuild/deployed-rev). If equal: log 'already at tip \u003crev\u003e' and exit 0 — this makes periodic reconciliation free.\n3. Otherwise: nixos-rebuild switch --no-write-lock-file --flake \"github:patflynn/cosmo/${rev}#classic-laddie\" — pin the EXACT rev so what you deploy is what you compared (drop --refresh; it's unnecessary when pinning a rev).\n4. On success, write $rev to the state file, then LOOP back to step 1 — if main moved during the build, converge again. Bound it (e.g. 5 iterations) with a clear log line if the bound is hit.\nKeep the existing resource caps (MemoryHigh, idle CPU/IO scheduling, TimeoutStartSec — consider whether TimeoutStartSec needs raising since the unit may now do multiple switches; StartLimit* live in unitConfig since #613, keep them there).\n\nADD A RECONCILE TIMER: systemd.timers.cosmo-rebuild, OnCalendar hourly-ish with RandomizedDelaySec (say 5m), Persistent=true — belt-and-braces so a lost webhook can never strand main ahead of the machine for more than an hour. The early-exit in step 2 makes the no-change case cost one git ls-remote.\n\nEDGE CASES to handle/document in comments: git ls-remote failing (network) should fail the unit cleanly, not write the state file; first run with no state file must proceed to deploy; the state file records only *successfully switched* revs. Note in the PR body the remaining tiny race (push after the final loop check but before exit) and why the timer bounds it.\n\nVERIFY: nix flake check; nix eval .#nixosConfigurations.classic-laddie.config.system.build.toplevel.drvPath; render the unit and timer text from the eval and quote the relevant excerpt (loop present, StateDirectory, OnCalendar) in the PR body. Also confirm github:owner/repo/rev flake-ref syntax evaluates (it's standard).\n\nIMPORTANT: the owner will review this PR personally — do NOT expect auto-merge; make the PR body explain the design (edge- vs level-triggered, the wu-wei reconciliation framing is welcome in one sentence) clearly enough to review without reading this prompt.",
+  "issue": null,
+  "branch": "agent/20260712-1716-8de39c03",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260712-1716-8de39c03",
+  "tmux_pane": "%24",
+  "budget": "8",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260711-1019-4102bc2b/logs/20260712-1716-8de39c03.jsonl",
+  "created_at": "2026-07-12T17:16:23-04:00",
+  "cost_usd": 2.5886639999999996,
+  "duration_ms": 314492,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/622",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260712-1716-8de39c03",
+  "claude_session_id": "3c3876ca-ae32-4511-b585-cdfaa7e1d748"
+}

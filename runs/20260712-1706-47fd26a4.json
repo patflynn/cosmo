@@ -1,0 +1,18 @@
+{
+  "id": "20260712-1706-47fd26a4",
+  "prompt": "Fix a misleading runbook comment in hosts/classic-laddie/default.nix (the valley backup enablement runbook, next to services.valley.backup). The example restic repository URL in the comment currently reads 'sftp://u123456@u123456.your-storagebox.de:23//./backups/valley' — this absolute-at-root form FAILS on Hetzner Storage Boxes: the sftp account lands in /home and the box root is read-only, so restic init dies with a generic 'sftp Failure (SSH_FX_FAILURE)' on MkdirAll (this happened for real today). Correct the example to the form that works: 'sftp://u123456@u123456.your-storagebox.de:23//home/backups/valley' and add one short clause noting the account lands in /home and the box root is not writable. Touch only that comment block (and the same example if it appears in docs/valley-git-hosting.md — grep for 'your-storagebox' to catch all occurrences). Verify nix flake check passes (comment-only change). Tiny PR; body = two sentences on the real failure.",
+  "issue": null,
+  "branch": "agent/20260712-1706-47fd26a4",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260712-1706-47fd26a4",
+  "tmux_pane": "%22",
+  "budget": "3",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260711-1019-4102bc2b/logs/20260712-1706-47fd26a4.jsonl",
+  "created_at": "2026-07-12T17:06:36-04:00",
+  "cost_usd": 0.72294,
+  "duration_ms": 128372,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/621",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260712-1706-47fd26a4",
+  "claude_session_id": "a4f185fa-5c93-45c8-b0a9-134d806eecb5"
+}

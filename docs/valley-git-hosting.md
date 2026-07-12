@@ -8,15 +8,14 @@ the-valley's outcome `oc-9949561` with the mechanism decided in
 
 ## What is declared where
 
-- `hosts/classic-laddie/valley.cue` — the domain declaration (projects and
-  their push mirrors), validated at build time against the-valley's CUE
-  schema. This is the only place projects are added.
+- `hosts/classic-laddie/valley.cue` — the domain declaration (projects,
+  their push mirrors, and the backup policy — nightly restic, retention
+  7/4/6), validated at build time against the-valley's CUE schema. This is
+  the only place projects are added.
 - `hosts/classic-laddie/default.nix` — machine integration: enables
   `services.valley`, provisions the git user's SSH identity for mirror
-  pushes.
-- `hosts/classic-laddie/valley-backup.nix` — nightly restic backup of the
-  repo directory to a Hetzner Storage Box. **Disabled** until the Storage
-  Box exists; the file's header comment is the enablement runbook.
+  pushes, and supplies the backup's secret paths
+  (`services.valley.backup.*`) with the enablement runbook alongside.
 
 ## Using it
 
@@ -45,8 +44,12 @@ Mirror pushes fail-log until the git user has a real identity:
 
 ## Offsite backups (pending)
 
-Blocked on provisioning the Hetzner VPS (git mirror target) and Storage Box
-(restic target) — see the-valley `dcr-db1acbb`. Once provisioned: follow the
-runbook in `valley-backup.nix`, flip `cosmo.valley.backup.enable`, and add
-the VPS mirror URL to `valley.cue`. The outcome closes only after a restore
-is performed and verified.
+The backup is declared in `valley.cue` (the `backup` block, the-valley's
+`#Backup`), so the nightly restic unit already renders — it fail-logs
+harmlessly until the Storage Box exists and the secrets are populated, same
+as the mirror push. Once the Hetzner VPS (git mirror target) and Storage Box
+(restic target) are provisioned — see the-valley `dcr-db1acbb` — follow the
+runbook next to `services.valley.backup` in
+`hosts/classic-laddie/default.nix`, and add the VPS mirror URL to
+`valley.cue`. The outcome closes only after a restore is performed and
+verified.

@@ -18,3 +18,13 @@ projects: {
 		mirrors: ["git@github.com:gunk-dev/the-valley.git"]
 	}
 }
+
+// The host's durability policy (the-valley's #Backup): nightly restic to
+// the Hetzner Storage Box over sftp, retention 7 daily / 4 weekly / 6
+// monthly — all the schema defaults, so only the target is spelled out.
+// The policy lives here now; the repository URL, credentials, and host-key
+// pin are machine integration, supplied in default.nix
+// (services.valley.backup.*) alongside the enablement runbook.
+backup: {
+	target: "restic-sftp"
+}

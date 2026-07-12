@@ -35,7 +35,6 @@ in
     ../../modules/common/ddcci.nix
     ../../modules/common/crash-capture.nix
     ../../modules/media-server/default.nix
-    ./valley-backup.nix
     inputs.reel-life.nixosModules.default
     inputs.github-relay.nixosModules.default
     inputs.the-valley.nixosModules.valley-host
@@ -285,6 +284,54 @@ in
   };
 
   # ---------------------------------------------------------------------------
+  # Offsite backup of the valley git data (the-valley oc-9949561, dcr-db1acbb)
+  # ---------------------------------------------------------------------------
+  # The POLICY — nightly restic to a Hetzner Storage Box over sftp, retention
+  # 7 daily / 4 weekly / 6 monthly — is declared in ./valley.cue (the backup
+  # block, the-valley's #Backup). These options supply the machine half: where
+  # the repository is and how to authenticate. Declaring the block in the CUE
+  # file is what enables the backup (already done), so the nightly restic run
+  # fail-logs harmlessly until the human steps below are finished — the same
+  # accepted pattern as the mirror push above.
+  #
+  # Human steps to make the backup real:
+  #   1. Provision the Storage Box and enable its SSH/sftp access.
+  #   2. Authorize the valley mirror key on the box (append the PUBLIC half of
+  #      valley-git-ssh-key to the box's authorized_keys — the backup reuses
+  #      that identity for sftp).
+  #   3. Populate the secrets:
+  #        cd secrets && agenix -e valley-restic-repo.age
+  #          # single line, the restic repository URL, e.g.:
+  #          # sftp://u123456@u123456.your-storagebox.de:23//./backups/valley
+  #        cd secrets && agenix -e valley-restic-password.age
+  #          # single line, the restic repository encryption password
+  #          # (generate one and store it in the password manager — losing it
+  #          # loses the backups)
+  #   4. Pin the Storage Box host key (from Hetzner's published fingerprints,
+  #      not a blind ssh-keyscan) into the known-hosts file read below:
+  #        printf '%s\n' '[u123456.your-storagebox.de]:23 ssh-ed25519 AAAA...' \
+  #          | sudo tee /var/lib/valley-backup/known_hosts
+  #
+  # A restore must be performed and verified before oc-9949561 can close —
+  # configured is not done.
+  services.valley.backup = {
+    repositoryFile = config.age.secrets."valley-restic-repo".path;
+    passwordFile = config.age.secrets."valley-restic-password".path;
+    # The backup service runs as root; it reuses the mirror identity for sftp.
+    sshKeyFile = config.age.secrets."valley-git-ssh-key".path;
+    knownHostsFile = "/var/lib/valley-backup/known_hosts";
+  };
+
+  age.secrets."valley-restic-repo" = {
+    file = ../../secrets/valley-restic-repo.age;
+    mode = "0400";
+  };
+  age.secrets."valley-restic-password" = {
+    file = ../../secrets/valley-restic-password.age;
+    mode = "0400";
+  };
+
+  # ---------------------------------------------------------------------------
   # Auto-rebuild on push to cosmo main
   # ---------------------------------------------------------------------------
   systemd.services.cosmo-rebuild = {
@@ -525,6 +572,9 @@ in
     "d ${config.services.valley.dataDir}/.ssh 0700 ${config.services.valley.user} ${config.services.valley.group} - -"
     "L+ ${config.services.valley.dataDir}/.ssh/config - - - - ${valleySshConfig}"
     "L+ ${config.services.valley.dataDir}/.ssh/known_hosts - - - - ${valleyKnownHosts}"
+    # Holds the pinned Storage Box host key for the valley backup (step 4 of
+    # the runbook in the valley backup section above).
+    "d /var/lib/valley-backup 0700 root root - -"
   ];
 
   # Host-specific user configuration

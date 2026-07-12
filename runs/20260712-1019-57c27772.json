@@ -1,0 +1,18 @@
+{
+  "id": "20260712-1019-57c27772",
+  "prompt": "One-line-ish change: declare a second project on classic-laddie's valley host. In hosts/classic-laddie/valley.cue, add to the projects block:\n\n  \"qinling\": {}\n\nwith a short comment in the file's existing style: qinling is the gunk-dev valley *instance* repo — the instance's own declaration, runbook, and operational outcomes; born sovereign (canonical origin is this host; deliberately NO mirrors yet — a GitHub mirror gets declared later, when cosmo consumes the instance declaration as a flake input and CI needs a fetchable copy). Name context (one clause is plenty): Qinling, the valley range associated with the Tao Te Ching's origin.\n\nValidate: cue vet -c against the-valley's schema at cosmo's locked rev (empty project value is valid — git.enable defaults true, mirrors default []); nix flake check; nix eval .#nixosConfigurations.classic-laddie.config.system.build.toplevel.drvPath. Touch nothing else. PR body: what qinling is (the instance repo per the owner's decision), that merging auto-deploys via the now-working rebuild loop and valley-init will create the empty bare repo git@classic-laddie:qinling.git, and that content seeding follows as a separate step in S1 direct-push mode.",
+  "issue": null,
+  "branch": "agent/20260712-1019-57c27772",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260712-1019-57c27772",
+  "tmux_pane": "%18",
+  "budget": "5",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260711-1019-4102bc2b/logs/20260712-1019-57c27772.jsonl",
+  "created_at": "2026-07-12T10:19:37-04:00",
+  "cost_usd": 1.6225129999999999,
+  "duration_ms": 302014,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/619",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260712-1019-57c27772",
+  "claude_session_id": "6b56b248-993b-4a1a-8d10-0e88512e9133"
+}

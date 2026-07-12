@@ -348,6 +348,11 @@ in
   # the hourly timer bounds any remaining gap.
   systemd.services.cosmo-rebuild = {
     description = "Converge NixOS to the tip of cosmo main";
+    # The switch this unit runs may change this very unit; without these,
+    # activation would stop/restart it mid-flight, killing the rebuild it's
+    # performing (same reason nixos-upgrade.service sets restartIfChanged).
+    restartIfChanged = false;
+    stopIfChanged = false;
     # StartLimit* are [Unit] keys; in [Service] systemd ignores them and the
     # rate limit silently never applies.
     unitConfig = {

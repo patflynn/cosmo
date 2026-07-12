@@ -175,9 +175,19 @@
       };
 
       # --- Cursor ---
+      # Hyprland 0.55 defaults to hyprcursor, but Bibata ships only an XCursor
+      # theme, so Hyprland finds no hyprcursor theme and falls back to a generic
+      # cursor. Disable hyprcursor and name the already-installed Bibata XCursor
+      # theme (via the env vars below) to restore the pre-upgrade cursor.
       cursor = {
         no_hardware_cursors = true;
+        enable_hyprcursor = false;
       };
+
+      env = [
+        "XCURSOR_THEME,Bibata-Modern-Ice"
+        "XCURSOR_SIZE,24"
+      ];
 
       # --- Layer Rules ---
       layerrule = [

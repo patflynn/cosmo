@@ -302,7 +302,10 @@ in
   #   3. Populate the secrets:
   #        cd secrets && agenix -e valley-restic-repo.age
   #          # single line, the restic repository URL, e.g.:
-  #          # sftp://u123456@u123456.your-storagebox.de:23//./backups/valley
+  #          # sftp://u123456@u123456.your-storagebox.de:23//home/backups/valley
+  #          # (the path must live under /home — the sftp account lands in
+  #          # /home and the box root is not writable, so a root-anchored
+  #          # path fails restic init with a generic SSH_FX_FAILURE)
   #        cd secrets && agenix -e valley-restic-password.age
   #          # single line, the restic repository encryption password
   #          # (generate one and store it in the password manager — losing it

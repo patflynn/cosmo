@@ -337,8 +337,22 @@ in
   # ---------------------------------------------------------------------------
   # Auto-rebuild on push to cosmo main
   # ---------------------------------------------------------------------------
+  # Level-triggered convergence, not edge-triggered dispatch: a run converges
+  # the machine to whatever the remote tip is *now*, instead of treating each
+  # webhook as "do one rebuild". Edge-triggering lost events in practice: a
+  # push landing while a rebuild ran made the relay's re-dispatch block on the
+  # active unit (`systemctl start` waits for oneshot units) until the relay's
+  # exec timeout killed it, leaving main ahead of the deployed system with
+  # nothing scheduled to reconcile. With the loop below a lost start signal
+  # costs nothing — the running unit re-checks the tip after each switch, and
+  # the hourly timer bounds any remaining gap.
   systemd.services.cosmo-rebuild = {
-    description = "Rebuild NixOS from cosmo main";
+    description = "Converge NixOS to the tip of cosmo main";
+    # The switch this unit runs may change this very unit; without these,
+    # activation would stop/restart it mid-flight, killing the rebuild it's
+    # performing (same reason nixos-upgrade.service sets restartIfChanged).
+    restartIfChanged = false;
+    stopIfChanged = false;
     # StartLimit* are [Unit] keys; in [Service] systemd ignores them and the
     # rate limit silently never applies.
     unitConfig = {
@@ -347,7 +361,13 @@ in
     };
     serviceConfig = {
       Type = "oneshot";
-      TimeoutStartSec = 600;
+      # One run may now perform several switches (the converge loop), so the
+      # timeout covers the loop bound, not a single switch as before.
+      TimeoutStartSec = 3600;
+      # /var/lib/cosmo-rebuild/deployed-rev records the last rev that
+      # *successfully switched*; the early exit against it makes a no-change
+      # run cost one git ls-remote.
+      StateDirectory = "cosmo-rebuild";
       # Build subprocesses inherit this unit's cgroup, so the caps actually
       # constrain the rebuild — unlike daemon-targeted limits, which don't
       # apply when nixos-rebuild runs the build directly in its own process
@@ -362,8 +382,62 @@ in
       nix
     ];
     script = ''
-      nixos-rebuild switch --no-write-lock-file --refresh --flake github:patflynn/cosmo#classic-laddie
+      # The wrapper already runs bash -e; pipefail on top so a failed
+      # ls-remote isn't masked by cut exiting 0.
+      set -o pipefail
+
+      state_file="''${STATE_DIRECTORY}/deployed-rev"
+
+      for _ in 1 2 3 4 5; do
+        # Resolve the tip first, then deploy exactly that rev — what we
+        # compare is what we switch to. If ls-remote fails (network down,
+        # GitHub unreachable) the unit fails here, cleanly, without touching
+        # the state file; the timer retries within the hour.
+        rev=$(git ls-remote https://github.com/patflynn/cosmo.git refs/heads/main | cut -f1)
+        if [ -z "$rev" ]; then
+          echo "could not resolve refs/heads/main on the remote" >&2
+          exit 1
+        fi
+
+        # First run: no state file, $deployed stays empty, never equals $rev,
+        # so we proceed to deploy.
+        deployed=""
+        if [ -f "$state_file" ]; then
+          deployed=$(cat "$state_file")
+        fi
+
+        if [ "$rev" = "$deployed" ]; then
+          echo "already at tip $rev"
+          exit 0
+        fi
+
+        echo "deploying $rev (previously deployed: ''${deployed:-<none>})"
+        nixos-rebuild switch --no-write-lock-file --flake "github:patflynn/cosmo/$rev#classic-laddie"
+
+        # Reached only when the switch succeeded (bash -e aborts above
+        # otherwise): the state file holds successfully deployed revs, never
+        # attempts, so a failed deploy is retried from scratch next run.
+        echo "$rev" > "$state_file"
+
+        # Loop: main may have moved while the build ran — converge again.
+      done
+
+      echo "main moved during all 5 converge iterations; leaving the rest to the next run" >&2
     '';
+  };
+
+  # Reconcile timer, belt-and-braces to the webhook: even if a push event is
+  # lost entirely (relay down, network blip, or the small race between the
+  # loop's final tip check and unit exit), the machine converges within
+  # roughly an hour. The early exit in the script keeps the steady-state cost
+  # at one git ls-remote per tick.
+  systemd.timers.cosmo-rebuild = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "hourly";
+      RandomizedDelaySec = "5m";
+      Persistent = true;
+    };
   };
 
   # ---------------------------------------------------------------------------

@@ -85,6 +85,9 @@
 
         # Agent orchestration
         inputs.klaus.packages."${pkgs.stdenv.hostPlatform.system}".default
+
+        # the valley CLI (S1 integrator verbs: pending/review); ships from the engine repo
+        inputs.the-valley.packages."${pkgs.stdenv.hostPlatform.system}".valley
       ]
       ++ lib.optional config.cosmo.antigravity.enable pkgs.antigravity;
 

@@ -1,0 +1,18 @@
+{
+  "id": "20260713-0950-f4da1cd0",
+  "prompt": "Single-purpose PR: bump cosmo's the-valley flake input so classic-laddie picks up the just-merged mirror-push fix (gunk-dev/the-valley#18: explicit head/tag refspecs + --prune instead of --mirror in the valley-host post-receive hook). Run 'nix flake lock --update-input the-valley', verify the locked rev is the-valley's current main tip (git ls-remote https://github.com/gunk-dev/the-valley refs/heads/main must equal .nodes.the-valley.locked.rev in flake.lock), and confirm the locked rev's nix/valley-host.nix contains the new 'push --prune' invocation and no 'git push --mirror'. Touch ONLY flake.lock. Verify: nix flake check; nix eval .#nixosConfigurations.classic-laddie.config.system.build.toplevel.drvPath. PR body: one paragraph — what the upstream fix changes and that the converge loop deploys it on merge; this precedes populating the-valley's primary on the valley host (migration Phase 1).",
+  "issue": null,
+  "branch": "agent/20260713-0950-f4da1cd0",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260713-0950-f4da1cd0",
+  "tmux_pane": "%27",
+  "budget": "4",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260711-1019-4102bc2b/logs/20260713-0950-f4da1cd0.jsonl",
+  "created_at": "2026-07-13T09:50:52-04:00",
+  "cost_usd": 0.961551,
+  "duration_ms": 259383,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/624",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260713-0950-f4da1cd0",
+  "claude_session_id": "ebdb4872-74e8-4ae4-bc15-183f1debd1c1"
+}

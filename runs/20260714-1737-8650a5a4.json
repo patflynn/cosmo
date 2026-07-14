@@ -1,0 +1,18 @@
+{
+  "id": "20260714-1737-8650a5a4",
+  "prompt": "Add .github/workflows/update-the-valley.yml to cosmo, mirroring the existing update-klaus.yml pattern exactly (read it first). Trigger: repository_dispatch types [the-valley-updated] plus workflow_dispatch. Steps identical to update-klaus.yml (same pinned action shas, same app-token minting with APP_ID/APP_PRIVATE_KEY, same environment: automation): update-flake-lock scoped to 'inputs: the-valley', pr-title 'chore: update the-valley', labels dependencies+automated, then gh pr merge --auto --squash. One header comment: the dispatch arrives from the-valley's GitHub MIRROR (its canonical origin is the sovereign valley host; the mirror push triggers the notify workflow there), and the converge loop deploys the merged bump — end-to-end automatic from 'valley review [i]' on classic-laddie to deployed. Verify: zizmor passes on the new workflow (CI runs it), nix flake check unaffected. Normal PR flow (cosmo is GitHub-canonical). PR body: two sentences + note the owner must add the COSMO_DISPATCH_TOKEN secret on gunk-dev/the-valley before the loop is live.",
+  "issue": null,
+  "branch": "agent/20260714-1737-8650a5a4",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260714-1737-8650a5a4",
+  "tmux_pane": "%38",
+  "budget": "4",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260711-1019-4102bc2b/logs/20260714-1737-8650a5a4.jsonl",
+  "created_at": "2026-07-14T17:37:51-04:00",
+  "cost_usd": 1.3062160000000003,
+  "duration_ms": 202133,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/627",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260714-1737-8650a5a4",
+  "claude_session_id": "0a7d7f31-35f5-4d3b-9d23-78295d209ea5"
+}

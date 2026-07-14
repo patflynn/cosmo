@@ -1,0 +1,52 @@
+# The repository_dispatch arrives from the-valley's GitHub mirror (its canonical
+# origin is the sovereign valley host; the mirror push triggers the notify
+# workflow there), and the converge loop deploys the merged bump — end-to-end
+# automatic from 'valley review [i]' on classic-laddie to deployed.
+name: Update the-valley
+
+on:
+  repository_dispatch:
+    types: [the-valley-updated]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  update-the-valley:
+    runs-on: ubuntu-latest
+    environment: automation
+    permissions: {}
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
+
+      - name: Update the-valley in flake.lock
+        id: update
+        uses: DeterminateSystems/update-flake-lock@a2bbe0274e3a0c4194390a1e445f734c597ebc37 # v24
+        with:
+          inputs: the-valley
+          pr-title: "chore: update the-valley"
+          pr-labels: |
+            dependencies
+            automated
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Enable auto-merge
+        if: steps.update.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_NUMBER: ${{ steps.update.outputs.pull-request-number }}
+        run: gh pr merge --auto --squash "$PR_NUMBER"

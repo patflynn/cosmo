@@ -1,0 +1,18 @@
+{
+  "id": "20260715-0847-f6ff17a7",
+  "prompt": "Add nicer terminal diff tooling to the owner's dev profile. Two things, matching local idiom (find where git/home-manager config lives — home/dev.nix and wherever programs.git is configured):\n1. Enable delta as git's pager via home-manager's first-class support: programs.git.delta.enable = true (add sensible minimal options if the module supports them: navigate = true, line-numbers = true; nothing gaudy). If programs.git isn't currently managed by home-manager, wire delta the least-invasive idiomatic way instead (package + core.pager in the existing gitconfig mechanism) and say so in the PR.\n2. Add difftastic (pkgs.difftastic) to the dev packages plus a git alias 'dft' = '-c diff.external=difft diff' (or programs.git.aliases equivalent) as the structural second-opinion diff — do NOT make it the default differ.\nVerify: nix flake check; eval classic-laddie toplevel drvPath; eval the home configuration that CI builds. PR body: two sentences + note that valley review picks delta up automatically once the-valley's pager tweak lands (git var GIT_PAGER). Normal PR flow.",
+  "issue": null,
+  "branch": "agent/20260715-0847-f6ff17a7",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260715-0847-f6ff17a7",
+  "tmux_pane": "%40",
+  "budget": "4",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260711-1019-4102bc2b/logs/20260715-0847-f6ff17a7.jsonl",
+  "created_at": "2026-07-15T08:47:11-04:00",
+  "cost_usd": 3.4438180000000003,
+  "duration_ms": 568392,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/634",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260715-0847-f6ff17a7",
+  "claude_session_id": "3c5cabea-fc65-4a59-80d4-6fbf2e759446"
+}

@@ -14,7 +14,8 @@
     default = false;
     description = ''
       Whether to install the native (non-FHS) Antigravity IDE
-      (pkgs.antigravity, autoPatchelf-based). Unfree; requires
+      (pkgs.antigravity, autoPatchelf-based) and the antigravity CLI
+      (pkgs.antigravity-cli). Unfree; requires
       nixpkgs.config.allowUnfree on the host.
     '';
   };
@@ -90,7 +91,10 @@
         # the valley CLI (S1 integrator verbs: pending/review); ships from the engine repo
         inputs.the-valley.packages."${pkgs.stdenv.hostPlatform.system}".valley
       ]
-      ++ lib.optional config.cosmo.antigravity.enable pkgs.antigravity;
+      ++ lib.optionals config.cosmo.antigravity.enable [
+        pkgs.antigravity
+        pkgs.antigravity-cli
+      ];
 
     programs.zsh.shellAliases = {
       rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";

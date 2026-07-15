@@ -79,6 +79,7 @@
         claude-code # Anthropic's CLI
         github-cli # GitHub CLI (gh)
         jujutsu # Modern VCS (jj)
+        difftastic # Structural diff (difft), wired to the `git dft` alias below
 
         # Age tools
         inputs.agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
@@ -94,6 +95,21 @@
     programs.zsh.shellAliases = {
       rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";
     };
+
+    # Delta as git's pager for diff/log/show (home-manager's first-class
+    # module; programs.git.delta was renamed to programs.delta upstream).
+    programs.delta = {
+      enable = true;
+      enableGitIntegration = true;
+      options = {
+        navigate = true; # n/N jump between files in a diff
+        line-numbers = true;
+      };
+    };
+
+    # Structural second-opinion diff: `git dft` runs difftastic on demand
+    # without making it the default differ.
+    programs.git.settings.alias.dft = "-c diff.external=difft diff";
 
     # Klaus agent orchestration config
     home.file.".klaus/config.json".text = builtins.toJSON {

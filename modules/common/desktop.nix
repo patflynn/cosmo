@@ -6,40 +6,6 @@
 }:
 
 {
-  # --- catppuccin-gtk build fix (temporary) ---
-  # python3.14-catppuccin-2.5.0 (dependency of catppuccin-gtk, used for GTK
-  # theming in home/desktop.nix) fails its check phase: matplotlib 3.11
-  # removed mpl.style.core, which catppuccin 2.5.0's matplotlib extra still
-  # calls (catppuccin/python#129). This breaks every desktop host's system
-  # build. Mirror the two nixpkgs-master fixes that are not yet on the
-  # pinned nixos-unstable channel:
-  #   455d916d0c python3Packages.catppuccin: fix build with matplotlib 3.11+
-  #               (patch from catppuccin/python#130)
-  #   894acc94f6 catppuccin-gtk: fix build with python314+
-  # Remove this overlay once the nixpkgs pin includes both commits — the
-  # daily flake.lock update should bring them within days.
-  nixpkgs.overlays = [
-    (final: prev: {
-      catppuccin-gtk =
-        (prev.catppuccin-gtk.override {
-          python3 = prev.python3.override {
-            packageOverrides = pyfinal: pyprev: {
-              catppuccin = pyprev.catppuccin.overridePythonAttrs (old: {
-                patches = (old.patches or [ ]) ++ [
-                  ./patches/catppuccin-python-matplotlib-3.11.patch
-                ];
-              });
-            };
-          };
-        }).overrideAttrs
-          (old: {
-            patches = (old.patches or [ ]) ++ [
-              ./patches/catppuccin-gtk-python-3.14.patch
-            ];
-          });
-    })
-  ];
-
   # --- Desktop Environment ---
   programs.hyprland = {
     enable = true;

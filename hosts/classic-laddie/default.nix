@@ -261,6 +261,11 @@ in
     # Host-level access by design: the same user keys that can decrypt
     # secrets can push/fetch every project.
     authorizedKeys = (import ../../secrets/keys.nix).users;
+    # Event bus (the-valley Phase 1): NATS JetStream feed of project ref
+    # updates. Localhost only (127.0.0.1:4222, the module default) — widening
+    # the listener is gated on bus authorization
+    # (the-valley .the-valley/bugs/bd-d853d9c-bus-unauthenticated.md).
+    bus.enable = true;
     # dataDir stays at the default /srv/git (root fs) for now. Moving it to a
     # dedicated tank/git ZFS dataset (as PR #601 planned) is a follow-up: the
     # dataset doesn't exist yet and the first deploy must not depend on it.

@@ -1,0 +1,18 @@
+{
+  "id": "20260717-0823-5b8e0fdf",
+  "prompt": "Enable the valley event bus on classic-laddie. the-valley's phase1 event log just merged (rev b5ae157): its NixOS module now has services.valley.bus options (see nix/valley-host.nix in the-valley) — a NATS JetStream bus, defaulting to disabled, listening on 127.0.0.1:4222 when enabled.\n\nTask: in cosmo's classic-laddie configuration, find where services.valley is configured (the valley host module consumed from the the-valley flake input) and set services.valley.bus.enable = true. Add a short comment in the file's style noting the bus listens on localhost only, and that widening the listener is gated on bus authorization (the-valley .the-valley/bugs/bd-d853d9c-bus-unauthenticated.md).\n\nConstraints:\n- Do NOT set bus.listen — the localhost default is a deliberate security posture from the security review; enabling only.\n- The flake.lock's the-valley input must already contain the bus module (rev b5ae157 or later, which includes commit 4a10664). If the lock on main is older — the auto-bump PR #651 may not have merged yet — bump the the-valley input in this PR too, or rebase once #651 lands.\n- Verify before pushing: the classic-laddie NixOS configuration evaluates/builds with the option enabled (the repo's CI dry-runs builds; run the equivalent locally, e.g. building the classic-laddie toplevel or at minimum nix flake check as this repo's CI does).\n- Open a normal PR. In the description, note it enables a new (localhost-only) service on the host and needs the operator's personal approval — do not mark it for auto-merge.",
+  "issue": null,
+  "branch": "agent/20260717-0823-5b8e0fdf",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260717-0823-5b8e0fdf",
+  "tmux_pane": "%8",
+  "budget": "8",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260716-1706-feb2d6b3/logs/20260717-0823-5b8e0fdf.jsonl",
+  "created_at": "2026-07-17T08:23:51-04:00",
+  "cost_usd": 1.431898,
+  "duration_ms": 219349,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/652",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260717-0823-5b8e0fdf",
+  "claude_session_id": "67d7dbfd-4459-4f17-89ed-b432bbc14851"
+}

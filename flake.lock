@@ -440,11 +440,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784201277,
-        "narHash": "sha256-8D3ku9IFAmgNbDpCUHudyAX1096Jc5bsKU4sxRjNKiU=",
+        "lastModified": 1784289187,
+        "narHash": "sha256-IEUIZz9Yt/CYLkILJ2gTjoX05N3P/D30WITMMO5VsmA=",
         "owner": "gunk-dev",
         "repo": "the-valley",
-        "rev": "0c9d14cb53fab2760f5e99239ed1570675385612",
+        "rev": "632d2985a3a8f3290f1f6889f7d7f2572b3688ae",
         "type": "github"
       },
       "original": {

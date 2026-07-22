@@ -81,10 +81,11 @@
           identity,
           baseModule,
           homeDirectory ? "/home/${username}",
+          system ? "x86_64-linux",
         }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
-            system = "x86_64-linux";
+            inherit system;
             config.allowUnfree = true;
           };
           extraSpecialArgs = { inherit inputs; };
@@ -308,6 +309,15 @@
           identity = ./home/identities/work.nix;
           baseModule = ./home/crostini.nix;
         };
+
+        # 5. Work macOS (MacBook)
+        "paflynn@paflynn-mac" = mkHome {
+          username = "paflynn";
+          identity = ./home/identities/work-mac.nix;
+          baseModule = ./home/darwin.nix;
+          homeDirectory = "/Users/paflynn";
+          system = "aarch64-darwin";
+        };
       };
 
       packages.x86_64-linux = {
@@ -365,6 +375,28 @@
         pkgs.mkShell {
           inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
           buildInputs = self.checks.x86_64-linux.pre-commit-check.enabledPackages;
+        };
+
+      devShells.aarch64-darwin.default =
+        let
+          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+          pre-commit-check = pre-commit-hooks.lib.aarch64-darwin.run {
+            src = ./.;
+            hooks = {
+              nixfmt.enable = true;
+              detect-private-keys.enable = true;
+              zizmor = {
+                enable = true;
+                name = "zizmor";
+                entry = "${nixpkgs.legacyPackages.aarch64-darwin.zizmor}/bin/zizmor .";
+                pass_filenames = false;
+              };
+            };
+          };
+        in
+        pkgs.mkShell {
+          inherit (pre-commit-check) shellHook;
+          buildInputs = pre-commit-check.enabledPackages;
         };
     };
 }

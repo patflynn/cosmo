@@ -160,7 +160,7 @@
   };
 
   services.emacs = {
-    enable = true;
+    enable = pkgs.stdenv.isLinux;
   };
 
   # Emacs is the default editor everywhere. `emacsclient -t` attaches to the

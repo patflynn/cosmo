@@ -17,6 +17,13 @@
   };
 
   config = {
+    # Shared cosmo overlays (e.g. the temporary claude-code forward-pin).
+    # Hosts use home-manager.useGlobalPkgs = true, so home-manager inherits the
+    # system pkgs — applying the overlays here covers claude-code in every NixOS
+    # host's home config. The standalone homeConfigurations get the same overlays
+    # via mkHome's `import nixpkgs` in flake.nix; keep both wiring points in sync.
+    nixpkgs.overlays = import ../../overlays;
+
     # MemTest86+ boot entry for memory diagnostics (only on systemd-boot hosts)
     boot.loader.systemd-boot.memtest86 = lib.mkIf config.boot.loader.systemd-boot.enable {
       enable = true;

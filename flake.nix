@@ -87,6 +87,10 @@
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
+            # Shared cosmo overlays (e.g. the temporary claude-code forward-pin).
+            # NixOS hosts get these via nixpkgs.overlays in
+            # modules/common/system.nix — keep both wiring points in sync.
+            overlays = import ./overlays;
           };
           extraSpecialArgs = { inherit inputs; };
           modules = [

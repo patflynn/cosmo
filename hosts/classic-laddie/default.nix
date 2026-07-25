@@ -446,25 +446,50 @@ in
   };
 
   # ---------------------------------------------------------------------------
-  # Ollama (local LLM inference)
+  # Local LLM inference (llama.cpp + llama-swap)
   # ---------------------------------------------------------------------------
-  services.ollama = {
-    enable = true;
-    package = pkgs.ollama-cuda;
-    loadModels = [
-      "gemma4:26b"
-      "qwen3:32b"
-      "qwen2.5-coder:32b"
-    ];
-    environmentVariables = {
-      # Cap the default context so the 32B dense models (qwen3, qwen2.5-coder)
-      # stay fully resident in the 4090's 24GB VRAM. At Ollama's auto-selected
-      # 32K context the KV cache overflowed VRAM and spilled ~23% of the model
-      # to the CPU, badly hurting throughput. 8192 is a safe default for every
-      # model here; override per request with options.num_ctx when more is needed.
-      OLLAMA_CONTEXT_LENGTH = "8192";
+  # Replaces services.ollama, whose vendored ggml fork failed to compile
+  # (ollama-cuda 0.32.1) and wedged the nightly rebuild. llama-swap fronts one
+  # RTX 4090 (24GB): one model loaded per request, idle-unloaded (32B Q4_K_M +
+  # 8192 KV ~= 20GB -> no co-residency). CUDA llama.cpp invoked per-command, not
+  # a standalone services.llama-cpp (which would hold a second always-on
+  # server), so llama-swap owns each llama-server lifecycle. Reuses ollama's
+  # :11434, OpenAI API, identical model IDs; GGUFs pulled via -hf into
+  # LLAMA_CACHE. Localhost-only (no openFirewall); open-webui the sole consumer.
+  services.llama-swap =
+    let
+      llama-cpp-cuda = pkgs.llama-cpp.override { cudaSupport = true; };
+      llama-server = lib.getExe' llama-cpp-cuda "llama-server";
+      # Full GPU offload, 8192 ctx (KV fits VRAM), llama-swap-assigned $PORT, HF
+      # GGUF on demand, idle-unloaded after ttl (900s) to free VRAM.
+      mkModel = hfRepo: {
+        cmd = "${llama-server} --host 127.0.0.1 --port \${PORT} -ngl 99 -c 8192 -hf ${hfRepo} --no-webui";
+        ttl = 900;
+      };
+    in
+    {
+      enable = true;
+      listenAddress = "127.0.0.1";
+      port = 11434;
+      settings = {
+        # First pull (~20GB) is slow; wait before declaring unhealthy.
+        healthCheckTimeout = 1800;
+        models = {
+          "qwen2.5-coder:32b" = mkModel "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M";
+          "qwen3:32b" = mkModel "unsloth/Qwen3-32B-GGUF:Q4_K_M";
+          # No clean upstream 'gemma4:26b'; nearest ~27B Q4_K_M is Gemma 3 27B
+          # IT. ID kept identical so callers see the same name.
+          "gemma4:26b" = mkModel "unsloth/gemma-3-27b-it-GGUF:Q4_K_M";
+        };
+      };
     };
-  };
+
+  # llama-server -hf writes ~20GB GGUFs to $LLAMA_CACHE, but the module runs
+  # DynamicUser with WorkingDirectory=/tmp, ProtectHome, and no writable state,
+  # so its default ~/.cache is read-only. Point it at a persistent
+  # CacheDirectory (auto-created, chowned to the dynamic user, survives reboot).
+  systemd.services.llama-swap.serviceConfig.CacheDirectory = "llama-swap";
+  systemd.services.llama-swap.environment.LLAMA_CACHE = "/var/cache/llama-swap";
 
   # ---------------------------------------------------------------------------
   # Open WebUI (LLM chat interface)
@@ -473,6 +498,13 @@ in
     enable = true;
     port = 8888;
     openFirewall = true;
+    environment = {
+      # Talk to the local llama-swap OpenAI-compatible endpoint instead of
+      # ollama's native API (which no longer exists on this host).
+      ENABLE_OLLAMA_API = "False";
+      OPENAI_API_BASE_URL = "http://127.0.0.1:11434/v1";
+      OPENAI_API_KEY = "sk-local";
+    };
   };
 
   age.secrets."github-token" = {

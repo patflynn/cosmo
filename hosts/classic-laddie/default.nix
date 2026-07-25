@@ -446,25 +446,65 @@ in
   };
 
   # ---------------------------------------------------------------------------
-  # Ollama (local LLM inference)
+  # Local LLM inference (llama.cpp + llama-swap)
   # ---------------------------------------------------------------------------
-  services.ollama = {
-    enable = true;
-    package = pkgs.ollama-cuda;
-    loadModels = [
-      "gemma4:26b"
-      "qwen3:32b"
-      "qwen2.5-coder:32b"
-    ];
-    environmentVariables = {
-      # Cap the default context so the 32B dense models (qwen3, qwen2.5-coder)
-      # stay fully resident in the 4090's 24GB VRAM. At Ollama's auto-selected
-      # 32K context the KV cache overflowed VRAM and spilled ~23% of the model
-      # to the CPU, badly hurting throughput. 8192 is a safe default for every
-      # model here; override per request with options.num_ctx when more is needed.
-      OLLAMA_CONTEXT_LENGTH = "8192";
+  # Replaces the previous services.ollama. Ollama vendors a custom ggml fork,
+  # and that fragility broke the nightly rebuild (ollama-cuda 0.32.1 failed to
+  # compile, wedging the whole classic-laddie generation), so inference moved
+  # to the upstream llama.cpp stack via the first-class nixpkgs modules.
+  #
+  # llama-swap fronts a single RTX 4090 (24GB): it loads exactly one model on
+  # request and unloads it after an idle TTL. A 32B Q4_K_M (~20GB) plus an
+  # 8192-token KV cache only fits one model at a time, so we swap rather than
+  # keep models co-resident.
+  #
+  # We use the CUDA-enabled llama.cpp *package* directly in each model's launch
+  # command rather than enabling a standalone services.llama-cpp: that would
+  # spawn a second, always-on llama-server holding a port (and potentially
+  # VRAM) for no benefit, defeating the load-on-request design. llama-swap owns
+  # the lifecycle of every llama-server process.
+  #
+  # llama-swap reuses ollama's old port (127.0.0.1:11434) and speaks the OpenAI
+  # API (/v1/chat/completions, /v1/models). Model IDs are kept identical to the
+  # old ollama tags so open-webui and other callers see the same names. GGUFs
+  # are pulled from Hugging Face at first use via llama-server's -hf flag into
+  # the service's persistent LLAMA_CACHE (/var/cache/llama-swap, a systemd
+  # CacheDirectory — outside the nix store and surviving restarts), so the first
+  # request for each model is a one-time slow download.
+  #
+  # The endpoint stays localhost-only (no openFirewall) — a deliberate security
+  # boundary matching the old ollama setup; open-webui is the only consumer.
+  services.llama-swap =
+    let
+      llama-cpp-cuda = pkgs.llama-cpp.override { cudaSupport = true; };
+      llama-server = lib.getExe' llama-cpp-cuda "llama-server";
+      # One model resident at a time: full GPU offload, 8192-token context
+      # (matching the old OLLAMA_CONTEXT_LENGTH so the KV cache fits in VRAM),
+      # bound to the port llama-swap assigns, HF GGUF pulled on demand, and
+      # idle-unloaded after 15 minutes to free VRAM for the next model.
+      mkModel = hfRepo: {
+        cmd = "${llama-server} --host 127.0.0.1 --port \${PORT} -ngl 99 -c 8192 -hf ${hfRepo} --no-webui";
+        ttl = 900;
+      };
+    in
+    {
+      enable = true;
+      listenAddress = "127.0.0.1";
+      port = 11434;
+      settings = {
+        # First-time model pulls (~18-20GB) can take a while; give the upstream
+        # server generous time to become healthy before llama-swap gives up.
+        healthCheckTimeout = 1800;
+        models = {
+          "qwen2.5-coder:32b" = mkModel "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M";
+          "qwen3:32b" = mkModel "unsloth/Qwen3-32B-GGUF:Q4_K_M";
+          # 'gemma4:26b' has no clean upstream equivalent; the closest current
+          # Gemma at ~27B Q4_K_M is Gemma 3 27B IT. The llama-swap model ID is
+          # kept identical so callers see the same name.
+          "gemma4:26b" = mkModel "unsloth/gemma-3-27b-it-GGUF:Q4_K_M";
+        };
+      };
     };
-  };
 
   # ---------------------------------------------------------------------------
   # Open WebUI (LLM chat interface)
@@ -473,6 +513,13 @@ in
     enable = true;
     port = 8888;
     openFirewall = true;
+    environment = {
+      # Talk to the local llama-swap OpenAI-compatible endpoint instead of
+      # ollama's native API (which no longer exists on this host).
+      ENABLE_OLLAMA_API = "False";
+      OPENAI_API_BASE_URL = "http://127.0.0.1:11434/v1";
+      OPENAI_API_KEY = "sk-local";
+    };
   };
 
   age.secrets."github-token" = {

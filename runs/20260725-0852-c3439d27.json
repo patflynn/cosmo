@@ -1,0 +1,18 @@
+{
+  "id": "20260725-0852-c3439d27",
+  "prompt": "Fix the two Nix evaluation warnings that print on every classic-laddie rebuild. cosmo repo, normal PR flow. Keep any comments EXTREMELY compressed/high-density (maintainer preference).\n\nThe warnings (from 'rebuild' output):\n  evaluation warning: 'antigravity' has been renamed to 'antigravity-ide'\n  evaluation warning: patrick profile: Relying on `home.pointerCursor` to enable cursor config generation is deprecated. Please update your configuration to explicitly set: home.pointerCursor.enable = true;\n\nFIX 1 — antigravity rename (home/dev.nix): line ~107 references pkgs.antigravity (inside the cosmo.antigravity.enable list, alongside pkgs.antigravity-cli). nixpkgs renamed the package: pkgs.antigravity -\u003e pkgs.antigravity-ide. Rename that ONE reference. Keep pkgs.antigravity-cli as-is (separate package, still valid — antigravity-cli-1.1.4). Update the nearby comments that say 'pkgs.antigravity' to 'pkgs.antigravity-ide' (compressed). Do NOT rename the cosmo.antigravity.enable OPTION namespace (that's the repo's own option, unrelated to the warning) unless trivial and clearly beneficial — prefer minimal scope.\n\nFIX 2 — pointerCursor (home/desktop.nix): line ~149 has a 'home.pointerCursor = { ... };' block that relies on implicit enablement. Add 'enable = true;' inside that block.\n\nVERIFY (against cosmo's OWN pinned nixpkgs, NOT the flake registry — antigravity-ide only exists in the pinned rev): build the affected home config(s) and confirm BOTH warnings are GONE. e.g.:\n  nix build .#homeConfigurations.\"personal\".activationPackage --no-link 2\u003e\u00261 | grep -i 'evaluation warning' || echo 'no warnings'\nBuild whichever home config(s) surface these (the 'patrick profile' one is Patrick's personal profile; the antigravity one is in dev.nix). Confirm pkgs.antigravity-ide actually resolves in this nixpkgs (the build proves it). Also run nix flake check. Then commit + open PR. Title e.g. 'chore: silence antigravity + pointerCursor eval warnings'.",
+  "issue": null,
+  "branch": "agent/20260725-0852-c3439d27",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260725-0852-c3439d27",
+  "tmux_pane": "%7",
+  "budget": "6",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260725-0716-cb897c0b/logs/20260725-0852-c3439d27.jsonl",
+  "created_at": "2026-07-25T08:52:55-04:00",
+  "cost_usd": 0.555055,
+  "duration_ms": 224759,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/668",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260725-0852-c3439d27",
+  "claude_session_id": "24e445c4-720b-448c-bf4e-070807e84642"
+}

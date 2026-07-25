@@ -1,0 +1,18 @@
+{
+  "id": "20260725-0852-da5f395e",
+  "prompt": "Fix classic-laddie's NZXT Kraken LCD so the readout isn't upside-down, and give it the udev access it currently lacks. cosmo repo, normal PR flow. Keep comments EXTREMELY compressed/high-density (maintainer preference).\n\nCONTEXT (already probed on the host): the cooler is an NZXT Kraken Z-series LCD (USB 1e71:3008, product 'NZXT KrakenZ Device' — liquidctl's 'Kraken Z3' family). Its round LCD shows the liquid temp but is rotated 180 degrees (text upside-down). Running 'liquidctl list' as non-root currently fails with 'The device has no langid (permission issue)' because cosmo installs no liquidctl udev rules. So the fix has TWO parts:\n\n1. UDEV ACCESS: add liquidctl's packaged udev rules so the device is accessible without root, e.g. services.udev.packages = [ pkgs.liquidctl ]; (put this on classic-laddie, or a small reusable module if that fits the repo layout better).\n\n2. ORIENTATION AT BOOT: add a systemd oneshot service (runs as root) that initializes the cooler and sets the LCD orientation to 180 so the readout is upright. Use pkgs.liquidctl:\n     liquidctl initialize\n     liquidctl set lcd screen orientation 180\n   (single connected device, so no --match needed; if you prefer, pin --vendor 0x1e71 --product 0x3008.) The USB HID device may not be present immediately at boot — make the service robust: trigger it from a udev rule on device 'add' (ACTION==\"add\", SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1e71\", ATTR{idProduct}==\"3008\", TAG+=\"systemd\", ENV{SYSTEMD_WANTS}+=\"\u003csvc\u003e.service\"), or use After/Wants + a short retry, so it reliably applies on cold boot and on replug. Confirm the correct liquidctl orientation subcommand/syntax for Kraken Z3 (check 'liquidctl set lcd screen --help') before wiring it.\n\nVERIFY: build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --dry-run and nix flake check must pass. The actual display flip can only be confirmed after the config is switched in (needs root, which you don't have) — so do NOT attempt a live liquidctl run; instead, in the PR body, state clearly that orientation applies on next switch and the maintainer confirms visually, and paste the exact liquidctl commands the service will run. Keep scope to the Kraken (udev rules + the orientation service). Title e.g. 'feat(classic-laddie): upright NZXT Kraken LCD via liquidctl'.",
+  "issue": null,
+  "branch": "agent/20260725-0852-da5f395e",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260725-0852-da5f395e",
+  "tmux_pane": "%8",
+  "budget": "8",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260725-0716-cb897c0b/logs/20260725-0852-da5f395e.jsonl",
+  "created_at": "2026-07-25T08:53:01-04:00",
+  "cost_usd": 1.2207017500000001,
+  "duration_ms": 317574,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/669",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260725-0852-da5f395e",
+  "claude_session_id": "3d974e67-32e5-4f9b-8f0c-4a8b46c79293"
+}

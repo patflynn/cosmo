@@ -1,0 +1,20 @@
+{
+  "id": "20260725-0827-bcc7b1e1",
+  "prompt": "Two fixes to this PR (classic-laddie ollama-\u003ellama.cpp migration in hosts/classic-laddie/default.nix). Keep the change tightly scoped to these two things.\n\nFIX 1 — persistent model cache (RUNTIME BUG). The PR only MENTIONS LLAMA_CACHE=/var/cache/llama-swap in a comment but never actually sets it. The nixpkgs services.llama-swap module runs DynamicUser=true, WorkingDirectory=/tmp, with no StateDirectory/CacheDirectory and no HOME/LLAMA_CACHE. So at runtime 'llama-server -hf' would try to write its ~20GB GGUF download under HOME=/var/empty (read-only) and FAIL on first model load — or dump into tmpfs /tmp and vanish on reboot. Fix by overriding the generated unit so downloads go to a persistent, writable, dynamic-user-owned dir:\n    systemd.services.llama-swap.serviceConfig.CacheDirectory = \"llama-swap\";   # -\u003e /var/cache/llama-swap, chowned to the DynamicUser\n    systemd.services.llama-swap.environment.LLAMA_CACHE = \"/var/cache/llama-swap\";\nVerify these actually land in the generated unit: build the unit and confirm CacheDirectory= and Environment=LLAMA_CACHE=... are present, e.g.\n    nix eval --raw .#nixosConfigurations.classic-laddie.config.systemd.services.llama-swap.serviceConfig.CacheDirectory\n    nix eval .#nixosConfigurations.classic-laddie.config.systemd.services.llama-swap.environment\n(Adjust attribute paths if the module nests differently — confirm the override merges, not conflicts, with the module.) If the module already exposes an option for env or cache dir, prefer that over a raw systemd override, but the end state must be: a persistent writable cache dir that LLAMA_CACHE points at.\n\nFIX 2 — COMMENT COMPRESSION (style). Patrick wants code comments EXTREMELY compressed / very high information density. The current ~20-line prose block above services.llama-swap (and any other verbose comments in this diff) must collapse to a few packed lines. Keep only the non-obvious WHY; drop anything the code plainly shows. Target density (example for the header block):\n    # llama-swap fronts one RTX 4090 (24GB): one model loaded per request, idle-unloaded\n    # (32B Q4_K_M + 8192 KV ~= 20GB -\u003e no co-residency). CUDA llama.cpp invoked per-command,\n    # not a standalone service, so llama-swap owns each llama-server lifecycle. Reuses\n    # ollama's :11434, OpenAI API, identical model IDs; GGUFs pulled via -hf into LLAMA_CACHE.\n    # Localhost-only; open-webui the sole consumer.\nApply the same terseness to the inline mkModel comment and the gemma substitution note (compress, don't delete the gemma-3-27b substitution fact). This terse-comment rule is a standing preference — apply it to any comment you touch.\n\nVERIFY (synchronous only; do NOT start long builds/downloads and exit): nix flake check; nix eval the two attrs above to confirm the cache config; nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --dry-run. Then commit and push to the PR branch. Do NOT do a full real build (the coordinator runs that on-host). Update the PR body to replace the false 'CacheDirectory' claim with the now-accurate cache setup.",
+  "issue": null,
+  "pr": "667",
+  "branch": "agent/20260725-0817-c6bd2f40",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260725-0827-bcc7b1e1",
+  "tmux_pane": "%5",
+  "budget": "8",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260725-0716-cb897c0b/logs/20260725-0827-bcc7b1e1.jsonl",
+  "created_at": "2026-07-25T08:27:57-04:00",
+  "cost_usd": 0.7430705000000001,
+  "duration_ms": 217162,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/667",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260725-0827-bcc7b1e1",
+  "claude_session_id": "5c6b25d7-ad50-48cc-b3da-0540cac480a3"
+}

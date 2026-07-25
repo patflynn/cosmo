@@ -608,6 +608,43 @@ in
   security.sudo.wheelNeedsPassword = true;
 
   # ---------------------------------------------------------------------------
+  # NZXT Kraken Z-series LCD (USB 1e71:3008)
+  # ---------------------------------------------------------------------------
+  # Round LCD mounts rotated 180° in this case, so the liquid-temp readout is
+  # upside-down until re-oriented. Two parts:
+  #  1) liquidctl ships 71-liquidctl.rules (TAG+="uaccess" for 1e71:3008);
+  #     without it every liquidctl call fails "no langid" (no non-root access).
+  #  2) a root oneshot re-orients the panel. It's not a boot dependency — the
+  #     USB HID may enumerate late, so udev pulls it on device `add` (below),
+  #     firing on cold boot and on replug. initialize is required per plug
+  #     before set; the loop absorbs the settle window after enumeration.
+  services.udev.packages = [ pkgs.liquidctl ];
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1e71", ATTR{idProduct}=="3008", TAG+="systemd", ENV{SYSTEMD_WANTS}+="kraken-lcd-orientation.service"
+  '';
+  systemd.services.kraken-lcd-orientation = {
+    description = "Set NZXT Kraken LCD to 180° (upright)";
+    serviceConfig = {
+      Type = "oneshot";
+      # Bounds the settle-retry loop; well under the udev-triggered budget.
+      TimeoutStartSec = 60;
+    };
+    path = [ pkgs.liquidctl ];
+    script = ''
+      # Pin the cooler so a future second liquidctl device can't ambiguate.
+      dev="--vendor 0x1e71 --product 0x3008"
+      for _ in $(seq 1 10); do
+        if liquidctl $dev initialize && liquidctl $dev set lcd screen orientation 180; then
+          exit 0
+        fi
+        sleep 2
+      done
+      echo "kraken LCD unreachable after retries" >&2
+      exit 1
+    '';
+  };
+
+  # ---------------------------------------------------------------------------
   # PXE Boot Server (TFTP)
   # ---------------------------------------------------------------------------
   # Serves netboot.xyz for network installations

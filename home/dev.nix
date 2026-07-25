@@ -14,7 +14,7 @@
     default = false;
     description = ''
       Whether to install the native (non-FHS) Antigravity IDE
-      (pkgs.antigravity, autoPatchelf-based) and the antigravity CLI
+      (pkgs.antigravity-ide, autoPatchelf-based) and the antigravity CLI
       (pkgs.antigravity-cli). Unfree; requires
       nixpkgs.config.allowUnfree on the host.
     '';
@@ -104,7 +104,7 @@
         }))
       ]
       ++ lib.optionals config.cosmo.antigravity.enable [
-        pkgs.antigravity
+        pkgs.antigravity-ide
         pkgs.antigravity-cli
       ];
 

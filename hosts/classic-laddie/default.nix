@@ -258,9 +258,16 @@ in
   services.valley = {
     enable = true;
     config = ./valley.cue;
-    # Host-level access by design: the same user keys that can decrypt
-    # secrets can push/fetch every project.
-    authorizedKeys = (import ../../secrets/keys.nix).users;
+    # Host-level access by design: every authorized key can push/fetch every
+    # project. Two classes of key get that access:
+    #   users    — the human keys, which can also decrypt secrets and log in.
+    #   gitOnly  — scratch and agent machines, which can do neither. Not
+    #              agenix recipients, not shell users: git hosting only.
+    authorizedKeys =
+      let
+        keys = import ../../secrets/keys.nix;
+      in
+      keys.users ++ keys.gitOnly;
     # Event bus (the-valley Phase 1): NATS JetStream feed of project ref
     # updates. Localhost only (127.0.0.1:4222, the module default) — widening
     # the listener is gated on bus authorization

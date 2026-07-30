@@ -28,6 +28,24 @@ Access is host-level and key-only: the `git` user runs `git-shell`, every
 authorized key can reach every project. Repos live in `/srv/git` (moving to
 a dedicated `tank/git` ZFS dataset is a follow-up).
 
+### Who gets a key
+
+`services.valley.authorizedKeys` is `keys.users ++ keys.gitOnly`, two classes
+with deliberately different blast radius:
+
+- **`users`** — Patrick's own machines. These are also agenix recipients
+  (`secrets/secrets.nix` encrypts every secret to `users ++ hosts`) and shell
+  users (`modules/common/users.nix`). A key here can read every secret in the
+  repo.
+- **`gitOnly`** — scratch boxes and agent VMs that need to clone and push
+  projects and nothing else. Not agenix recipients, not shell users. Git
+  hosting is their entire reach.
+
+Add a machine that isn't yours to `gitOnly`. Because these keys are not
+recipients, adding or removing one needs no secret re-encryption: edit
+`keys.nix` and rebuild classic-laddie, and access changes with the
+activation.
+
 Every push is replicated best-effort to each mirror URL declared in
 `valley.cue` (`git push --mirror`, detached). A dead mirror only costs a
 journal line: `journalctl -t valley-mirror`.

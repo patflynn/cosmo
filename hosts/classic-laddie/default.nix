@@ -491,13 +491,6 @@ in
       };
     };
 
-  # llama-server -hf writes ~20GB GGUFs to $LLAMA_CACHE, but the module runs
-  # DynamicUser with WorkingDirectory=/tmp, ProtectHome, and no writable state,
-  # so its default ~/.cache is read-only. Point it at a persistent
-  # CacheDirectory (auto-created, chowned to the dynamic user, survives reboot).
-  systemd.services.llama-swap.serviceConfig.CacheDirectory = "llama-swap";
-  systemd.services.llama-swap.environment.LLAMA_CACHE = "/var/cache/llama-swap";
-
   # ---------------------------------------------------------------------------
   # Open WebUI (LLM chat interface)
   # ---------------------------------------------------------------------------

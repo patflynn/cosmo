@@ -463,6 +463,15 @@ in
   # server), so llama-swap owns each llama-server lifecycle. Reuses ollama's
   # :11434, OpenAI API, identical model IDs; GGUFs pulled via -hf into
   # LLAMA_CACHE. Localhost-only (no openFirewall); open-webui the sole consumer.
+  #
+  # cudaSupport overrides are unfree, so cache.nixos.org has no prebuilt paths
+  # (~20min of local nvcc per llama-cpp bump); this cache does. Appends to the
+  # defaults -- cache.nixos.org is still substituted.
+  nix.settings = {
+    substituters = [ "https://cache.nixos-cuda.org" ];
+    trusted-public-keys = [ "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M=" ];
+  };
+
   services.llama-swap =
     let
       llama-cpp-cuda = pkgs.llama-cpp.override { cudaSupport = true; };

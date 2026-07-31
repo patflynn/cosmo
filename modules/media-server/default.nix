@@ -113,7 +113,9 @@ in
 
     # SABnzbd runs as a container below (routed through Gluetun for VPN)
 
-    services.overseerr = {
+    # Seerr (upstream merged Overseerr into Jellyseerr under this name). Port is
+    # still 5055, so the "overseerr" hostname/vhost below stay as-is (LAN DNS records).
+    services.seerr = {
       enable = true;
       openFirewall = true;
     };
@@ -172,7 +174,7 @@ in
     # 4. Reverse Proxy (Easy Access)
     # ---------------------------------------------------------
 
-    # Caddy reverse proxy for local media services (Jellyfin, Overseerr).
+    # Caddy reverse proxy for local media services (Jellyfin, Seerr).
     # default_bind restricts Caddy to the LAN interface (enp4s0, 192.168.1.28) and loopback
     # so it does not conflict with Tailscale Funnel, which needs :443 on the
     # Tailscale interface (100.111.60.17) for inbound webhooks.

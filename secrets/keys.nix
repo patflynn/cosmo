@@ -8,6 +8,16 @@ let
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICkzfSlbK9YX3KztdvtgfyJelixdI6QN3c41eme9HOWv" # weller
   ];
 
+  # Git-only keys. These reach valley git hosting and nothing else: they are
+  # deliberately NOT agenix recipients (see secrets.nix, which encrypts to
+  # `users ++ hosts`) and NOT shell users (see modules/common/users.nix).
+  # Add a key here when it belongs to a scratch or agent machine that should
+  # be able to clone and push projects without being able to decrypt any
+  # secret. Removing a key here revokes that access with no re-encryption.
+  gitOnly = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAvpmbUKEDVsejgv2vxWaY/t4xl0JNnjFswb9SxcG9GG" # stoned-flynn (exe.dev the-valley playground)
+  ];
+
   # Host Keys
   classic-laddie = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE7/mipW9wcQwVlDmEqBZksGDO3BEG94gb6VBuyDJUgk";
   weller = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGEqPYzGOvoeU3mpgBmw9XM/C3IaPETUBJeKtXsCBEBd";
@@ -17,6 +27,8 @@ let
 in
 {
   users = patrick;
+
+  inherit gitOnly;
 
   hosts = [
     classic-laddie

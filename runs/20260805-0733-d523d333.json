@@ -1,0 +1,18 @@
+{
+  "id": "20260805-0733-d523d333",
+  "prompt": "Unblock classic-laddie's converge loop: the system build fails on hyprland because the pinned nixpkgs (nixos-unstable 20260804.e72e4f2) carries glaze 8.0.0 without the companion hyprland fix. Carry the upstream fix in an overlay until the channel catches up.\n\n## Diagnosis, already established — verify, don't re-derive\n\n- cosmo-rebuild has failed since 07:04 (journalctl -u cosmo-rebuild): leaf error \"could not find git for clone of glaze\" under hyprland, cascading through xdg-desktop-portal-hyprland to the toplevel.\n- Upstream: nixpkgs issue 549246 (closed) — glaze 7.9.1 -\u003e 8.0.0 broke hyprland's find_package(glaze), which falls back to a sandbox-impossible network FetchContent. Fixed on master by commit e0832b87 (\"hyprland: fix build by relaxing glaze dependency\", 2026-08-04). nixos-unstable's tip is still e72e4f2, so the fix has not reached the channel; a lock revert would be undone by tonight's auto-merged daily bump.\n\n## What to build\n\nRead commit e0832b87's actual diff first (gh api repos/NixOS/nixpkgs/commits/e0832b87). Replicate its change minimally as a nixpkgs overlay in cosmo, scoped to where hyprland is used. Requirements:\n\n- The overlay reproduces the upstream fix's effect — prefer replicating its exact mechanism (patch, cmake flag, or dependency relaxation) over inventing an alternative like pinning glaze back.\n- **It must retire safely.** Precedent: a temporary overlay once outlived its purpose and broke the build for six hours when the pin caught up (the catppuccin incident, cosmo #636). Prefer a change that is idempotent when the channel already carries the fix; if idempotence is impossible, guard it by inspecting the package it patches (version or an attribute the fix introduces), never by date. Comment the retirement condition tersely: when nixos-unstable advances past e0832b87, this overlay is deletable — and say how a reader verifies that.\n- Follow cosmo's existing overlay conventions — find how overlays are currently wired (the catppuccin one's history is a reference) and match.\n\n## Prove it\n\nBuild the previously failing path locally before opening the PR:\n    nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --no-link\nThis is the exact invocation the converge unit runs. It must succeed. This takes a while — commit and push your branch BEFORE starting it, then open the PR after it passes. If it is still building as you approach limits, push, open the PR marked with what remains unverified, and say so plainly.\n\n## Repo conventions\n\ncosmo is GitHub-canonical: normal PR flow (branch, push, open PR). CI only dry-runs eval, so your local toplevel build is the real verification — say in the PR body that it was run and passed. Terse comments. No Co-Authored-By trailers naming Claude or Anthropic; no mention of AI in the commit or PR body.\n\n## Do not park\n\nNever end the run without having pushed and opened the PR.",
+  "issue": null,
+  "branch": "agent/20260805-0733-d523d333",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260805-0733-d523d333",
+  "tmux_pane": "%90",
+  "budget": "15",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260731-1250-1de7d649/logs/20260805-0733-d523d333.jsonl",
+  "created_at": "2026-08-05T07:33:49-04:00",
+  "cost_usd": 1.681606,
+  "duration_ms": 241674,
+  "pr_url": null,
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260805-0733-d523d333",
+  "claude_session_id": "02b9082b-70a3-441a-9f8c-448b8268791c"
+}

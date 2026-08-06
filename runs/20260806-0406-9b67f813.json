@@ -1,0 +1,20 @@
+{
+  "id": "20260806-0406-9b67f813",
+  "prompt": "One-field change to the declaratively managed klaus config: set the fleet-default agent model.\n\nIn cosmo's home/dev.nix, the attrset rendered to home.file.\".klaus/config.json\" (around line 131, gated on cosmo.klaus.enable) gains one field: default_agent_model = \"opus\"; — matching the existing fields' style and ordering convention in that attrset. Do NOT add default_agent_effort; its absence is deliberate (claude's own default applies).\n\nWhy (for the PR body): klaus launch now supports --model/--effort with config defaults; until the config pins default_agent_model, every dispatched agent silently inherits the operator's interactive model preference. Pinning \"opus\" decouples fleet policy from interactive preference; per-dispatch flags tier up or down from it.\n\nOrder of work: (1) make the change, commit, push, OPEN THE PR immediately with the body noting \"verification in progress\"; (2) verify in the foreground: nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --no-link — the closure is warm from a build an hour ago, only the home-manager files rebuild, so this is minutes; (3) comment the result on the PR. Do not end the run before step 3.\n\nConventions: normal PR flow; terse commit message; no Co-Authored-By trailers naming Claude or Anthropic; no mention of AI in commit or PR body.",
+  "issue": null,
+  "branch": "agent/20260806-0406-9b67f813",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260806-0406-9b67f813",
+  "tmux_pane": "%95",
+  "budget": "5",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260731-1250-1de7d649/logs/20260806-0406-9b67f813.jsonl",
+  "created_at": "2026-08-06T04:06:34-04:00",
+  "cost_usd": 0.20639939999999996,
+  "duration_ms": 59585,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/711",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260806-0406-9b67f813",
+  "claude_session_id": "a58cdc5c-503c-4b4b-92c8-b101b0286ccc",
+  "model": "sonnet",
+  "effort": "low"
+}

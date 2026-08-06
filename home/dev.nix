@@ -137,6 +137,7 @@
         default_branch = "main";
         trusted_reviewers = [ "gemini-code-assist[bot]" ];
         auto_merge_on_approval = true;
+        default_agent_model = "opus";
         webhook = {
           port = 9800;
           path = "/webhook/github";

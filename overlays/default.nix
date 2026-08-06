@@ -4,4 +4,5 @@
 # sync when adding an overlay here.
 [
   (import ./claude-code.nix)
+  (import ./hyprland-glaze.nix)
 ]

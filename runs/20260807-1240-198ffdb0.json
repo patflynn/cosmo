@@ -1,0 +1,19 @@
+{
+  "id": "20260807-1240-198ffdb0",
+  "prompt": "Two-line cosmo change, shipped together so no intermediate state breaks eval: (1) update the the-valley flake input pin to current main (nix flake lock --update-input the-valley); (2) in hosts/classic-laddie/default.nix, set the valley integrator's new instance-project option to \"qinling\" — read the option's exact name and type from the pinned the-valley's nix/valley-host.nix (grep instance in the integrator options) rather than guessing; qinling is the gunk-dev instance repository whose served bare repo carries the group's policy floor. Match the surrounding option style; one terse comment: the floor is read from this repo's integrated tip.\n\nIf an automated \"chore: update the-valley\" PR appears while you work, rebase onto or close-and-supersede it — one PR should land both halves. Verify: nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --no-link in the FOREGROUND; open the PR FIRST with verification-in-progress, comment the pasted result. Normal PR flow; no AI mentions; no Co-Authored-By trailers naming Claude or Anthropic.",
+  "issue": null,
+  "branch": "agent/20260807-1240-198ffdb0",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260807-1240-198ffdb0",
+  "tmux_pane": "%130",
+  "budget": "5",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260731-1250-1de7d649/logs/20260807-1240-198ffdb0.jsonl",
+  "created_at": "2026-08-07T12:40:17-04:00",
+  "cost_usd": 0.7314384,
+  "duration_ms": 174890,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/725",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260807-1240-198ffdb0",
+  "claude_session_id": "ba11294f-ce46-4723-a075-7bf5a10882f9",
+  "model": "sonnet"
+}

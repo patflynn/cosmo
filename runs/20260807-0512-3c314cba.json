@@ -1,0 +1,19 @@
+{
+  "id": "20260807-0512-3c314cba",
+  "prompt": "Deploy the valley integrator on classic-laddie: protection declarations, the integrator service, its key, and the interim known-signers compilation. This turns on Phase 3 of the-valley's roadmap for the pilot instance.\n\nRead first: hosts/classic-laddie/valley.cue and default.nix in full (the mirror-key and backup blocks are the precedent for secrets and runbook comments); the-valley's schema/valley.cue #Protection and nix/valley-host.nix services.valley.integrator options (fetch github:gunk-dev/the-valley current main — the module landed today); the-valley .the-valley/decisions/dcr-b87f6e8 (known-signers = interim registry compilation).\n\nThe change:\n1. Update the the-valley flake input pin (nix flake lock --update-input the-valley) so the new module options exist; if the automated bump PR lands first, rebase on it.\n2. valley.cue: both projects gain protection — refs [\"refs/heads/main\"], writers [\"patrick\", \"integrator\"]. Comment: the dual-writer set is the transition arrangement; integrator-only is the destination.\n3. default.nix: enable services.valley.integrator. Generate a fresh ed25519 keypair for the integrator in a scratch directory — this is the integrator's OWN identity, distinct from the host key — encrypt the private half with agenix following the valley-git-ssh-key precedent exactly (recipients from secrets/secrets.nix; NEVER print or log the private key), owner = the integrator's service user; commit the .age file. Runbook-style comments matching the mirror-key block's numbered pattern.\n4. Known signers: a plain file in the repo (public keys only) listing the principals the integrator verifies — the operator's two sk public keys (find them in the existing authorized_keys/valley config in this repo; do not invent keys) and the host's ed25519 public host key with a comment that it signs execution claims. Wire it to knownSignersFile. Comment: this file is the identity registry's interim compilation, replaced when the registry compiles.\n5. authorized_keys principal tags: the operator's keys carry principal \"patrick\" per the module's tagged-key shape, so the hook admits his pushes to protected refs. Keys that should not write protected refs stay untagged.\n\nVerify: nix build .#nixosConfigurations.classic-laddie.config.system.build.toplevel --no-link in the FOREGROUND — open the PR FIRST with \"verification in progress\" in the body, then comment the pasted result (pass or failure output) on the PR. Do not end the run before the comment is posted.\n\nConventions: normal PR flow; terse comments; no Co-Authored-By trailers naming Claude or Anthropic; no AI mentions anywhere.",
+  "issue": null,
+  "branch": "agent/20260807-0512-3c314cba",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260807-0512-3c314cba",
+  "tmux_pane": "%112",
+  "budget": "15",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260731-1250-1de7d649/logs/20260807-0512-3c314cba.jsonl",
+  "created_at": "2026-08-07T05:12:12-04:00",
+  "cost_usd": 4.282159999999999,
+  "duration_ms": 569316,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/717",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260807-0512-3c314cba",
+  "claude_session_id": "e12ad2f2-66ac-451b-ac96-ff00414b3227",
+  "model": "opus"
+}

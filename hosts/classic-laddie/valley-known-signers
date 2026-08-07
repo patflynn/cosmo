@@ -30,3 +30,7 @@ makers-mark/attestations+4eb59ac2+AW8B2eVhu/TpXZPyOt/6w0ELdtO6X6cTiWz3CvofxDCR
 # itself: it signs the execution claims — that a check ran over a tree with
 # a result — that `attest run` produces on this machine.
 classic-laddie/attestations+9033aa07+AU7/mipW9wcQwVlDmEqBZksGDO3BEG94gb6VBuyDJUgk
+
+# The operator, from classic-laddie — the plain ed25519 key beside the
+# hardware keys, which cannot produce note signatures.
+patrick+58a6cfd9+AWCxVUxXoyFYV40QureqqSMSA17CvK9IrFB33BA6UOip

@@ -1,0 +1,32 @@
+# The signers whose evidence this host's integrator accepts, one verifier
+# key per line in `attest key` format: the name a key signs under, the note
+# format's four-byte key hash over that name and key, and base64 of the
+# algorithm byte and the raw ed25519 public key. Public keys only — nothing
+# here is a secret, which is why it is a plain file in this repo rather
+# than an agenix secret.
+#
+# This file is the identity registry's INTERIM COMPILATION. Identity is a
+# governed registry (the-valley .the-valley/decisions/dcr-b87f6e8): entries
+# are declared there and compiled into what each enforcement boundary
+# checks. No compiler exists yet, so the compiled artifact is written out
+# by hand here, and this file is deleted the day the registry compiles.
+# Nothing may start parsing a registry before then.
+#
+# Every key below is already published in secrets/keys.nix; the lines are
+# the same ed25519 public keys re-encoded into the format attest reads. A
+# key hash binds the NAME to the key, so a key published under a second
+# name is a second, unrelated verifier key — the names here are the ones
+# `attest` signs under by default (the machine's hostname + /attestations).
+#
+# Evidence signed by nobody in this file does not transfer. That is
+# reported per check, not treated as a forgery.
+
+# The operator, from makers-mark. Two keys, one per OS install on that
+# machine, both signing under the machine's name.
+makers-mark/attestations+45e7639c+Abc8u2oEFD+sn9vmX0gEbf62V4fmHGSvu10ENPkci3Yd
+makers-mark/attestations+4eb59ac2+AW8B2eVhu/TpXZPyOt/6w0ELdtO6X6cTiWz3CvofxDCR
+
+# classic-laddie's ed25519 SSH host key. This is the host signing as
+# itself: it signs the execution claims — that a check ran over a tree with
+# a result — that `attest run` produces on this machine.
+classic-laddie/attestations+9033aa07+AU7/mipW9wcQwVlDmEqBZksGDO3BEG94gb6VBuyDJUgk

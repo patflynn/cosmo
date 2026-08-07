@@ -18,6 +18,9 @@ in
   # placeholders so evaluation works before the real values exist; populate
   # with agenix -e (see hosts/classic-laddie/default.nix).
   "valley-git-ssh-key.age".publicKeys = keys.users ++ keys.hosts;
+  # The integrator's own signing identity — a real ed25519 key, not a
+  # placeholder: it was generated for this file and exists nowhere else.
+  "valley-integrator-key.age".publicKeys = keys.users ++ keys.hosts;
   "valley-restic-repo.age".publicKeys = keys.users ++ keys.hosts;
   "valley-restic-password.age".publicKeys = keys.users ++ keys.hosts;
 }

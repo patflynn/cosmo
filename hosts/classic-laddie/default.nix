@@ -263,11 +263,25 @@ in
     #   users    — the human keys, which can also decrypt secrets and log in.
     #   gitOnly  — scratch and agent machines, which can do neither. Not
     #              agenix recipients, not shell users: git hosting only.
+    #
+    # The human keys additionally carry the principal tag "patrick" — the
+    # module's tagged-key shape, which puts the name in the pre-receive
+    # hook's environment so it can tell one pusher from another (every push
+    # arrives as the shared git user, so identity has to ride on the key).
+    # "patrick" is a writer of both projects' protected refs in ./valley.cue,
+    # so tagging is what keeps his pushes to main admitted now that the refs
+    # are protected. gitOnly stays untagged deliberately: an untagged key has
+    # no principal, and a key with no principal writes nothing protected —
+    # which is exactly right for scratch and agent machines.
     authorizedKeys =
       let
         keys = import ../../secrets/keys.nix;
       in
-      keys.users ++ keys.gitOnly;
+      map (key: {
+        principal = "patrick";
+        inherit key;
+      }) keys.users
+      ++ keys.gitOnly;
     # Event bus (the-valley Phase 1): NATS JetStream feed of project ref
     # updates. Localhost only (127.0.0.1:4222, the module default) — widening
     # the listener is gated on bus authorization
@@ -291,6 +305,58 @@ in
   age.secrets."valley-git-ssh-key" = {
     file = ../../secrets/valley-git-ssh-key.age;
     owner = config.services.valley.user;
+    group = config.services.valley.group;
+    mode = "0400";
+  };
+
+  # ---------------------------------------------------------------------------
+  # The valley integrator (the-valley design/roadmap.md, Phase 3)
+  # ---------------------------------------------------------------------------
+  # One controller per protected project — which projects those are is not an
+  # option: it follows from the `protection` blocks in ./valley.cue, because a
+  # protected ref is exactly what a controller exists to write. Each controller
+  # polls its repo's integration requests and lands a change once the evidence
+  # attached to it still transfers to the current tip, signing a transfer
+  # statement of its own for what it did.
+  #
+  # It runs as valley-integrator, not the git user: one unix identity per
+  # service. Its whole permission model is the git group, which reaches the
+  # served repositories (made group-shared by the module) and nothing else.
+  #
+  # Human steps to make integration real — until they are done a controller
+  # fail-logs to the journal each interval, harmlessly, the same accepted
+  # pattern as the mirror push and the backup below:
+  #   1. Publish the integrator's PUBLIC key as the "integrator" principal in
+  #      the instance's identity registry, so readers can verify the transfer
+  #      statements it signs. (The private half is already provisioned, below.)
+  #   2. Check out the qinling instance repository on this host and point its
+  #      policy layer at the directory read below:
+  #        sudo git clone git@classic-laddie:qinling.git /var/lib/valley-instance/repo
+  #        sudo ln -sfn /var/lib/valley-instance/repo/policy /var/lib/valley-instance/policy
+  #      The instance layer is resolved from the controller's own side, never
+  #      from the submitted tree, so a change can never supply the policy that
+  #      gates it (the-valley bd-eaefe82). Keeping that checkout current is a
+  #      manual step until the instance repo is a flake input here.
+  services.valley.integrator = {
+    enable = true;
+    signingKeyFile = config.age.secrets."valley-integrator-key".path;
+    # Public keys only, so a store path is right: readable by the service
+    # user, and no secret ever reaches the world-readable store. See the file
+    # itself for why it exists in this form.
+    knownSignersFile = ./valley-known-signers;
+    instancePolicy = "/var/lib/valley-instance/policy";
+  };
+
+  # The integrator's OWN identity — a fresh ed25519 keypair, deliberately not
+  # the host key and not the git user's mirror key: what it signs is its own
+  # verdict that a change's evidence transfers, which is a different claim
+  # from the host's "this check ran with this result". Generated once with
+  # `ssh-keygen -t ed25519` and committed here encrypted; rotating it means
+  # generating a new pair, re-encrypting, and republishing the public half to
+  # the identity registry (step 1 above).
+  age.secrets."valley-integrator-key" = {
+    file = ../../secrets/valley-integrator-key.age;
+    owner = config.services.valley.integrator.user;
     group = config.services.valley.group;
     mode = "0400";
   };
@@ -735,6 +801,11 @@ in
     # Holds the pinned Storage Box host key for the valley backup (step 4 of
     # the runbook in the valley backup section above).
     "d /var/lib/valley-backup 0700 root root - -"
+    # Holds the qinling checkout whose policy/ is the integrator's instance
+    # layer (step 2 of the runbook in the integrator section above). Root
+    # owns it, the integrator only reads it — the layer that gates changes is
+    # not writable by the service it gates.
+    "d /var/lib/valley-instance 0755 root root - -"
   ];
 
   # Host-specific user configuration

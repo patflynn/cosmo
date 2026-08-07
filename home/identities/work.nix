@@ -1,4 +1,10 @@
 { lib, ... }:
+let
+  workUser = {
+    name = "Patrick Flynn";
+    email = "paflynn@google.com";
+  };
+in
 {
   # Corp hosts (bushmills, work crostini) can't reach the Tailscale webhook
   # relay, so klaus must poll GitHub for pipeline events instead.
@@ -16,12 +22,6 @@
     fi
   '';
 
-  programs.git = {
-    settings = {
-      user = {
-        name = "Patrick Flynn";
-        email = "paflynn@google.com";
-      };
-    };
-  };
+  programs.git.settings.user = workUser;
+  programs.jujutsu.settings.user = workUser;
 }

@@ -329,14 +329,6 @@ in
   #   1. Publish the integrator's PUBLIC key as the "integrator" principal in
   #      the instance's identity registry, so readers can verify the transfer
   #      statements it signs. (The private half is already provisioned, below.)
-  #   2. Check out the qinling instance repository on this host and point its
-  #      policy layer at the directory read below:
-  #        sudo git clone git@classic-laddie:qinling.git /var/lib/valley-instance/repo
-  #        sudo ln -sfn /var/lib/valley-instance/repo/policy /var/lib/valley-instance/policy
-  #      The instance layer is resolved from the controller's own side, never
-  #      from the submitted tree, so a change can never supply the policy that
-  #      gates it (the-valley bd-eaefe82). Keeping that checkout current is a
-  #      manual step until the instance repo is a flake input here.
   services.valley.integrator = {
     enable = true;
     signingKeyFile = config.age.secrets."valley-integrator-key".path;
@@ -344,7 +336,9 @@ in
     # user, and no secret ever reaches the world-readable store. See the file
     # itself for why it exists in this form.
     knownSignersFile = ./valley-known-signers;
-    instancePolicy = "/var/lib/valley-instance/policy";
+    # qinling is the gunk-dev instance repository; the floor is read from
+    # this repo's integrated tip.
+    instanceProject = "qinling";
   };
 
   # The integrator's OWN identity — a fresh ed25519 keypair, deliberately not
@@ -801,11 +795,6 @@ in
     # Holds the pinned Storage Box host key for the valley backup (step 4 of
     # the runbook in the valley backup section above).
     "d /var/lib/valley-backup 0700 root root - -"
-    # Holds the qinling checkout whose policy/ is the integrator's instance
-    # layer (step 2 of the runbook in the integrator section above). Root
-    # owns it, the integrator only reads it — the layer that gates changes is
-    # not writable by the service it gates.
-    "d /var/lib/valley-instance 0755 root root - -"
   ];
 
   # Host-specific user configuration

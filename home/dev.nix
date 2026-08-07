@@ -86,7 +86,6 @@
 
         # CLIs
         github-cli # GitHub CLI (gh)
-        jujutsu # Modern VCS (jj)
         difftastic # Structural diff (difft), wired to the `git dft` alias below
 
         # Age tools
@@ -126,6 +125,9 @@
     # Structural second-opinion diff: `git dft` runs difftastic on demand
     # without making it the default differ.
     programs.git.settings.alias.dft = "-c diff.external=difft diff";
+
+    # Modern VCS (jj); user identity is set per-identity (see home/identities/*.nix).
+    programs.jujutsu.enable = true;
 
     # Klaus agent orchestration config
     home.file.".klaus/config.json" = lib.mkIf config.cosmo.klaus.enable {

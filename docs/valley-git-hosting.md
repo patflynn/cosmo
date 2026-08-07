@@ -9,13 +9,19 @@ the-valley's outcome `oc-9949561` with the mechanism decided in
 ## What is declared where
 
 - `hosts/classic-laddie/valley.cue` — the domain declaration (projects,
-  their push mirrors, and the backup policy — nightly restic, retention
-  7/4/6), validated at build time against the-valley's CUE schema. This is
-  the only place projects are added.
+  their push mirrors, which of their refs are protected and who may write
+  them, and the backup policy — nightly restic, retention 7/4/6), validated
+  at build time against the-valley's CUE schema. This is the only place
+  projects are added.
 - `hosts/classic-laddie/default.nix` — machine integration: enables
   `services.valley`, provisions the git user's SSH identity for mirror
-  pushes, and supplies the backup's secret paths
-  (`services.valley.backup.*`) with the enablement runbook alongside.
+  pushes, provisions the integrator's own signing identity, and supplies the
+  backup's secret paths (`services.valley.backup.*`) with the enablement
+  runbook alongside.
+- `hosts/classic-laddie/valley-known-signers` — the signers whose evidence
+  the integrator accepts, public keys only. The identity registry's interim
+  compilation (the-valley `dcr-b87f6e8`); deleted once the registry
+  compiles.
 
 ## Using it
 
@@ -46,6 +52,11 @@ recipients, adding or removing one needs no secret re-encryption: edit
 `keys.nix` and rebuild classic-laddie, and access changes with the
 activation.
 
+`users` keys are additionally tagged with the principal `patrick`; `gitOnly`
+keys are untagged. Every push arrives as the shared `git` user, so the
+principal is the only thing that distinguishes one pusher from another — and
+an untagged key has no principal, so it can write nothing protected.
+
 Every push is replicated best-effort to each mirror URL declared in
 `valley.cue` (`git push --mirror`, detached). A dead mirror only costs a
 journal line: `journalctl -t valley-mirror`.
@@ -59,6 +70,28 @@ Mirror pushes fail-log until the git user has a real identity:
    (the committed file is an encrypted placeholder).
 3. Add the public key as a deploy key **with write access** on
    `github.com/gunk-dev/the-valley`.
+
+## Protected refs and the integrator (the-valley Phase 3)
+
+Both projects protect `refs/heads/main`, with writers `patrick` and
+`integrator`. A `pre-receive` hook enforces the one structural invariant:
+only a declared writer may write a protected ref, and attestation refs
+(`refs/the-valley/attestations/*`) are create-only for everyone. Everything
+else — topic branches, tags — stays open.
+
+Two writers is the transition arrangement, not the destination. Direct
+pushes keep working while the integrator starts landing changes whose
+evidence transfers; dropping `patrick` from the writers is what makes the
+integrator the sole path onto main, and that happens once integration has
+carried real work.
+
+`services.valley.integrator` renders one `valley-integrator@<project>`
+controller per protected project, running as `valley-integrator` (its own
+unix identity, whose whole permission model is the git group). Controllers
+fail-log each interval until the runbook next to `services.valley.integrator`
+in `hosts/classic-laddie/default.nix` is finished — the integrator's public
+key published in the identity registry, and the qinling checkout supplying
+`/var/lib/valley-instance/policy`.
 
 ## Offsite backups (pending)
 

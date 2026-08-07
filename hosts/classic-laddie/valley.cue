@@ -16,6 +16,18 @@ projects: {
 	// the-valley decision dcr-db1acbb).
 	"the-valley": {
 		mirrors: ["git@github.com:gunk-dev/the-valley.git"]
+		protection: {
+			refs: ["refs/heads/main"]
+			// Two writers is the transition arrangement, not the
+			// destination: "patrick" keeps the direct push that has
+			// landed every change so far, while "integrator" starts
+			// landing changes whose evidence transfers. The
+			// destination is integrator-only — dropping "patrick"
+			// here is what makes the integrator the sole path onto
+			// main, and it happens once integration has carried real
+			// work rather than on a date.
+			writers: ["patrick", "integrator"]
+		}
 	}
 
 	// The gunk-dev valley *instance* repo — this instance's own declaration,
@@ -24,7 +36,15 @@ projects: {
 	// once cosmo consumes the instance declaration as a flake input and CI
 	// needs a fetchable copy. Named for Qinling, the valley range associated
 	// with the Tao Te Ching's origin.
-	"qinling": {}
+	"qinling": {
+		// Same transition arrangement as the-valley above: both
+		// writers now, integrator alone once integration has carried
+		// real work.
+		protection: {
+			refs: ["refs/heads/main"]
+			writers: ["patrick", "integrator"]
+		}
+	}
 }
 
 // The host's durability policy (the-valley's #Backup): nightly restic to

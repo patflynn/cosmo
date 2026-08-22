@@ -18,10 +18,11 @@ the-valley's outcome `oc-9949561` with the mechanism decided in
   pushes, provisions the integrator's own signing identity, and supplies the
   backup's secret paths (`services.valley.backup.*`) with the enablement
   runbook alongside.
-- `hosts/classic-laddie/valley-known-signers` — the signers whose evidence
-  the integrator accepts, public keys only. The identity registry's interim
-  compilation (the-valley `dcr-b87f6e8`); deleted once the registry
-  compiles.
+- The identity registry itself is a document in qinling's `identity/`
+  directory, not a file here: `services.valley.identity.enable` compiles it
+  at each pass into the signers whose evidence the integrator accepts and the
+  git user's tagged `authorized_keys` (the-valley `dcr-b87f6e8`). It replaced
+  the hand-written `hosts/classic-laddie/valley-known-signers`.
 
 ## Using it
 
@@ -87,11 +88,10 @@ carried real work.
 
 `services.valley.integrator` renders one `valley-integrator@<project>`
 controller per protected project, running as `valley-integrator` (its own
-unix identity, whose whole permission model is the git group). Controllers
-fail-log each interval until the runbook next to `services.valley.integrator`
-in `hosts/classic-laddie/default.nix` is finished — the integrator's public
-key published in the identity registry, and the qinling checkout supplying
-`/var/lib/valley-instance/policy`.
+unix identity, whose whole permission model is the git group). Each reads its
+floor from qinling's integrated tip (`instanceProject = "qinling"`), and signs
+its transfer statements under the `integrator` principal the registry
+publishes its key as.
 
 ## Offsite backups (pending)
 

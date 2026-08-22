@@ -323,31 +323,44 @@ in
   # service. Its whole permission model is the git group, which reaches the
   # served repositories (made group-shared by the module) and nothing else.
   #
-  # Human steps to make integration real — until they are done a controller
-  # fail-logs to the journal each interval, harmlessly, the same accepted
-  # pattern as the mirror push and the backup below:
-  #   1. Publish the integrator's PUBLIC key as the "integrator" principal in
-  #      the instance's identity registry, so readers can verify the transfer
-  #      statements it signs. (The private half is already provisioned, below.)
+  # Its PUBLIC key is published as the "integrator" principal in the instance's
+  # identity registry (qinling's identity/), so readers can verify the transfer
+  # statements it signs; the private half is provisioned below.
   services.valley.integrator = {
     enable = true;
     signingKeyFile = config.age.secrets."valley-integrator-key".path;
-    # Public keys only, so a store path is right: readable by the service
-    # user, and no secret ever reaches the world-readable store. See the file
-    # itself for why it exists in this form.
-    knownSignersFile = ./valley-known-signers;
-    # qinling is the gunk-dev instance repository; the floor is read from
-    # this repo's integrated tip.
+    # Sign under the registry's name for this key, not the binary's default
+    # (this host's attestations name). The note format's key hash binds name
+    # to key, so signing under a name the registry does not publish the key
+    # under produces notes no verifier can find a key for.
+    signingName = "integrator";
+    # qinling is the gunk-dev instance repository; the floor and the identity
+    # registry are both read from this repo's integrated tip.
     instanceProject = "qinling";
   };
+
+  # The identity registry compiler (the-valley dcr-b87f6e8): the step between
+  # the registry declared in qinling's identity/ and the two gates that read
+  # what it compiles to — the known-signers file the integrator accepts
+  # evidence from, and the git user's tagged authorized_keys. Only the switch
+  # is set: the defaults for ref (refs/heads/main), directory (identity) and
+  # interval (5m) already describe this deployment exactly.
+  #
+  # Compilation is where entry expiry becomes enforced — an aged-out entry is
+  # simply not rendered, and the compiler says so. Fail-safe by construction:
+  # both artifacts are rendered before either is written and each is replaced
+  # by rename, so a failed or invalid render leaves the last-good files
+  # untouched; services.valley.authorizedKeys above stays authorized beside
+  # the compiled keys, which is the way back in when a compilation is wrong.
+  services.valley.identity.enable = true;
 
   # The integrator's OWN identity — a fresh ed25519 keypair, deliberately not
   # the host key and not the git user's mirror key: what it signs is its own
   # verdict that a change's evidence transfers, which is a different claim
   # from the host's "this check ran with this result". Generated once with
   # `ssh-keygen -t ed25519` and committed here encrypted; rotating it means
-  # generating a new pair, re-encrypting, and republishing the public half to
-  # the identity registry (step 1 above).
+  # generating a new pair, re-encrypting, and republishing the public half in
+  # the identity registry.
   age.secrets."valley-integrator-key" = {
     file = ../../secrets/valley-integrator-key.age;
     owner = config.services.valley.integrator.user;

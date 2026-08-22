@@ -1,0 +1,19 @@
+{
+  "id": "20260822-1235-886589f2",
+  "prompt": "# The writers drop: the integrator becomes the sole path onto main (cosmo)\n\n`hosts/classic-laddie/valley.cue` declares `writers: [\"patrick\", \"integrator\"]` for both served\nprojects, with a comment naming this the transition arrangement and integrator-only the\ndestination, reached \"once integration has carried real work.\" That criterion was met: the\nintegrator has landed real changes end to end (verdict → attested transfer → CAS → consumed\nrequest). This change completes the transition.\n\n## What to change\n\nIn `hosts/classic-laddie/valley.cue` only:\n\n1. Both `protection` blocks: `writers: [\"integrator\"]` — remove `\"patrick\"` from each.\n2. Rewrite the two transition comments to describe the destination state, tersely: the integrator\n   is the sole writer of protected refs; the operator's changes land by filing an integration\n   request (`valley review`'s [a]sk verb) and being judged like anyone else's; this file remains\n   the recovery path — re-adding a writer is an ordinary PR plus converge, and host root remains\n   the layer below (recovery, not operations). No transition narrative, no history.\n\nNothing else: no module options, no authorizedKeys, no other files.\n\n## Read first\n\n- The `#Protection` schema and the pre-receive hook rendering in the the-valley flake input\n  (`schema/valley.cue`, `nix/valley-host.nix`) — confirm `[\"integrator\"]` is valid and understand\n  what the hook admits, so your PR description is accurate about what changes operationally.\n- The current comments you are replacing, so the new ones keep their information density.\n\n## PR description must carry\n\n- The milestone plainly: from this deploy, no key pushes `refs/heads/main` on either served\n  project; every landing flows request → verdict → attested transfer → CAS.\n- The operator flow: `valley review` → [a]sk files evidence + the request ref; the integrator\n  lands it. Direct pushes to protected refs are refused at the pre-receive hook, including the\n  operator's.\n- The recovery ladder, honestly: re-add a writer via ordinary PR + converge (this file is\n  GitHub-canonical until the host declaration relocates); host root is the layer below —\n  recovery, not operations.\n\n## Verification\n\n- Match cosmo CI exactly (read `.github/workflows/`): run the same evaluation locally and PASTE\n  the final output lines — show it, not claim it.\n- `cue vet` the edited file against the schema the flake input ships, and paste the command +\n  result.\n- Run any repo test suite CI runs; fix failures you introduced.\n\n## Flow\n\nNormal PR flow (GitHub-canonical): branch, push, open PR with the description above. Do not merge\nor approve anything yourself.\n",
+  "issue": null,
+  "branch": "agent/20260822-1235-886589f2",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260822-1235-886589f2",
+  "tmux_pane": "%15",
+  "budget": "5",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260822-1235-886589f2.jsonl",
+  "created_at": "2026-08-22T12:35:14-04:00",
+  "cost_usd": 1.5957385,
+  "duration_ms": 353375,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/737",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260822-1235-886589f2",
+  "claude_session_id": "cc8c57ed-5ae2-4943-b0fe-5dd87ced2e5f",
+  "model": "opus"
+}

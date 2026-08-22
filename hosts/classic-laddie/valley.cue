@@ -18,15 +18,14 @@ projects: {
 		mirrors: ["git@github.com:gunk-dev/the-valley.git"]
 		protection: {
 			refs: ["refs/heads/main"]
-			// Two writers is the transition arrangement, not the
-			// destination: "patrick" keeps the direct push that has
-			// landed every change so far, while "integrator" starts
-			// landing changes whose evidence transfers. The
-			// destination is integrator-only — dropping "patrick"
-			// here is what makes the integrator the sole path onto
-			// main, and it happens once integration has carried real
-			// work rather than on a date.
-			writers: ["patrick", "integrator"]
+			// The integrator is the sole writer of these refs. The
+			// operator's changes land the way anyone else's do: file
+			// an integration request (`valley review`'s [a]sk verb)
+			// and be judged on the evidence it carries. This file is
+			// the recovery path — re-adding a writer is an ordinary
+			// PR plus converge — and host root is the layer below
+			// it: recovery, not operations.
+			writers: ["integrator"]
 		}
 	}
 
@@ -37,12 +36,12 @@ projects: {
 	// needs a fetchable copy. Named for Qinling, the valley range associated
 	// with the Tao Te Ching's origin.
 	"qinling": {
-		// Same transition arrangement as the-valley above: both
-		// writers now, integrator alone once integration has carried
-		// real work.
+		// Same as the-valley above: the integrator alone writes these
+		// refs, the operator asks like anyone else, and recovery is
+		// this file (a PR plus converge) with host root beneath it.
 		protection: {
 			refs: ["refs/heads/main"]
-			writers: ["patrick", "integrator"]
+			writers: ["integrator"]
 		}
 	}
 }

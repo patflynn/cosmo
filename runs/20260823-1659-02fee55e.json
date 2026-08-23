@@ -1,0 +1,19 @@
+{
+  "id": "20260823-1659-02fee55e",
+  "prompt": "# Close the bootstrap hole (cosmo)\n\nThe temporary writers hole opened by PR #738 served its purpose: the-valley hand-landed\n`policy/project-layer` (270729b) and `integrator/absence-semantics` (d92fe21) — the policy layer\nits landings required and the integrator change that makes such holes unnecessary (a missing\nproject layer now composes floor-only). Close the hole.\n\n`hosts/classic-laddie/valley.cue`, the-valley's protection block: remove the `writers` element\nentirely — the schema landed on the-valley main makes writers optional-defaulting-empty (commit\nd051235… wait: verify — if the schema at cosmo's LOCKED the-valley rev does not yet make writers\noptional, set `writers: []` if the locked schema requires the field, or remove the element if it\npermits absence; check the locked input's schema/valley.cue and do whichever vets. State which\nyou did and why in the PR body.) Replace the bootstrap-hole comment with the permanent one from\nbefore the hole (the integrator is the sole writer; landings flow request → verdict → attested\ntransfer; this file is the recovery path; root is the layer below — recovery, not operations).\n\nNothing else changes. qinling's block is untouched.\n\nVerification: match cosmo CI exactly, run locally, PASTE final lines; cue vet against the locked\nschema. Normal PR flow; merge nothing yourself.\n",
+  "issue": null,
+  "branch": "agent/20260823-1659-02fee55e",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260823-1659-02fee55e",
+  "tmux_pane": "%23",
+  "budget": "5",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260823-1659-02fee55e.jsonl",
+  "created_at": "2026-08-23T16:59:16-04:00",
+  "cost_usd": 3.3783795,
+  "duration_ms": 315859,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/741",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260823-1659-02fee55e",
+  "claude_session_id": "e70a28df-12da-4df9-b2b9-cba9cf8c7128",
+  "model": "opus"
+}

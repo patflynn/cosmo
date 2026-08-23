@@ -18,25 +18,14 @@ projects: {
 		mirrors: ["git@github.com:gunk-dev/the-valley.git"]
 		protection: {
 			refs: ["refs/heads/main"]
-			// A temporary bootstrap hole, deliberately open and
-			// already scheduled to close. Rule 2 of the commit rule
-			// takes a landing's required checks from the policy at
-			// the TARGET TIP, so a change never supplies the policy
-			// that gates it; this repo has no `policy/project` layer
-			// at its tip, so the integrator refuses every request
-			// filed against it — including the request that would
-			// add the layer. The substrate repo therefore cannot
-			// machine-land the policy layer its own landings
-			// require. The operator hand-lands the one commit that
-			// breaks the circle, `policy/project-layer`, through
-			// this hole; a follow-up change removes the hole
-			// immediately after and restores writers: ["integrator"]
-			// below. That is genesis before enforcement
-			// (the-valley design/architecture.md, _the loops unroll
-			// in time_): a regime's prerequisites land under the
-			// regime that preceded it. Recovery is this file — an
-			// ordinary PR plus converge — with host root beneath it.
-			writers: ["patrick"]
+			// The integrator is the sole writer of these refs. The
+			// operator's changes land the way anyone else's do: file
+			// an integration request (`valley review`'s [a]sk verb)
+			// and be judged on the evidence it carries. This file is
+			// the recovery path — re-adding a writer is an ordinary
+			// PR plus converge — and host root is the layer below
+			// it: recovery, not operations.
+			writers: ["integrator"]
 		}
 	}
 

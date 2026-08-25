@@ -512,6 +512,21 @@ in
         color: @subtext0;
       }
 
+      /* Deployed but not yet running it: the booted kernel/systemd are the old
+         ones. Informational — tonight's quiet window is expected to clear it,
+         so this is a colour, not an alarm. */
+      #custom-converge.reboot-pending {
+        color: @blue;
+      }
+
+      /* A week of nightly attempts, every one blocked. Filled amber: short of
+         the pulsing red `failed` earns, past the point of scrolling by. */
+      #custom-converge.reboot-overdue {
+        color: @base;
+        background-color: @peach;
+        border-color: @peach;
+      }
+
       /* The one state that means the host has silently stopped tracking main
          and will stay that way until someone looks. Filled red like
          #privacy-item.screenshare — the other alarm that must not be missed —

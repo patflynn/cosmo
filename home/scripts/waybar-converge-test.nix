@@ -4,7 +4,9 @@
 # reply and exit code — so the script's own parsing, precedence and rendering
 # all run for real. The two cases the `failed` state exists for (a failure
 # hiding behind a rev that still matches main, and a unit flapping between
-# activating and failed) are asserted explicitly.
+# activating and failed) are asserted explicitly, as is the case the reboot
+# states exist for: a deployed rev that matches main on a host still booted
+# into the world before it.
 { pkgs }:
 
 let
@@ -32,13 +34,22 @@ pkgs.runCommand "waybar-converge-tests"
     STUB
     chmod +x stub/ssh
 
-    # A reply shaped the way the remote block prints it.
-    canned() { # canned <rev> <tip> <active> <failed> <log>
-      printf 'rev=%s\ntip=%s\nactive=%s\nfailed=%s\nlog=%s\n' "$1" "$2" "$3" "$4" "$5" \
+    # The host's clock, which every age in the reply is relative to. Pinned so
+    # the rendered ages are exact rather than "about a week".
+    NOW=1787000000
+
+    # A reply shaped the way the remote block prints it. The reboot fields
+    # default to the empty values an unpopulated /var/lib/reboot-pending
+    # produces, which is the steady state.
+    canned() { # canned <rev> <tip> <active> <failed> <log> [reboot_since] [reboot_blocked]
+      printf 'rev=%s\ntip=%s\nactive=%s\nfailed=%s\nlog=%s\nnow=%s\nreboot_since=%s\nreboot_blocked=%s\n' \
+        "$1" "$2" "$3" "$4" "$5" "$NOW" "''${6:-}" "''${7:-}" \
         >"$STUB_DIR/stdout"
       : >"$STUB_DIR/stderr"
       printf '0' >"$STUB_DIR/exit"
     }
+
+    days_ago() { printf '%d' "$((NOW - $1 * 86400))"; }
 
     raw() { # raw <exit> <stdout> <stderr>
       printf '%s' "$2" >"$STUB_DIR/stdout"
@@ -102,6 +113,45 @@ pkgs.runCommand "waybar-converge-tests"
     canned "$A" "$B" inactive failed "error: $(printf 'x%.0s' {1..400})"
     check "an overlong journal line is truncated" \
       '.class == "failed" and (.tooltip | contains("…") and (length < 500))'
+
+    # --- reboot-pending / reboot-overdue -------------------------------------
+    # The reason these states exist: deployed-rev matches main, so the rev
+    # comparison alone calls this converged — while the machine is still booted
+    # into the kernel and PID 1 of the world before it.
+    canned "$A" "$A" inactive inactive "" "$(days_ago 3)" "restic-backups-valley.service is running"
+    check "a pending reboot outranks a rev that matches main" \
+      '.class == "reboot-pending" and (.text | contains("1a2b3c4"))'
+    check "the pending tooltip carries the age and the last blocker" \
+      '.tooltip | contains("reboot pending since 3 days") and contains("restic-backups-valley.service is running")'
+
+    canned "$A" "$B" inactive inactive "" "$(days_ago 2)" "session 2 (tty1) idle under 60m"
+    check "a pending reboot also outranks stale, without losing either rev" \
+      '.class == "reboot-pending" and (.tooltip | contains("'"$B"'"))'
+
+    canned "$A" "$A" inactive inactive "" "$(days_ago 9)" "klaus run 20260825-0732-99333f00 in progress"
+    check "pending for over a week -> reboot-overdue" \
+      '.class == "reboot-overdue" and (.tooltip | contains("9 days"))'
+
+    # The state file exists but no attempt has been recorded against it yet —
+    # the window between the first detection and that night's attempt.
+    canned "$A" "$A" inactive inactive "" "$(days_ago 0)"
+    check "no blocked attempt recorded yet still reads as pending" \
+      '.class == "reboot-pending" and (.tooltip | contains("none recorded"))'
+
+    # A failure means the host has stopped tracking main at all, which is the
+    # larger problem; a pending reboot must not hide it.
+    canned "$A" "$A" inactive failed "error: builder failed" "$(days_ago 9)" "blocked"
+    check "a failed converge outranks even an overdue reboot" '.class == "failed"'
+    canned "$A" "$B" activating inactive "deploying $B" "$(days_ago 9)" "blocked"
+    check "a running converge outranks an overdue reboot" '.class == "rebuilding"'
+
+    canned "" "$B" inactive inactive "" "$(days_ago 3)" "blocked"
+    check "an incomparable rev outranks a pending reboot" '.class == "unreachable"'
+
+    # A state dir holding something this doesn't understand must not become an
+    # age computed from it.
+    canned "$A" "$A" inactive inactive "" "not-a-timestamp" "blocked"
+    check "an unparseable reboot timestamp is dropped, not rendered" '.class == "current"'
 
     # --- unreachable ---------------------------------------------------------
     # ssh's real shape: a warning line, then the diagnostic, then a newline.

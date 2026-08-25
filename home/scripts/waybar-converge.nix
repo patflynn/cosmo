@@ -10,6 +10,12 @@
 # unreachable) main is precisely what cannot move it off that reading. Hence
 # the `failed` state, which outranks the rev comparison entirely.
 #
+# Tracking main is only half of running it: the host switches without rebooting,
+# so a rev that matches main can still be a kernel and a PID 1 the machine is
+# not running yet. modules/common/auto-reboot.nix leaves that split — and every
+# blocked attempt to clear it — in /var/lib/reboot-pending, and the same probe
+# reads it. A reboot deferred night after night has no other way to surface.
+#
 # One ssh per poll gathers every fact the states need, the remote tip included:
 # the host's own reachability of GitHub is the thing that has to work for a
 # converge to happen, so resolving the tip there rather than locally both keeps
@@ -19,6 +25,10 @@
   host ? "classic-laddie",
   repo ? "https://github.com/patflynn/cosmo.git",
   unit ? "cosmo-rebuild.service",
+  rebootStateDir ? "/var/lib/reboot-pending",
+  # A week of nightly attempts, all blocked: the machine is trying and failing
+  # to find a quiet moment, and that is the operator's problem to solve.
+  rebootOverdueSeconds ? 604800,
 }:
 
 let
@@ -90,6 +100,9 @@ pkgs.writeShellScriptBin "waybar-converge" ''
     printf "active=%s\n" "$(systemctl is-active ${unit} 2>/dev/null)"
     printf "failed=%s\n" "$(systemctl is-failed ${unit} 2>/dev/null)"
     printf "log=%s\n" "$(journalctl -u ${unit} -n 200 -o cat --no-pager 2>/dev/null | grep -vE "^(${unitRe}: )?(Starting|Started|Stopping|Stopped|Finished|Deactivated|Consumed|Main process exited|Failed with result|Scheduled restart|Triggering)" | tail -n 1 | tr "\n" " ")"
+    printf "now=%s\n" "$(date +%s)"
+    printf "reboot_since=%s\n" "$(sed -n "s/^since=//p" ${rebootStateDir}/state 2>/dev/null | head -n 1)"
+    printf "reboot_blocked=%s\n" "$(sed -n "s/^reason=//p" ${rebootStateDir}/last-blocked 2>/dev/null | head -n 1)"
   ' 2>"$err_file") || {
     # Last non-empty line of ssh's own diagnostics: "Permission denied
     # (publickey).", "No route to host", and friends all land there, usually
@@ -108,6 +121,9 @@ pkgs.writeShellScriptBin "waybar-converge" ''
   active=""
   failed=""
   log=""
+  now=""
+  reboot_since=""
+  reboot_blocked=""
   answered=0
   while IFS= read -r line; do
     case "$line" in
@@ -119,6 +135,9 @@ pkgs.writeShellScriptBin "waybar-converge" ''
         ;;
       failed=*) failed="''${line#failed=}" ;;
       log=*) log="''${line#log=}" ;;
+      now=*) now="''${line#now=}" ;;
+      reboot_since=*) reboot_since="''${line#reboot_since=}" ;;
+      reboot_blocked=*) reboot_blocked="''${line#reboot_blocked=}" ;;
     esac
   done <<<"$response"
 
@@ -129,6 +148,34 @@ pkgs.writeShellScriptBin "waybar-converge" ''
   if [ "''${#log}" -gt 200 ]; then
     log="''${log:0:200}…"
   fi
+  if [ "''${#reboot_blocked}" -gt 120 ]; then
+    reboot_blocked="''${reboot_blocked:0:120}…"
+  fi
+
+  # Both timestamps come from the host's own clock, so the age below is a
+  # difference on one clock. Anything that isn't a plain integer means the
+  # state dir held something we don't understand: drop it rather than render
+  # an age computed from it.
+  case "$now" in "" | *[!0-9]*) now="" ;; esac
+  case "$reboot_since" in "" | *[!0-9]*) reboot_since="" ;; esac
+
+  # Coarse on purpose: "6 days" is the whole message, and an exact figure would
+  # only invite reading precision into a nightly retry.
+  relative_age() {
+    local secs="$1" n unit
+    if [ "$secs" -lt 5400 ]; then
+      n=$((secs / 60))
+      unit=minute
+    elif [ "$secs" -lt 172800 ]; then
+      n=$((secs / 3600))
+      unit=hour
+    else
+      n=$((secs / 86400))
+      unit=day
+    fi
+    [ "$n" -eq 1 ] || unit="''${unit}s"
+    printf '%d %s' "$n" "$unit"
+  }
 
   short_rev="''${rev:0:7}"
   deployed_line="deployed  ''${rev:-<none>}"
@@ -141,7 +188,8 @@ pkgs.writeShellScriptBin "waybar-converge" ''
     emit unreachable "󰖪 ?" "$host: unreadable response to the converge probe"
   fi
 
-  # Precedence: rebuilding > failed > unreachable > current > stale.
+  # Precedence: rebuilding > failed > unreachable > reboot-overdue >
+  # reboot-pending > current > stale.
   #
   # Activity first — a converge running right now is the answer regardless of
   # what the last one did. A unit that retries and keeps dying flaps between
@@ -170,6 +218,27 @@ pkgs.writeShellScriptBin "waybar-converge" ''
   if [ -z "$rev" ] || [ -z "$tip" ]; then
     emit unreachable "󰖪 ?" \
       "$(join_lines "$host: cannot compare against main" "$deployed_line" "$main_line")"
+  fi
+
+  # Above the rev comparison because the rev comparison cannot see this either:
+  # deployed-rev moves on a successful switch, and the switch is what leaves the
+  # booted kernel and PID 1 behind. "Converged with main" is a true and
+  # misleading thing to say about a host that is one reboot short of running it.
+  # Staleness is not lost when this wins — the tooltip still carries both revs.
+  if [ -n "$reboot_since" ] && [ -n "$now" ]; then
+    reboot_age=$((now - reboot_since))
+    [ "$reboot_age" -ge 0 ] || reboot_age=0
+    reboot_line="reboot pending since $(relative_age "$reboot_age"), last attempt blocked: ''${reboot_blocked:-none recorded}"
+
+    if [ "$reboot_age" -ge ${toString rebootOverdueSeconds} ]; then
+      emit reboot-overdue "󰜉 $short_rev" \
+        "$(join_lines "$host: $reboot_line" \
+          "Every quiet window for over a week has found something running." \
+          "$deployed_line" "$main_line")"
+    fi
+
+    emit reboot-pending "󰜉 $short_rev" \
+      "$(join_lines "$host: $reboot_line" "$deployed_line" "$main_line")"
   fi
 
   if [ "$rev" = "$tip" ]; then

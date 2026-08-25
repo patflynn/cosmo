@@ -217,7 +217,7 @@ in
       gluetun = {
         # Pinned: a bare tag makes every container restart a silent upgrade.
         # These pins move only by PR.
-        image = "qmcgaw/gluetun:v3.41.0";
+        image = "docker.io/qmcgaw/gluetun:v3.41.0";
         capabilities = {
           NET_ADMIN = true;
           NET_RAW = true;

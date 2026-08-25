@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 let
+  waybar-converge = import ./scripts/waybar-converge.nix { inherit pkgs; };
+
   waybar-weather = pkgs.writeShellScriptBin "waybar-weather" ''
         set -euo pipefail
 
@@ -137,6 +139,7 @@ in
         modules-center = [ "privacy" ];
         modules-right = [
           "mpris"
+          "custom/converge"
           "group/cpu-info"
           "custom/gpu"
           "memory"
@@ -186,6 +189,16 @@ in
           exec = "${waybar-weather}/bin/waybar-weather";
           return-type = "json";
           interval = 600;
+        };
+
+        # Each poll is one ssh round trip plus a git ls-remote on the far end,
+        # so this is deliberately slower than the local-only modules. The
+        # converge itself is hourly; a minute of lag on the bar costs nothing.
+        "custom/converge" = {
+          exec = "${waybar-converge}/bin/waybar-converge";
+          return-type = "json";
+          interval = 120;
+          on-click = "kitty ssh -t classic-laddie journalctl -u cosmo-rebuild -n 100 -f";
         };
 
         mpris = {
@@ -306,6 +319,7 @@ in
       @define-color teal #94e2d5;
       @define-color blue #89b4fa;
       @define-color red #f38ba8;
+      @define-color maroon #eba0ac;
       @define-color flamingo #f2cdcd;
 
       /* --- Global --- */
@@ -342,6 +356,7 @@ in
       #bluetooth,
       #custom-gpu,
       #custom-weather,
+      #custom-converge,
       #custom-notification,
       #tray {
         background-color: alpha(@base, 0.85);
@@ -475,10 +490,51 @@ in
         color: @subtext0;
       }
 
+      /* --- Converge (classic-laddie tracking cosmo main) --- */
+      /* Converged is the steady state, so it recedes: no accent, no motion. */
+      #custom-converge.current {
+        color: @subtext0;
+      }
+
+      /* Behind main, but the hourly converge will pick it up — worth noticing,
+         not worth acting on. */
+      #custom-converge.stale {
+        color: @yellow;
+      }
+
+      #custom-converge.rebuilding {
+        color: @sky;
+      }
+
+      /* Can't tell (host down, ssh refused, tip unresolved) — muted, the same
+         way #network.disconnected reads as absence of information. */
+      #custom-converge.unreachable {
+        color: @subtext0;
+      }
+
+      /* The one state that means the host has silently stopped tracking main
+         and will stay that way until someone looks. Filled red like
+         #privacy-item.screenshare — the other alarm that must not be missed —
+         and pulsing, so it registers peripherally rather than blending into
+         the row of steady-coloured pills. */
+      #custom-converge.failed {
+        color: @base;
+        background-color: @red;
+        border-color: @red;
+        animation: alarm 1s ease infinite alternate;
+      }
+
       /* --- Animations --- */
       @keyframes blink {
         to {
           color: @flamingo;
+        }
+      }
+
+      @keyframes alarm {
+        to {
+          background-color: @maroon;
+          border-color: @maroon;
         }
       }
     '';

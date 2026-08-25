@@ -328,6 +328,9 @@
         # Expose zizmor here so CI can run it via 'nix run .#zizmor'
         # to avoid registry lookups and devShell hooks.
         zizmor = nixpkgs.legacyPackages.x86_64-linux.zizmor;
+        # The rebuild machinery's status tool: authored by cosmo-rebuild on
+        # classic-laddie, streamed to the workstation's waybar over ssh.
+        converge-status = nixpkgs.legacyPackages.x86_64-linux.callPackage ./pkgs/converge-status { };
         klaus-worker-0 = self.nixosConfigurations.klaus-worker-0.config.microvm.declaredRunner;
         johnny-walker-image = nixos-generators.nixosGenerate {
           system = "x86_64-linux";
@@ -357,7 +360,16 @@
       };
 
       checks.x86_64-linux = {
+        # buildGoModule runs the package's own tests in its check phase, so
+        # this covers the status schema, the render precedence table and the
+        # watch stream.
+        inherit (self.packages.x86_64-linux) converge-status;
+
         waybar-converge = import ./home/scripts/waybar-converge-test.nix {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+
+        cosmo-rebuild = import ./hosts/classic-laddie/cosmo-rebuild-test.nix {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
 

@@ -23,6 +23,9 @@ let
   valleyKnownHosts = pkgs.writeText "valley-known-hosts" ''
     github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
   '';
+
+  converge-status = pkgs.callPackage ../../pkgs/converge-status { };
+  cosmoRebuildScripts = import ./cosmo-rebuild-scripts.nix { inherit pkgs converge-status; };
 in
 {
   imports = [
@@ -432,6 +435,15 @@ in
   # nothing scheduled to reconcile. With the loop below a lost start signal
   # costs nothing — the running unit re-checks the tip after each switch, and
   # the hourly timer bounds any remaining gap.
+  #
+  # The loop is also the only thing that knows what the machine is doing, so it
+  # is what says so: every transition below is written to
+  # /var/lib/cosmo-rebuild/status by `converge-status set`, and the waybar
+  # widget is a projection of that file rather than an outside reconstruction
+  # of it. That is why nothing on the widget's path talks to GitHub — the one
+  # ls-remote per run *is* the machine's knowledge of where main is, and
+  # `phase=failed` carrying a target the host is not on is how "behind" reaches
+  # the bar.
   systemd.services.cosmo-rebuild = {
     description = "Converge NixOS to the tip of cosmo main";
     # The switch this unit runs may change this very unit; without these,
@@ -452,8 +464,14 @@ in
       TimeoutStartSec = 3600;
       # /var/lib/cosmo-rebuild/deployed-rev records the last rev that
       # *successfully switched*; the early exit against it makes a no-change
-      # run cost one git ls-remote.
+      # run cost one git ls-remote. The status file beside it is a projection
+      # of the same loop, never a second ledger: deployed-rev stays the thing
+      # the comparison reads.
       StateDirectory = "cosmo-rebuild";
+      ExecStart = "${cosmoRebuildScripts.cosmo-rebuild}/bin/cosmo-rebuild";
+      # The ways a run can end that leave the script no chance to say so —
+      # TimeoutStartSec above, a kill, a crashed shell — all land here.
+      ExecStopPost = "${cosmoRebuildScripts.cosmo-rebuild-result}/bin/cosmo-rebuild-result";
       # Build subprocesses inherit this unit's cgroup, so the caps actually
       # constrain the rebuild — unlike daemon-targeted limits, which don't
       # apply when nixos-rebuild runs the build directly in its own process
@@ -467,49 +485,6 @@ in
       nixos-rebuild
       nix
     ];
-    script = ''
-      # The wrapper already runs bash -e; pipefail on top so a failed
-      # ls-remote isn't masked by cut exiting 0.
-      set -o pipefail
-
-      state_file="''${STATE_DIRECTORY}/deployed-rev"
-
-      for _ in 1 2 3 4 5; do
-        # Resolve the tip first, then deploy exactly that rev — what we
-        # compare is what we switch to. If ls-remote fails (network down,
-        # GitHub unreachable) the unit fails here, cleanly, without touching
-        # the state file; the timer retries within the hour.
-        rev=$(git ls-remote https://github.com/patflynn/cosmo.git refs/heads/main | cut -f1)
-        if [ -z "$rev" ]; then
-          echo "could not resolve refs/heads/main on the remote" >&2
-          exit 1
-        fi
-
-        # First run: no state file, $deployed stays empty, never equals $rev,
-        # so we proceed to deploy.
-        deployed=""
-        if [ -f "$state_file" ]; then
-          deployed=$(cat "$state_file")
-        fi
-
-        if [ "$rev" = "$deployed" ]; then
-          echo "already at tip $rev"
-          exit 0
-        fi
-
-        echo "deploying $rev (previously deployed: ''${deployed:-<none>})"
-        nixos-rebuild switch --no-write-lock-file --flake "github:patflynn/cosmo/$rev#classic-laddie"
-
-        # Reached only when the switch succeeded (bash -e aborts above
-        # otherwise): the state file holds successfully deployed revs, never
-        # attempts, so a failed deploy is retried from scratch next run.
-        echo "$rev" > "$state_file"
-
-        # Loop: main may have moved while the build ran — converge again.
-      done
-
-      echo "main moved during all 5 converge iterations; leaving the rest to the next run" >&2
-    '';
   };
 
   # Reconcile timer, belt-and-braces to the webhook: even if a push event is
@@ -707,7 +682,13 @@ in
   };
 
   programs.dconf.enable = true; # Required for virt-manager
-  environment.systemPackages = with pkgs; [ virt-manager ];
+  # converge-status is called by name over ssh from the workstation's waybar
+  # module (home/scripts/waybar-converge.nix), so it has to be on the system
+  # profile's PATH rather than only in the units' closures.
+  environment.systemPackages = [
+    pkgs.virt-manager
+    converge-status
+  ];
 
   security.sudo.wheelNeedsPassword = true;
 

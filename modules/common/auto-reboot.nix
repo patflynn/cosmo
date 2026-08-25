@@ -78,6 +78,12 @@ in
       {
         reboot-needed = {
           description = "Detect whether the booted system has diverged from the deployed one";
+          # The run right after the reboot is how the state clears itself, so
+          # it has to happen *at* the reboot. Left to the timer's OnBootSec plus
+          # its randomized delay, the bar kept showing a reboot as pending for
+          # up to ten minutes after the machine came back already running the
+          # deployed system — the one reading that is never worth waiting for.
+          wantedBy = [ "multi-user.target" ];
           serviceConfig = {
             Type = "oneshot";
             ExecStart = "${scripts.reboot-needed}/bin/reboot-needed";
@@ -125,7 +131,9 @@ in
       description = "Check hourly for a booted/deployed split";
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        OnBootSec = "5min";
+        # No OnBootSec: multi-user.target above already covers the boot, and
+        # the jitter below exists to spread the *hourly* ticks, not to delay
+        # the one run whose answer everyone is waiting for.
         OnCalendar = "hourly";
         RandomizedDelaySec = "5m";
         Persistent = true;

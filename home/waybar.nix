@@ -191,13 +191,14 @@ in
           interval = 600;
         };
 
-        # Each poll is one ssh round trip plus a git ls-remote on the far end,
-        # so this is deliberately slower than the local-only modules. The
-        # converge itself is hourly; a minute of lag on the bar costs nothing.
+        # No `interval`: the script never exits, and each line it prints
+        # replaces the display. What produces those lines is the rebuild
+        # machinery reaching a new state, so the bar changes when the host
+        # does — not up to two minutes later, and with no polling of GitHub or
+        # of the host in between.
         "custom/converge" = {
           exec = "${waybar-converge}/bin/waybar-converge";
           return-type = "json";
-          interval = 120;
           on-click = "kitty ssh -t classic-laddie journalctl -u cosmo-rebuild -n 100 -f";
         };
 
@@ -496,13 +497,14 @@ in
         color: @subtext0;
       }
 
-      /* Behind main, but the hourly converge will pick it up — worth noticing,
-         not worth acting on. */
+      /* Nobody is authoring state: the converge unit and its hourly timer are
+         both silent, so every other reading below is unavailable rather than
+         reassuring. Worth noticing, not an alarm on its own. */
       #custom-converge.stale {
         color: @yellow;
       }
 
-      #custom-converge.rebuilding {
+      #custom-converge.building {
         color: @sky;
       }
 

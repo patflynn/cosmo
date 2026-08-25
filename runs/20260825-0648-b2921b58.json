@@ -1,0 +1,20 @@
+{
+  "id": "20260825-0648-b2921b58",
+  "prompt": "# Correction: a failed rebuild must be its own state, not silence\n\nAs briefed, a failed converge rebuild masquerades as `current` (old rev, aging) — deployed-rev\nonly moves on success. Add a fifth state, ranked above current/stale in precedence:\n\n- `failed`: `systemctl is-failed cosmo-rebuild.service` reports failed (the unit's last run\n  died). Same batched ssh — add the is-failed query and one journal tail line\n  (`journalctl -u cosmo-rebuild -n 1 -o cat --no-pager` or the last error-matching line) for\n  the tooltip, so the bar answers \"failed on WHAT\" without a terminal.\n- Styling: hard alarm — this is the one state that means the host silently stopped tracking\n  main. Text keeps the deployed short-rev with a failure marker.\n- Precedence: rebuilding \u003e failed \u003e unreachable \u003e current \u003e stale. (A retrying loop flapping\n  between activating and failed should read as activity or failure, never as current.)\n- Test the state's rendering path with a canned ssh response the way the other states are\n  exercised; note in the report that live reproduction wasn't attempted against the real host.\n\nEverything else in the original brief stands.\n",
+  "issue": null,
+  "branch": "agent/20260825-0648-b2921b58",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260825-0648-b2921b58",
+  "tmux_pane": "%33",
+  "budget": "5",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260825-0648-b2921b58.jsonl",
+  "created_at": "2026-08-25T06:48:21-04:00",
+  "cost_usd": 4.803117000000001,
+  "duration_ms": 1007544,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/749",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260825-0648-b2921b58",
+  "original_run_id": "20260825-0646-89c0b631",
+  "claude_session_id": "dd33b4fb-009d-407d-b9cf-14e308ba5a3a",
+  "model": "opus"
+}

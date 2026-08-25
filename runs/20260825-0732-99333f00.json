@@ -1,0 +1,19 @@
+{
+  "id": "20260825-0732-99333f00",
+  "prompt": "# Auto-reboot when needed, never when disruptive + widget indicator (cosmo)\n\nclassic-laddie converges continuously but never reboots, so the booted generation drifts from\nthe deployed one (kernel/systemd skew — real update incompatibilities). Build: reboot only when\nNEEDED, executed only when QUIET, visible always, escalating when blocked.\n\n## Part 1 — host module (new, e.g. modules/common/auto-reboot.nix, enabled for classic-laddie)\n\n1. **Needed-detection**: a oneshot (hourly timer + triggered after cosmo-rebuild completes)\n   comparing the booted world against the deployed one — kernel, initrd, kernel-modules,\n   systemd paths under /run/booted-system vs /run/current-system. Read nixpkgs'\n   `system.autoUpgrade.allowReboot` implementation for the canonical comparison and mirror it.\n   State file: `/var/lib/reboot-pending/state` — written with the first-detected timestamp when\n   divergence appears, removed when clean (post-reboot it clears itself). Also record each\n   blocked attempt: timestamp + reason, same directory.\n2. **The quiet-window attempt**: a daily timer ~04:45 (after restic's 03:52, before the Storage\n   Box snapshots) that, IF pending, checks blockers and either reboots (`systemctl reboot`,\n   NON-forced — inhibitor locks are honored by design) or records why not:\n   - a klaus agent run in progress: any `~patrick/.klaus/sessions/*/runs/*.json` with a running\n     status (read as root, parse defensively);\n   - an interactive session active or idle under 60 minutes (`loginctl`/`w` — document the\n     imperfection tersely);\n   - `cosmo-rebuild.service` or the restic backup unit currently active.\n   Every blocked attempt is journaled AND recorded in the state dir with its reason — the widget\n   reads it.\n3. Comments terse; the module's doc comment states the philosophy in two lines: reboot when the\n   booted and deployed worlds split; only when nothing that matters is running; never silently\n   deferred forever — visibility is the backstop.\n\n## Part 2 — widget indicator (extends #749's merged module)\n\nSame single batched ssh in the waybar converge script additionally reads the reboot-pending\nstate (existence, first-detected age, last blocked reason). Display:\n\n- pending: a distinct indicator on the module (glyph + class `reboot-pending`), tooltip line\n  \"reboot pending since \u003crelative\u003e, last attempt blocked: \u003creason\u003e\".\n- pending older than 7 days: escalated class (`reboot-overdue`, amber-family) — the operator's\n  cue that the machine has been trying and failing to find a quiet moment.\n- Precedence stated explicitly in the script: rebuilding \u003e failed \u003e unreachable \u003e\n  reboot-overdue \u003e reboot-pending \u003e current \u003e stale.\n- Extend the existing test file's canned-input pattern with the new states.\n\n## Verification\n\nMatch cosmo CI, run the same evals for hosts and the home profile, PASTE final lines. Unit-test\nthe blocker script with canned inputs (running-agent json, idle/busy loginctl output) per the\nhouse pattern; note plainly that the live reboot path is verified post-merge by the state file\nappearing at the next kernel-diverging deploy.\n\nNormal PR flow; merge nothing yourself.\n",
+  "issue": null,
+  "branch": "agent/20260825-0732-99333f00",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260825-0732-99333f00",
+  "tmux_pane": "%36",
+  "budget": "6",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260825-0732-99333f00.jsonl",
+  "created_at": "2026-08-25T07:32:58-04:00",
+  "cost_usd": 5.8073039999999985,
+  "duration_ms": 1016929,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/751",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260825-0732-99333f00",
+  "claude_session_id": "8b3104c3-aa93-4e13-84cb-bb5a9bca8fe6",
+  "model": "opus"
+}

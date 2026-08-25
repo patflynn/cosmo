@@ -34,6 +34,7 @@ in
     ../../modules/common/gaming.nix
     ../../modules/common/ddcci.nix
     ../../modules/common/crash-capture.nix
+    ../../modules/common/auto-reboot.nix
     ../../modules/media-server/default.nix
     inputs.reel-life.nixosModules.default
     inputs.github-relay.nixosModules.default
@@ -523,6 +524,27 @@ in
       RandomizedDelaySec = "5m";
       Persistent = true;
     };
+  };
+
+  # ---------------------------------------------------------------------------
+  # Reboot into what was deployed
+  # ---------------------------------------------------------------------------
+  # The converge above switches but never reboots, so this host runs the kernel
+  # and PID 1 it booted with while deploying new ones underneath. The module
+  # detects that split and clears it in a quiet window — 04:45, after the
+  # restic run (03:30 + up to 30m of jitter) and before anyone is awake.
+  #
+  # The blockers are this host's long-running work: a converge mid-switch, the
+  # offsite backup mid-upload, and klaus agents, whose worktrees and tmux panes
+  # do not survive a reboot.
+  modules.autoReboot = {
+    enable = true;
+    blockingUnits = [
+      "cosmo-rebuild.service"
+      "restic-backups-valley.service"
+    ];
+    triggerAfter = [ "cosmo-rebuild" ];
+    agentRunGlobs = [ "/home/${config.cosmo.user.default}/.klaus/sessions/*/runs/*.json" ];
   };
 
   # ---------------------------------------------------------------------------

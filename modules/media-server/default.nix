@@ -215,7 +215,9 @@ in
 
       # The VPN Gateway
       gluetun = {
-        image = "qmcgaw/gluetun";
+        # Pinned: a bare tag makes every container restart a silent upgrade.
+        # These pins move only by PR.
+        image = "qmcgaw/gluetun:v3.41.0";
         capabilities = {
           NET_ADMIN = true;
           NET_RAW = true;
@@ -242,7 +244,10 @@ in
         ];
         extraOptions = [
           "--device=/dev/net/tun:/dev/net/tun"
-          "--health-cmd=wget -q -O /dev/null http://localhost:9999 || exit 1"
+          # Gluetun's own healthcheck: queries the internal health server and
+          # exits non-zero when the tunnel is down.  The hand-written wget probe
+          # this replaces broke silently when the image moved underneath it.
+          "--health-cmd=/gluetun-entrypoint healthcheck"
           "--health-interval=30s"
           "--health-retries=3"
           "--health-start-period=60s"
@@ -252,7 +257,7 @@ in
 
       # The Torrent Client (Routed through Gluetun)
       qbittorrent = {
-        image = "lscr.io/linuxserver/qbittorrent:latest";
+        image = "lscr.io/linuxserver/qbittorrent:5.1.4-r1-ls433";
         dependsOn = [ "gluetun" ];
         extraOptions = [ "--network=container:gluetun" ];
         environment = {

@@ -357,6 +357,10 @@
       };
 
       checks.x86_64-linux = {
+        waybar-converge = import ./home/scripts/waybar-converge-test.nix {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+
         pre-commit-check = pre-commit-hooks.lib.x86_64-linux.run {
           src = ./.;
           hooks = {

@@ -1,5 +1,6 @@
-# Peripherals profile – audio, bluetooth, and health monitoring for
-# machines connected to physical hardware (speakers, headsets, etc.).
+# Peripherals profile – audio, bluetooth, health monitoring, and firmware
+# updates for machines connected to physical hardware (speakers, headsets,
+# etc.). This is also the bare-metal boundary: the VM and WSL hosts skip it.
 # Import desktop.nix separately if you also need a window manager.
 {
   pkgs,
@@ -12,10 +13,12 @@
   imports = [
     ./bluetooth.nix
     ./health.nix
+    ./firmware.nix
   ];
 
   modules.bluetooth.enable = true;
   modules.health.enable = true;
+  modules.firmware.enable = true;
 
   # --- Audio ---
   security.rtkit.enable = true;

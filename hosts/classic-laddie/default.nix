@@ -845,7 +845,6 @@ in
 
   services.home-assistant = {
     enable = true;
-    openFirewall = true;
     extraComponents = [
       "default_config"
       "daikin"
@@ -864,6 +863,9 @@ in
       };
     };
   };
+
+  # openFirewall no longer works (port isn't eval-time knowable upstream); open the port we pin above.
+  networking.firewall.allowedTCPPorts = [ 8123 ];
 
   # Inject location coordinates from agenix secret into HA's configuration.yaml
   # at startup, after the NixOS module generates the base config file.

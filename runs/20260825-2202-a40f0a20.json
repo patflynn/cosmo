@@ -1,0 +1,20 @@
+{
+  "id": "20260825-2202-a40f0a20",
+  "prompt": "# classic-laddie: declare the valley attest signing env\n\nSmall, surgical change. In `hosts/classic-laddie/default.nix`, declare two\nsession environment variables so the `valley` CLI's `[a]sk` verb can sign\nattestations (the tool is deliberately config-less; the environment is its\ninterface, and until now these were only ever exported ad hoc):\n\n- `VALLEY_ATTEST_KEY` → the default user's `~/.ssh/id_ed25519` (derive the\n  home path from the existing user config idiom — `config.cosmo.user.default`\n  is used throughout this file — rather than hardcoding `/home/patrick` if the\n  repo offers a clean way; otherwise the literal path is acceptable, this is a\n  single-user host).\n- `VALLEY_ATTEST_NAME` → `\"patrick\"`.\n\nThere is already an `environment.sessionVariables.GDK_DPI_SCALE` setting in\nthis file (~line 110) — put these near it or merge into one attribute set,\nwhichever reads better in context.\n\nComment (terse, one or two lines max, repo idiom is high-density): the reason\nNAME must be set is that qinling's identity registry (identity/registry.cue in\nthe qinling repo) publishes this key as signing under \"patrick\", not under the\nattest helper's default name (this host's attestations name) — a note signed\nunder an unpublished name is one no verifier can find a key for. Same\nrationale as the `signingName` comment on `services.valley.integrator` further\ndown this file; a cross-reference to it is enough, don't restate the essay.\n\n## Constraints\n\n- Touch ONLY `hosts/classic-laddie/default.nix`. No other files.\n- Do not touch secrets, keys.nix, or the valley service config.\n\n## Acceptance\n\n- `nix flake check` passes — paste the final lines.\n- `nix build --dry-run .#nixosConfigurations.classic-laddie.config.system.build.toplevel`\n  evaluates cleanly — paste the tail.\n- `git diff --stat` in the report.\n- Open a normal PR. Do not merge.\n",
+  "issue": null,
+  "branch": "agent/20260825-2202-a40f0a20",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260825-2202-a40f0a20",
+  "tmux_pane": "%11",
+  "budget": "3",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260825-2202-a40f0a20.jsonl",
+  "created_at": "2026-08-25T22:03:00-04:00",
+  "cost_usd": 0.3914828999999999,
+  "duration_ms": 180999,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/756",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260825-2202-a40f0a20",
+  "claude_session_id": "1226a784-585a-4466-ae57-956b2441df18",
+  "model": "sonnet",
+  "effort": "low"
+}

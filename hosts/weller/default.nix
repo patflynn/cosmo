@@ -66,5 +66,6 @@
   security.sudo.wheelNeedsPassword = true;
 
   # Do not change this unless you reinstall the OS
-  system.stateVersion = "25.11";
+  # Fresh install on the 2026 rebuild; matches the release the flake tracks.
+  system.stateVersion = "26.11";
 }

@@ -1,5 +1,6 @@
 # Disko configuration for weller
-# Seagate FireCuda 510 NVMe (1.86TB)
+# Seagate FireCuda 510 NVMe (1.86TB) — the same physical drive as the pre-2026
+# weller, carried over from the dead X570 build and wiped for the rebuild.
 #
 # To apply during installation:
 #   sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./hosts/weller/disk-config.nix
@@ -68,7 +69,8 @@
                   "@swap" = {
                     mountpoint = "/swap";
                     mountOptions = [ "noatime" ];
-                    swap.swapfile.size = "16G";
+                    # Sized against DDR5 capacity; no hibernation requirement
+                    swap.swapfile.size = "32G";
                   };
                 };
               };

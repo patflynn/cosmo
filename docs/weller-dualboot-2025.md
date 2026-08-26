@@ -1,5 +1,7 @@
 # Weller Dual-Boot Setup (February 2025)
 
+> **Superseded by [weller-build-2026.md](./weller-build-2026.md)** — the X570/5950X hardware described below is gone. Kept for history.
+
 This document records the plan and steps for setting up a dual-boot Windows 11 + NixOS on the makers-mark hardware.
 
 ## Hostname Scheme

@@ -1,0 +1,22 @@
+{
+  "id": "20260825-2230-fffd589c",
+  "prompt": "# Fix PR #754 (automated flake.lock bump): HA openFirewall removed upstream\n\nYou are on the PR's branch (`update_flake_lock_action`). CI fails with exactly\none real error — the other host jobs are fail-fast cancellations of this one:\n\n```\nFailed assertions:\n- The option definition `services.home-assistant.openFirewall' in\n  hosts/classic-laddie/default.nix no longer has any effect; please remove it.\n  The frontend port is not configured in YAML any more and therefore cannot be\n  determined at eval time any longer.\n```\n\nThe nixpkgs bump removed `services.home-assistant.openFirewall`.\n\n## Fix\n\nIn `hosts/classic-laddie/default.nix`, Home Automation section (~line 837):\n1. Remove `openFirewall = true;` from `services.home-assistant`.\n2. Open the port explicitly right there, keeping the locality:\n   `networking.firewall.allowedTCPPorts = [ 8123 ];`\n   The port is statically known because this config pins\n   `http.server_port = 8123` a few lines below. One terse comment line: the\n   module lost openFirewall (port no longer eval-time knowable upstream), so\n   the config opens the port it pins itself.\n\nDo NOT touch flake.lock or anything else. If `nix flake check` then surfaces\nanother NEW assertion from the lock bump, fix it in the same minimal spirit\nand say so in your report; deprecation *warnings* (e.g. stdenv.isLinux from\nupstream) are not yours to fix.\n\n## Acceptance\n\n- `nix flake check` passes — paste the final lines.\n- `nix build --dry-run .#nixosConfigurations.classic-laddie.config.system.build.toplevel`\n  evaluates cleanly.\n- Commit to the current branch and push (this updates PR #754). Do not open a\n  new PR, do not merge.\n",
+  "issue": null,
+  "pr": "754",
+  "branch": "update_flake_lock_action",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260825-2230-fffd589c",
+  "tmux_pane": "%12",
+  "budget": "3",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260825-2230-fffd589c.jsonl",
+  "created_at": "2026-08-25T22:30:51-04:00",
+  "cost_usd": 0.23412840000000001,
+  "duration_ms": 132933,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/754",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260825-2230-fffd589c",
+  "claude_session_id": "50e6110a-719c-4813-85df-872d61fb8bc8",
+  "model": "sonnet",
+  "effort": "low"
+}

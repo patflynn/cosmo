@@ -247,7 +247,22 @@ in
           # Gluetun's own healthcheck: queries the internal health server and
           # exits non-zero when the tunnel is down.  The hand-written wget probe
           # this replaces broke silently when the image moved underneath it.
-          "--health-cmd=/gluetun-entrypoint healthcheck"
+          #
+          # Gated on first success, because --health-start-period shields the
+          # health *verdict* only: `podman healthcheck run` still exits 1, its
+          # transient unit lands in `failed`, and switch-to-configuration counts
+          # it -> activation exit 4 on any deploy that restarts gluetun, tunnel
+          # fine or not.  (podman 5.8.6; --health-startup-cmd fails the same
+          # way.)  So until the tunnel has come up once in this container a
+          # failing probe is expected and reports success.  The marker dies with
+          # the container (oci-containers runs --rm), re-arming the grace on
+          # every restart, and failures after it surface for real.  Cost: a
+          # tunnel that never connects reads healthy -- gluetun's log is the
+          # truth there, and recovery is its internal restart loop, which is why
+          # activation must not gate on VPN liveness in the first place.  Inner
+          # timeout stays under --health-timeout so podman's SIGKILL can never
+          # pre-empt the gate.
+          "--health-cmd=if timeout 5 /gluetun-entrypoint healthcheck; then touch /tmp/.vpn-was-up; exit 0; fi; [ -f /tmp/.vpn-was-up ] && exit 1; exit 0"
           "--health-interval=30s"
           "--health-retries=3"
           "--health-start-period=60s"

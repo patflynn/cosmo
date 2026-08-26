@@ -172,34 +172,10 @@ sudo tailscale up
 rsync -avhP classic-laddie:/tank/personal/weller-backup/ ~/restored-backup/
 ```
 
-### 6.3 Bluetooth Keyboard at the LUKS Prompt (two-step)
+### 6.3 Bluetooth Keyboard
 
-`hosts/weller/hardware.nix` can run bluez inside the initrd so the Kinesis
-Advantage 360 Pro (BLE) works at the LUKS passphrase prompt. It is **off on a
-fresh install** and must be enabled as a second step:
-
-1. Boot the installed system and pair the keyboard normally
-   (`bluetuith`, or `bluetoothctl` → `scan on` / `pair` / `trust`). This
-   creates `/var/lib/bluetooth/<adapter>/<device>/`.
-2. Set `initrdBluetooth = true;` at the top of `hosts/weller/hardware.nix`,
-   commit, and `sudo nixos-rebuild switch --flake .#weller`.
-3. Reboot and confirm the keyboard reaches the prompt. Keep a wired keyboard
-   attached until it does.
-
-Why it cannot just be on from the start: `boot.initrd.secrets` points at
-`/var/lib/bluetooth`, which does not exist before pairing. systemd-boot
-supports initrd secrets, so the pairing tree is appended to the initrd by the
-**bootloader installer** rather than baked into the Nix store — and
-`switch-to-configuration` installs the bootloader *before* it activates
-anything. A missing source therefore makes `cp` fail inside
-`append-initrd-secrets`, and the installer aborts with `failed to create initrd
-secrets!`. That would break `nixos-install` itself and every subsequent
-`nixos-rebuild switch`, not just the keyboard.
-
-Note that the pairing keys land **unencrypted on the EFI partition**. That is
-the accepted tradeoff for having the keyboard available before the disk is
-unlocked. If pairing data is later deleted, garbage-collect the generations
-that referenced it, or rebuilds will keep warning about it.
+The LUKS passphrase at boot is typed on a USB keyboard; the Kinesis pairs
+normally once booted.
 
 ### 6.4 Verify Dual-Boot
 
@@ -234,10 +210,6 @@ overwritten — that only happens if the drive-isolation rule in §3 was broken.
 **Can't boot NixOS.** F11 → the Seagate drive. If systemd-boot loads but no
 generation boots, pick the `stable` specialisation entry: it swaps the zen
 kernel for the mainline one and disables `scx`.
-
-**`failed to create initrd secrets!` during a rebuild.** `/var/lib/bluetooth`
-is gone (or the flag was flipped before pairing). Set `initrdBluetooth = false`
-in `hosts/weller/hardware.nix` and rebuild; then redo §6.3.
 
 **LUKS prompt never appears.** Confirm the initrd found the drive at all — a
 missing `nvme` module or a wrong `by-id` path in `disk-config.nix` both look

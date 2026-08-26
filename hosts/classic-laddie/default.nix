@@ -111,7 +111,13 @@ in
   };
 
   # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)
-  environment.sessionVariables.GDK_DPI_SCALE = "1.25";
+  # valley's [a]sk verb is config-less; NAME must match the registry entry for
+  # this key, see the signingName comment on services.valley.integrator below.
+  environment.sessionVariables = {
+    GDK_DPI_SCALE = "1.25";
+    VALLEY_ATTEST_KEY = "/home/${config.cosmo.user.default}/.ssh/id_ed25519";
+    VALLEY_ATTEST_NAME = "patrick";
+  };
 
   # ---------------------------------------------------------------------------
   # Monitor Control (DDC/CI)

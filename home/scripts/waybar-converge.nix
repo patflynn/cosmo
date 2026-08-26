@@ -1,109 +1,67 @@
 # Waybar module: is classic-laddie still tracking cosmo main?
 #
-# The host converges itself to the tip of main via the `cosmo-rebuild` unit
-# (hosts/classic-laddie/default.nix), which records a rev in
-# /var/lib/cosmo-rebuild/deployed-rev *only after a switch succeeds*. That
-# write-on-success rule is exactly what lets a failure go unnoticed: when a run
-# dies the file keeps the last good rev, so a bar that compared revs and
-# nothing else would keep reporting the host as converged until main next
-# moved — and if the run died resolving the remote tip (host offline, GitHub
-# unreachable) main is precisely what cannot move it off that reading. Hence
-# the `failed` state, which outranks the rev comparison entirely.
+# A stream, not a poll. Every state the bar shows is authored by the rebuild
+# machinery itself — `converge-status set` at each transition of the
+# cosmo-rebuild unit, and the reboot detector's verdicts in
+# /var/lib/reboot-pending — and `converge-status watch` on the far end turns
+# those files into one JSON line per change. So a push that starts a converge
+# reaches the bar in the second the relay starts the unit, and a reboot clears
+# from it in the second the post-boot detector run says so.
 #
-# Tracking main is only half of running it: the host switches without rebooting,
-# so a rev that matches main can still be a kernel and a PID 1 the machine is
-# not running yet. modules/common/auto-reboot.nix leaves that split — and every
-# blocked attempt to clear it — in /var/lib/reboot-pending, and the same probe
-# reads it. A reboot deferred night after night has no other way to surface.
-#
-# One ssh per poll gathers every fact the states need, the remote tip included:
-# the host's own reachability of GitHub is the thing that has to work for a
-# converge to happen, so resolving the tip there rather than locally both keeps
-# the comparison honest and keeps the poll to a single round trip.
+# Nothing here derives state. Precedence, ages and staleness all live in the
+# one place that has the files (pkgs/converge-status/render.go); this script
+# owns exactly one thing the far end cannot know — that it is unreachable.
 {
   pkgs,
   host ? "classic-laddie",
-  repo ? "https://github.com/patflynn/cosmo.git",
-  unit ? "cosmo-rebuild.service",
-  rebootStateDir ? "/var/lib/reboot-pending",
-  # A week of nightly attempts, all blocked: the machine is trying and failing
-  # to find a quiet moment, and that is the operator's problem to solve.
-  rebootOverdueSeconds ? 604800,
+  # A session this long counts as having worked, so a connection that lived an
+  # afternoon and then dropped retries immediately rather than at the ceiling.
+  backoffResetSeconds ? 60,
 }:
 
-let
-  # systemd prefixes some of its own journal lines with the unit name; the
-  # filter below has to match that literally, dots and all.
-  unitRe = builtins.replaceStrings [ "." ] [ "\\." ] unit;
-in
 pkgs.writeShellScriptBin "waybar-converge" ''
-  # No `set -e`: every probe below is allowed to come back empty, and each
-  # failure is turned into a state rather than a non-zero exit — waybar renders
-  # nothing at all for a module that dies.
+  # No `set -e`: a dropped ssh is the normal case this loop exists to handle,
+  # and waybar renders nothing at all for a module that dies.
   set -uo pipefail
+
+  # date/sleep/mktemp from a known closure; `ssh` is deliberately left to the
+  # session's own PATH (see below), and nothing here shadows it.
+  PATH="${pkgs.coreutils}/bin:$PATH"
 
   jq="${pkgs.jq}/bin/jq"
   host="${host}"
 
-  emit() {
-    # emit <class> <text> <tooltip>
-    "$jq" -nc --arg class "$1" --arg text "$2" --arg tooltip "$3" \
-      '{ text: $text, tooltip: $tooltip, class: $class, alt: $class }'
-    exit 0
-  }
+  # Test seams; nothing in production sets them. Attempts=0 means forever,
+  # which is the only value the widget ever runs with.
+  attempts="''${WAYBAR_CONVERGE_ATTEMPTS:-0}"
+  min_backoff="''${WAYBAR_CONVERGE_MIN_BACKOFF:-2}"
+  max_backoff="''${WAYBAR_CONVERGE_MAX_BACKOFF:-60}"
 
-  # Joins its non-empty arguments with newlines, so a tooltip can list a
-  # journal line or a rev that may or may not exist without growing a blank
-  # line when it doesn't.
-  join_lines() {
-    local out="" part
-    for part in "$@"; do
-      [ -n "$part" ] || continue
-      if [ -n "$out" ]; then
-        out=$(printf '%s\n%s' "$out" "$part")
-      else
-        out="$part"
-      fi
-    done
-    printf '%s' "$out"
-  }
-
-  err_file=$(${pkgs.coreutils}/bin/mktemp)
+  err_file=$(mktemp)
   trap 'rm -f "$err_file"' EXIT
 
-  # `ssh` is deliberately resolved on PATH: the poll runs as the desktop user
-  # and has to go through their ~/.ssh/config, known_hosts and agent. The keys
-  # in secrets/keys.nix are authorized for the default user on every host
-  # (modules/common/users.nix), so this works with no extra setup — and when
-  # the agent is locked or the host is down the failure lands on `unreachable`.
-  #
-  # The remote block prints one `key=value` line per fact. Each value is
-  # captured with $(...) so a probe that fails leaves an empty value instead of
-  # derailing the block, and the journal line is flattened to a single line so
-  # the parse below can stay line-oriented.
-  #
-  # The journal filter drops systemd's own framing to surface what the unit's
-  # script last printed, which is what answers "failed on what?". systemd
-  # writes some of those lines bare ("Finished …") and some prefixed with the
-  # unit ("cosmo-rebuild.service: Consumed …"), hence the optional prefix.
-  #
-  # `repo` and `unit` are interpolated into the remote command unescaped. They
-  # are build-time constants supplied by this repo, never runtime input, and
-  # keep them that way: the block is wrapped in single quotes for the *local*
-  # shell, which strips one level of quoting before ssh sends it, so
-  # lib.escapeShellArg here would be consumed locally and protect nothing on
-  # the far end. Anything untrusted would have to be passed as an argument to
-  # the remote command rather than spliced into its text.
-  response=$(ssh -o BatchMode=yes -o ConnectTimeout=5 "$host" '
-    printf "rev=%s\n" "$(cat /var/lib/cosmo-rebuild/deployed-rev 2>/dev/null)"
-    printf "tip=%s\n" "$(git ls-remote "${repo}" refs/heads/main 2>/dev/null | cut -f1)"
-    printf "active=%s\n" "$(systemctl is-active ${unit} 2>/dev/null)"
-    printf "failed=%s\n" "$(systemctl is-failed ${unit} 2>/dev/null)"
-    printf "log=%s\n" "$(journalctl -u ${unit} -n 200 -o cat --no-pager 2>/dev/null | grep -vE "^(${unitRe}: )?(Starting|Started|Stopping|Stopped|Finished|Deactivated|Consumed|Main process exited|Failed with result|Scheduled restart|Triggering)" | tail -n 1 | tr "\n" " ")"
-    printf "now=%s\n" "$(date +%s)"
-    printf "reboot_since=%s\n" "$(sed -n "s/^since=//p" ${rebootStateDir}/state 2>/dev/null | head -n 1)"
-    printf "reboot_blocked=%s\n" "$(sed -n "s/^reason=//p" ${rebootStateDir}/last-blocked 2>/dev/null | head -n 1)"
-  ' 2>"$err_file") || {
+  n=0
+  backoff="$min_backoff"
+  while :; do
+    n=$((n + 1))
+    started=$(date +%s)
+
+    # `ssh` is deliberately resolved on PATH: the stream runs as the desktop
+    # user and has to go through their ~/.ssh/config, known_hosts and agent.
+    # The keys in secrets/keys.nix are authorized for the default user on every
+    # host (modules/common/users.nix), so this works with no extra setup.
+    #
+    # Keepalives, because the failure this must notice is a connection that
+    # stopped carrying data without either end closing it — waybar would
+    # otherwise keep showing whatever line arrived before the network went.
+    #
+    # stdout is inherited, not piped: `converge-status watch` writes one
+    # unbuffered line per event and nothing in between should re-buffer it.
+    # `$host` is a build-time constant from this module, never runtime input.
+    ssh -o BatchMode=yes -o ConnectTimeout=5 \
+      -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+      "$host" converge-status watch --host "$host" 2>"$err_file"
+
     # Last non-empty line of ssh's own diagnostics: "Permission denied
     # (publickey).", "No route to host", and friends all land there, usually
     # under a banner or a known_hosts warning. The `|| [ -n "$line" ]` keeps
@@ -113,139 +71,22 @@ pkgs.writeShellScriptBin "waybar-converge" ''
     while IFS= read -r line || [ -n "$line" ]; do
       [ -n "$line" ] && ssh_error="$line"
     done <"$err_file"
-    emit unreachable "󰖪 ?" "$(join_lines "$host: unreachable over ssh" "$ssh_error")"
-  }
+    : >"$err_file"
 
-  rev=""
-  tip=""
-  active=""
-  failed=""
-  log=""
-  now=""
-  reboot_since=""
-  reboot_blocked=""
-  answered=0
-  while IFS= read -r line; do
-    case "$line" in
-      rev=*) rev="''${line#rev=}" ;;
-      tip=*) tip="''${line#tip=}" ;;
-      active=*)
-        active="''${line#active=}"
-        answered=1
-        ;;
-      failed=*) failed="''${line#failed=}" ;;
-      log=*) log="''${line#log=}" ;;
-      now=*) now="''${line#now=}" ;;
-      reboot_since=*) reboot_since="''${line#reboot_since=}" ;;
-      reboot_blocked=*) reboot_blocked="''${line#reboot_blocked=}" ;;
-    esac
-  done <<<"$response"
+    tooltip="$host: unreachable over ssh"
+    [ -n "$ssh_error" ] && tooltip=$(printf '%s\n%s' "$tooltip" "$ssh_error")
+    "$jq" -nc --arg tooltip "$tooltip" \
+      '{ text: "󰖪 ?", tooltip: $tooltip, class: "unreachable", alt: "unreachable" }'
 
-  # A journal line is not always a sentence — nix build output and structured
-  # container logs run to hundreds of characters, and a tooltip that wide is
-  # worse than no tooltip. The front of the line is the part that identifies
-  # the failure.
-  if [ "''${#log}" -gt 200 ]; then
-    log="''${log:0:200}…"
-  fi
-  if [ "''${#reboot_blocked}" -gt 120 ]; then
-    reboot_blocked="''${reboot_blocked:0:120}…"
-  fi
-
-  # Both timestamps come from the host's own clock, so the age below is a
-  # difference on one clock. Anything that isn't a plain integer means the
-  # state dir held something we don't understand: drop it rather than render
-  # an age computed from it.
-  case "$now" in "" | *[!0-9]*) now="" ;; esac
-  case "$reboot_since" in "" | *[!0-9]*) reboot_since="" ;; esac
-
-  # Coarse on purpose: "6 days" is the whole message, and an exact figure would
-  # only invite reading precision into a nightly retry.
-  relative_age() {
-    local secs="$1" n unit
-    if [ "$secs" -lt 5400 ]; then
-      n=$((secs / 60))
-      unit=minute
-    elif [ "$secs" -lt 172800 ]; then
-      n=$((secs / 3600))
-      unit=hour
-    else
-      n=$((secs / 86400))
-      unit=day
-    fi
-    [ "$n" -eq 1 ] || unit="''${unit}s"
-    printf '%d %s' "$n" "$unit"
-  }
-
-  short_rev="''${rev:0:7}"
-  deployed_line="deployed  ''${rev:-<none>}"
-  main_line="main      ''${tip:-<unresolved>}"
-
-  # We reached something, but not a host that answered the probe (truncated
-  # stream, a shell that swallowed the block). Better to say we can't tell than
-  # to derive a state from half a response.
-  if [ "$answered" -eq 0 ]; then
-    emit unreachable "󰖪 ?" "$host: unreadable response to the converge probe"
-  fi
-
-  # Precedence: rebuilding > failed > unreachable > reboot-overdue >
-  # reboot-pending > current > stale.
-  #
-  # Activity first — a converge running right now is the answer regardless of
-  # what the last one did. A unit that retries and keeps dying flaps between
-  # activating and failed; both of those readings are true and useful, and what
-  # must never win in that situation is the rev comparison, which would call
-  # the host converged while it is visibly not.
-  case "$active" in
-    activating | active | reloading | deactivating)
-      emit rebuilding "󰑓 rebuilding" \
-        "$(join_lines "$host: converging now" "$deployed_line" "$main_line" "$log")"
-      ;;
-  esac
-
-  # The state the rev comparison cannot see: the unit's last run died, so
-  # deployed-rev is frozen at the last rev that switched cleanly and the host
-  # has stopped following main until someone intervenes.
-  if [ "$failed" = "failed" ]; then
-    emit failed "󰀦 ''${short_rev:-none}" \
-      "$(join_lines "$host: ${unit} FAILED — no longer tracking main" \
-        "$deployed_line" "$main_line" "''${log:-(no journal output)}")"
-  fi
-
-  # Nothing running, nothing failed, but a side of the comparison is missing:
-  # either nothing has ever deployed here, or the host could not resolve the
-  # tip. Neither is current and neither is stale.
-  if [ -z "$rev" ] || [ -z "$tip" ]; then
-    emit unreachable "󰖪 ?" \
-      "$(join_lines "$host: cannot compare against main" "$deployed_line" "$main_line")"
-  fi
-
-  # Above the rev comparison because the rev comparison cannot see this either:
-  # deployed-rev moves on a successful switch, and the switch is what leaves the
-  # booted kernel and PID 1 behind. "Converged with main" is a true and
-  # misleading thing to say about a host that is one reboot short of running it.
-  # Staleness is not lost when this wins — the tooltip still carries both revs.
-  if [ -n "$reboot_since" ] && [ -n "$now" ]; then
-    reboot_age=$((now - reboot_since))
-    [ "$reboot_age" -ge 0 ] || reboot_age=0
-    reboot_line="reboot pending since $(relative_age "$reboot_age"), last attempt blocked: ''${reboot_blocked:-none recorded}"
-
-    if [ "$reboot_age" -ge ${toString rebootOverdueSeconds} ]; then
-      emit reboot-overdue "󰜉 $short_rev" \
-        "$(join_lines "$host: $reboot_line" \
-          "Every quiet window for over a week has found something running." \
-          "$deployed_line" "$main_line")"
+    if [ "$attempts" -ne 0 ] && [ "$n" -ge "$attempts" ]; then
+      exit 0
     fi
 
-    emit reboot-pending "󰜉 $short_rev" \
-      "$(join_lines "$host: $reboot_line" "$deployed_line" "$main_line")"
-  fi
-
-  if [ "$rev" = "$tip" ]; then
-    emit current "󰄬 $short_rev" "$(join_lines "$host: converged with main" "$deployed_line")"
-  fi
-
-  emit stale "󰚰 $short_rev" \
-    "$(join_lines "$host: behind main" "$deployed_line" "$main_line" \
-      "Converge runs hourly; the next run will switch.")"
+    if [ $(($(date +%s) - started)) -ge ${toString backoffResetSeconds} ]; then
+      backoff="$min_backoff"
+    fi
+    sleep "$backoff"
+    backoff=$((backoff * 2))
+    [ "$backoff" -le "$max_backoff" ] || backoff="$max_backoff"
+  done
 ''

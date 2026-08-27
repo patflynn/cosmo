@@ -19,10 +19,11 @@ in
     # vendors that publish there. Query with `fwupdmgr get-devices` and
     # `fwupdmgr refresh && fwupdmgr get-updates`.
     #
-    # Coverage caveat: participation is per-vendor, and GIGABYTE ships to LVFS
-    # only for its server line (via Redfish). The consumer AORUS desktop boards
-    # in classic-laddie and weller are NOT covered, so a BIOS update on those
-    # still means Q-Flash from a FAT32 USB stick. fwupd is enabled anyway
+    # Coverage caveat: participation is per-vendor. GIGABYTE ships to LVFS only
+    # for its server line (via Redfish), and MSI does not ship consumer boards
+    # at all, so neither classic-laddie's AORUS board nor weller's MSI X870E is
+    # covered — a BIOS update on those still means the vendor's own flashing
+    # tool from a FAT32 USB stick (Q-Flash / M-Flash). fwupd is enabled anyway
     # because it does see the peripheral firmware on these hosts, and it gives
     # one place to check rather than none.
     #

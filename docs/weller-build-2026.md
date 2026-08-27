@@ -1,0 +1,216 @@
+# weller Build & Install Runbook (2026 Rebuild)
+
+The X570/5950X `weller` died when its motherboard fried. The GPU and both NVMe
+drives survived and return in this build. This document is the hardware record
+and the install runbook for the new machine. It supersedes
+[weller-dualboot-2025.md](./weller-dualboot-2025.md), which describes the old
+board and remains useful only as history.
+
+## 1. Hostname Scheme
+
+Unchanged — one machine, three names depending on what is running:
+
+| Environment | Hostname | Purpose |
+|-------------|----------|---------|
+| Windows 11 | `makers-mark` | Windows-only games (iRacing, BF6) |
+| WSL2 NixOS | `makers-nix` | WSL environment inside `makers-mark` |
+| Native NixOS | `weller` | Daily driver, development, Linux gaming |
+
+## 2. Hardware
+
+| Component | Details | Notes |
+|-----------|---------|-------|
+| **Motherboard** | MSI MAG X870E Tomahawk WiFi (AM5) | WiFi 7 + 5GbE, both in-tree |
+| **CPU** | AMD Ryzen 9 9950X3D (16-core) | has an RDNA2 iGPU |
+| **Cooler** | Arctic Liquid Freezer III Pro 420 AIO | no software support needed |
+| **RAM** | G.Skill Trident Z5 Neo DDR5 (EXPO) | enable EXPO in BIOS |
+| **GPU** | NVIDIA RTX 4090 | carried over; vertical mount on a PCIe 5.0 riser, card runs Gen4 |
+| **Case** | HAVN HS 420 VGPU | |
+| **PSU** | Corsair RM1200x | |
+| **Disk 0** | Samsung 970 NVMe (932GB) | Windows — `makers-mark`. NixOS never touches it |
+| **Disk 1** | Seagate FireCuda 510 NVMe (1.86TB) | NixOS — `weller`. Same physical drive as the old build, wiped |
+
+Carried over from the old build, and still true:
+
+- The FireCuda 510's firmware crashes under NVMe APST, so
+  `nvme_core.default_ps_max_latency_us=0` stays on the kernel command line
+  (#263).
+- WiFi (MediaTek MT7925) and 5GbE (Realtek RTL8126) are handled by in-tree
+  drivers on the kernel this flake tracks. Their firmware comes from
+  `hardware.enableRedistributableFirmware`, which is already on. No extra
+  modules or firmware packages are needed.
+
+## 3. Disk Layout
+
+Each OS owns a drive, each drive owns its ESP. There is no chainloading and no
+shared boot partition — switch OSes from the BIOS boot menu (F11).
+
+```
+Disk 0 (Samsung 970 - 932GB):        [NixOS never touches this disk]
+├── EFI System Partition             - Windows Boot Manager
+├── Microsoft Reserved
+├── Windows C:
+└── Recovery partitions
+
+Disk 1 (Seagate FireCuda - 1.86TB):  [hosts/weller/disk-config.nix]
+├── EFI System Partition (1GB)       - systemd-boot
+└── LUKS2 (allowDiscards)
+    └── Btrfs (zstd, noatime):
+        ├── @root     (/)
+        ├── @home     (/home)
+        ├── @nix      (/nix)
+        └── @swap     (/swap, 32G swapfile)
+```
+
+> **Rule: the FireCuda comes OUT before any Windows repair or reinstall.**
+> Windows installs its bootloader onto whichever ESP it finds first and will
+> happily plant it on the NixOS drive, which then dies with the next `disko`
+> run or leaves an orphan boot entry. Physically unplug Disk 1 (or disable its
+> M.2 slot in BIOS), do the Windows work, then plug it back in.
+
+## 4. BIOS Prep
+
+Before installing anything:
+
+1. **EXPO** — on. Trident Z5 Neo runs at JEDEC speeds otherwise.
+2. **Resizable BAR** — on. Wanted by the 4090.
+3. **Boot order** — put the FireCuda first once NixOS is installed; use **F11**
+   for the one-shot boot menu to reach Windows or the installer.
+4. **Secure Boot** — off. systemd-boot here is unsigned.
+5. Note the BIOS version. MSI does not publish consumer boards to LVFS, so
+   `fwupd` will not see the board firmware; BIOS updates are M-Flash from a
+   FAT32 USB stick.
+
+## 5. Installation (Two-Stage)
+
+Two stages, to avoid the chicken-and-egg between agenix secrets and a host key
+that does not exist until the machine boots.
+
+### 5.1 Stage 1: Bootstrap Install
+
+`weller-bootstrap` is a minimal system: mutable users, SSH with the keys from
+`secrets/keys.nix` pre-authorized, and no agenix (so nothing tries to decrypt
+secrets the host cannot yet read).
+
+1. **Boot the NixOS installer** — PXE via netboot.xyz (see
+   [laddie-build-2025.md](./laddie-build-2025.md) for the UDM Pro setup) or a
+   USB installer. F11 → the boot entry you want.
+
+2. **Partition, encrypt and mount with disko** (prompts for the LUKS
+   passphrase):
+
+   ```bash
+   nix-shell -p git
+   git clone https://github.com/patflynn/cosmo /tmp/cosmo
+   cd /tmp/cosmo
+
+   sudo nix --experimental-features "nix-command flakes" \
+     run github:nix-community/disko -- \
+     --mode disko ./hosts/weller/disk-config.nix
+   ```
+
+   The device is pinned by `by-id`
+   (`nvme-Seagate_FireCuda_510_SSD_ZP2000GM30001_7QE00F0P`). Confirm it matches
+   with `ls -la /dev/disk/by-id/ | grep -i seagate` before running — this wipes
+   the disk.
+
+3. **Install the bootstrap system**:
+
+   ```bash
+   nixos-install --no-write-lock-file --flake /tmp/cosmo#weller-bootstrap
+   ```
+
+4. **Reboot**, enter the LUKS passphrase on a **wired USB keyboard** (the BLE
+   keyboard does not work at the prompt yet — see §6.3), then log in over SSH
+   with a key from `secrets/keys.nix`:
+
+   ```bash
+   ssh root@weller
+   ```
+
+### 5.2 Stage 2: Host Key, Rekey, Full Config
+
+1. **Read the new host key** (on weller):
+
+   ```bash
+   cat /etc/ssh/ssh_host_ed25519_key.pub
+   ```
+
+2. **Update secrets** (on a machine with a human age key — this cannot be done
+   by an agent):
+
+   - Replace the `weller` entry in `secrets/keys.nix` with the new host key.
+     The entry there now is the **old** weller's key and is dead; there is also
+     a stale user key commented `# weller` in the `users` list from the old
+     install. Add the new key first, rekey, verify weller can decrypt, then
+     remove the stale ones and rekey again.
+   - `cd secrets && agenix --rekey`
+   - Commit and push.
+
+3. **Apply the full configuration** (on weller):
+
+   ```bash
+   cd ~/hack/cosmo   # clone it if this is the first time
+   git pull
+   sudo nixos-rebuild switch --flake .#weller
+   ```
+
+   This brings up the workstation profile: NVIDIA, Hyprland, Steam/gamescope,
+   Sunshine auto-login, tailscale, hardened OpenSSH, immutable users.
+
+## 6. Post-Installation
+
+### 6.1 Tailscale
+
+```bash
+sudo tailscale up
+```
+
+### 6.2 Restore Data
+
+```bash
+rsync -avhP classic-laddie:/tank/personal/weller-backup/ ~/restored-backup/
+```
+
+### 6.3 Bluetooth Keyboard
+
+The LUKS passphrase at boot is typed on a USB keyboard; the Kinesis pairs
+normally once booted.
+
+### 6.4 Verify Dual-Boot
+
+1. Reboot — NixOS should come up via systemd-boot on the FireCuda.
+2. F11 → Windows Boot Manager on the Samsung; confirm Windows boots.
+3. Set the preferred default in BIOS boot order.
+
+### 6.5 Two GPUs
+
+The 9950X3D's iGPU is live alongside the 4090. `amdgpu` is in the initrd so the
+LUKS prompt renders if the console lands on the iGPU. If the desktop ever comes
+up on the wrong adapter, pin the compositor with `WLR_DRM_DEVICES` rather than
+disabling the iGPU in BIOS — the iGPU is a useful fallback if the 4090 needs to
+come out.
+
+## 7. Configuration Map
+
+| File | Contents |
+|------|----------|
+| `hosts/weller/hardware.nix` | Bootloader, initrd, NVIDIA, filesystems, networking |
+| `hosts/weller/disk-config.nix` | disko: ESP + LUKS2 + btrfs subvolumes |
+| `hosts/weller/default.nix` | Profile: users, desktop, gaming, tailscale, sshd, `stateVersion` |
+| `flake.nix` | `weller` and `weller-bootstrap` targets |
+| `secrets/keys.nix` | Host key — added by hand after first boot (§5.2) |
+
+## 8. Troubleshooting
+
+**Can't boot Windows after the NixOS install.** F11 → Windows Boot Manager, or
+change boot order in BIOS. If the entry is gone entirely, Windows' ESP was
+overwritten — that only happens if the drive-isolation rule in §3 was broken.
+
+**Can't boot NixOS.** F11 → the Seagate drive. If systemd-boot loads but no
+generation boots, pick the `stable` specialisation entry: it swaps the zen
+kernel for the mainline one and disables `scx`.
+
+**LUKS prompt never appears.** Confirm the initrd found the drive at all — a
+missing `nvme` module or a wrong `by-id` path in `disk-config.nix` both look
+the same from the console.

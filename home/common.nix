@@ -97,6 +97,14 @@
       setopt HIST_VERIFY          # show command with history expansion to user before running it
       setopt SHARE_HISTORY        # share command history data
 
+      # A program killed before it could send the matching DECRST leaves xterm
+      # mouse/focus tracking on, so the wheel types "<64;80;24M" at the shell.
+      autoload -Uz add-zsh-hook
+      _reset_terminal_input_modes() {
+        printf '\033[?1000l\033[?1002l\033[?1003l\033[?1004l\033[?1006l'
+      }
+      add-zsh-hook precmd _reset_terminal_input_modes
+
       # Auto-rename tmux session to repo:branch or directory name
       if [ -n "$TMUX" ]; then
         _tmux_auto_rename_last=""
@@ -130,7 +138,9 @@
     prefix = "C-q"; # Remap prefix from 'C-b' to 'C-q'
     keyMode = "emacs";
     mouse = true; # Enable mouse support
-    terminal = "screen-256color";
+    # Matches tmux 3.7; screen-256color under-declares italics/extended keys.
+    # Caveat: ssh out of tmux to a host lacking this entry gets an unknown TERM.
+    terminal = "tmux-256color";
     historyLimit = 100000;
 
     extraConfig = ''

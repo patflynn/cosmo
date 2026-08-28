@@ -33,7 +33,6 @@ in
     ../../modules/common/system.nix
     ../../modules/common/users.nix
     ../../modules/common/peripherals.nix
-    ../../modules/common/desktop.nix
     ../../modules/common/gaming.nix
     ../../modules/common/ddcci.nix
     ../../modules/common/crash-capture.nix
@@ -110,21 +109,12 @@ in
     postStart = "${pkgs.iproute2}/bin/ip link set vm-klaus-0 master br-klaus";
   };
 
-  # Dell U4025QW: scale up GTK app fonts (~140 real DPI vs 96 assumed)
   # valley's [a]sk verb is config-less; NAME must match the registry entry for
   # this key, see the signingName comment on services.valley.integrator below.
   environment.sessionVariables = {
-    GDK_DPI_SCALE = "1.25";
     VALLEY_ATTEST_KEY = "/home/${config.cosmo.user.default}/.ssh/id_ed25519";
     VALLEY_ATTEST_NAME = "patrick";
   };
-
-  # ---------------------------------------------------------------------------
-  # Monitor Control (DDC/CI)
-  # ---------------------------------------------------------------------------
-  modules.ddcci.enable = true;
-
-  modules.gaming.enable = true;
 
   # ---------------------------------------------------------------------------
   # Crash capture / hang recovery (Track A of the silent-freeze diagnosis)
@@ -136,12 +126,6 @@ in
   # to the persistent journal, and archives any pstore panic record on next boot.
   # Left OFF everywhere else (build workers / microVMs must never self-panic).
   modules.crashCapture.enable = true;
-
-  # Auto-login to desktop session
-  services.displayManager.autoLogin = {
-    enable = true;
-    user = config.cosmo.user.default;
-  };
 
   # ---------------------------------------------------------------------------
   # Media Server Configuration
@@ -533,12 +517,12 @@ in
   # ---------------------------------------------------------------------------
   # Replaces services.ollama, whose vendored ggml fork failed to compile
   # (ollama-cuda 0.32.1) and wedged the nightly rebuild. llama-swap fronts one
-  # RTX 4090 (24GB): one model loaded per request, idle-unloaded (32B Q4_K_M +
-  # 8192 KV ~= 20GB -> no co-residency). CUDA llama.cpp invoked per-command, not
-  # a standalone services.llama-cpp (which would hold a second always-on
-  # server), so llama-swap owns each llama-server lifecycle. Reuses ollama's
-  # :11434, OpenAI API, identical model IDs; GGUFs pulled via -hf into
-  # LLAMA_CACHE. Localhost-only (no openFirewall); open-webui the sole consumer.
+  # RTX 3080 Ti (12GB): one model loaded per request, idle-unloaded (14B-class
+  # Q4_K_M + 8192 KV ~= 10GB -> no co-residency). CUDA llama.cpp invoked
+  # per-command, not a standalone services.llama-cpp (which would hold a second
+  # always-on server), so llama-swap owns each llama-server lifecycle. Reuses
+  # ollama's :11434 and OpenAI API; GGUFs pulled via -hf into LLAMA_CACHE.
+  # Localhost-only (no openFirewall); open-webui discovers the IDs over the API.
   #
   # cudaSupport overrides are unfree, so cache.nixos.org has no prebuilt paths
   # (~20min of local nvcc per llama-cpp bump); this cache does. Appends to the
@@ -564,14 +548,12 @@ in
       listenAddress = "127.0.0.1";
       port = 11434;
       settings = {
-        # First pull (~20GB) is slow; wait before declaring unhealthy.
+        # First pull (~9GB) is slow; wait before declaring unhealthy.
         healthCheckTimeout = 1800;
         models = {
-          "qwen2.5-coder:32b" = mkModel "bartowski/Qwen2.5-Coder-32B-Instruct-GGUF:Q4_K_M";
-          "qwen3:32b" = mkModel "unsloth/Qwen3-32B-GGUF:Q4_K_M";
-          # No clean upstream 'gemma4:26b'; nearest ~27B Q4_K_M is Gemma 3 27B
-          # IT. ID kept identical so callers see the same name.
-          "gemma4:26b" = mkModel "unsloth/gemma-3-27b-it-GGUF:Q4_K_M";
+          "qwen2.5-coder:14b" = mkModel "bartowski/Qwen2.5-Coder-14B-Instruct-GGUF:Q4_K_M";
+          "qwen3:14b" = mkModel "unsloth/Qwen3-14B-GGUF:Q4_K_M";
+          "gemma3:12b" = mkModel "unsloth/gemma-3-12b-it-GGUF:Q4_K_M";
         };
       };
     };
@@ -697,43 +679,6 @@ in
   ];
 
   security.sudo.wheelNeedsPassword = true;
-
-  # ---------------------------------------------------------------------------
-  # NZXT Kraken Z-series LCD (USB 1e71:3008)
-  # ---------------------------------------------------------------------------
-  # Round LCD mounts rotated 180° in this case, so the liquid-temp readout is
-  # upside-down until re-oriented. Two parts:
-  #  1) liquidctl ships 71-liquidctl.rules (TAG+="uaccess" for 1e71:3008);
-  #     without it every liquidctl call fails "no langid" (no non-root access).
-  #  2) a root oneshot re-orients the panel. It's not a boot dependency — the
-  #     USB HID may enumerate late, so udev pulls it on device `add` (below),
-  #     firing on cold boot and on replug. initialize is required per plug
-  #     before set; the loop absorbs the settle window after enumeration.
-  services.udev.packages = [ pkgs.liquidctl ];
-  services.udev.extraRules = ''
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1e71", ATTR{idProduct}=="3008", TAG+="systemd", ENV{SYSTEMD_WANTS}+="kraken-lcd-orientation.service"
-  '';
-  systemd.services.kraken-lcd-orientation = {
-    description = "Set NZXT Kraken LCD to 180° (upright)";
-    serviceConfig = {
-      Type = "oneshot";
-      # Bounds the settle-retry loop; well under the udev-triggered budget.
-      TimeoutStartSec = 60;
-    };
-    path = [ pkgs.liquidctl ];
-    script = ''
-      # Pin the cooler so a future second liquidctl device can't ambiguate.
-      dev="--vendor 0x1e71 --product 0x3008"
-      for _ in $(seq 1 10); do
-        if liquidctl $dev initialize && liquidctl $dev set lcd screen orientation 180; then
-          exit 0
-        fi
-        sleep 2
-      done
-      echo "kraken LCD unreachable after retries" >&2
-      exit 1
-    '';
-  };
 
   # ---------------------------------------------------------------------------
   # PXE Boot Server (TFTP)

@@ -38,18 +38,33 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
 - Clean shutdown. Strip the H710 completely (it retires): 4090, RM1200x, ITX board+RAM,
   WD NVMe + 4TB SATA out. Kraken off the CPU — **stock AM4 backplate must stay on the
   board** (Noctua SecuFirm2 needs it). Graceless extraction is fine.
+  - **Third M.2:** there is an unlabelled 2280 NVMe in the underside (chipset) slot that
+    cosmo has never documented — not in `rpool`, not in `tank`, no `nvme1` anywhere in
+    the repo's history. It was well seated and the box ran fine with it, so it goes back
+    in the same slot: the underside is unreachable once the board is in the Lian Li, and
+    reseating it restores the known-good configuration. Identify it in software after
+    first boot (below), not on the bench.
 - Lian Li build: board in, NH-U12A on (NT-H1 in box; fans clear of DIMMs, can slide up),
-  3080 Ti in, SF750 in (check SFX bracket), both drives connected.
+  3080 Ti in, SF750 in (check SFX bracket), both pool drives connected, mystery M.2 back
+  in the underside slot **before** the board goes in.
 - First boot at the desk, monitor on the 3080 Ti (same NVIDIA driver, no config change):
   - Boots the pre-diet or diet config depending on merge timing; converge fixes drift:
     `sudo systemctl start cosmo-rebuild` (or wait for the hourly timer).
   - Sanity: `zpool status -x` → both pools; `nvidia-smi` → 3080 Ti; `tailscale status`.
+  - If it doesn't boot: the mystery M.2 may carry its own ESP. BIOS NVRAM travels with the
+    board so the boot order should be intact, but if CMOS got cleared, F11 → pick the WD
+    drive, then fix the boot order. Not a sign anything is broken.
+  - If `tank` is missing: check the board manual's M.2/SATA lane-sharing table before
+    suspecting the drive — some AM4 ITX boards disable a SATA port when the chipset M.2 is
+    populated. Unlikely (it already ran this way), but it is the one failure mode that
+    points back at this card.
 - Relocate under stairs: 2.5GbE into the switch/UDM (same MAC → same IP 192.168.1.28,
   PXE config unchanged), power, boot unattended.
 
 ### Service sweep (over SSH)
 
 ```
+lsblk -o NAME,MODEL,SERIAL,SIZE       # is the mystery M.2 there? rpool = WDS100T1X0E-00AFY0
 zpool status -x                       # pools healthy
 systemctl --failed                    # expect none
 ls /mnt/media /mnt/personal           # tank mounts
@@ -94,6 +109,12 @@ llama-swap serves the new 14B roster (first pull per model is slow, ~9GB each).
 
 - Docs: refresh `classic-laddie-hardware.md` (3080 Ti becomes true again), memory
   updates (4090 → weller), sell/recycle H710 + Kraken.
+- Identify the mystery M.2: `nvme id-ctrl /dev/nvme1` + `blkid` for contents. Label is
+  peeled, so software is the only read. Decide keep / wipe / pull, and record it in
+  `classic-laddie-hardware.md` — which currently lists only the two pool drives. If it
+  never appears, the chipset slot is disabled in BIOS or the drive is dead; either way it
+  is inert and can wait for the next time the board is out.
 - Watch crash-capture on laddie: does the silent-lockup history follow the ITX board?
+  The underside M.2 is a suspect worth ruling in or out.
 - Valley attest from weller: registry `signs:` grant + env vars (tracked in runbook).
 - Week-later: temps/dust under the stairs, UPS decision.

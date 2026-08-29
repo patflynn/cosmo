@@ -40,6 +40,19 @@ This document outlines the hardware specifications of the `classic-laddie` host 
         *   `tank/media`: Mounted at `/mnt/media`
         *   `tank/personal`: Mounted at `/mnt/personal`
 
+### Unidentified NVMe (underside M.2)
+
+*   **Slot:** chipset M.2 on the underside of the ITX board
+*   **Status:** present in hardware, absent from this document's original inventory and from
+    every NixOS config — not a member of `rpool` or `tank`, and `nvme1` appears nowhere in
+    cosmo's history. Physically well seated; the machine ran normally with it installed.
+*   **Identified from the PCB only** (retail label has been peeled off): single-sided M.2
+    2280, M-key, SanDisk NAND, 1GB Nanya DDR4 cache (`NT5AD512M16G4-HR`), components dated
+    2020–21. Same family as the SN850 boot drive, so the PCB alone does not distinguish it.
+*   **Open:** model, capacity and contents. Read with `lsblk -o NAME,MODEL,SERIAL,SIZE`,
+    `nvme id-ctrl`, and `blkid` once the box is up in the Lian Li; `rpool`'s drive reports
+    `WDS100T1X0E-00AFY0` and its ESP is `EC47-D6C0`. Do not wipe before reading.
+
 ## Network Interfaces
 *   **Wired Ethernet:** Intel Corporation Ethernet Controller I225-V [8086:15f3]
 *   **Wireless:** MEDIATEK Corp. MT7921K (RZ608) Wi-Fi 6E 80MHz [14c3:0608]

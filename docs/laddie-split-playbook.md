@@ -73,6 +73,14 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
   - Right-size the count: two or three case fans is plenty here. Under the stairs the
     problem is dust and restricted airflow, so favour filtered intakes and mild positive
     pressure over fan count.
+  - Airflow: **bottom = intake** (open blade face down), top/rear = exhaust. Bottom intake
+    feeds the 3080 Ti directly, works with convection, and is the only orientation that
+    uses the bottom dust filter. Target 2x bottom intake + 1x rear exhaust for positive
+    pressure (needs the hub); 1 + 1 on a splitter is acceptable and slightly dustier. The
+    NH-U12A points at the rear vent, so it assists exhaust for free. Fan frames carry two
+    moulded arrows (airflow, rotation); air exits the side with the motor struts.
+  - The SF750 has its own intake and filter section — do not count its vent as a fan mount
+    or block it.
 - Lian Li build: board in, NH-U12A on (NT-H1 in box; fans clear of DIMMs, can slide up),
   3080 Ti in, SF750 in (check SFX bracket), both pool drives connected, mystery M.2 back
   in the underside slot **before** the board goes in.
@@ -89,6 +97,10 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
     points back at this card.
 - Relocate under stairs: 2.5GbE into the switch/UDM (same MAC → same IP 192.168.1.28,
   PXE config unchanged), power, boot unattended.
+  - **Not on carpet.** Bottom intake draws the dirtiest air in the room; on carpet the feet
+    sink, the intake chokes and it pulls fibres into the filter. Stand it on a hard
+    surface (shelf, paver, offcut) with real clearance under the feet. This decision
+    dominates the week-later temps/dust check.
 
 ### Service sweep (over SSH)
 

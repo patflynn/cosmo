@@ -1,0 +1,19 @@
+{
+  "id": "20260829-1826-2ca52528",
+  "prompt": "# Refresh docs/classic-laddie-hardware.md after the laddie-split surgery\n\nThe classic-laddie hardware surgery completed 2026-08-29 (plan: the laddie-split project).\nThe machine kept its board, RAM, and disks but changed case, cooler, GPU, and location.\n`docs/classic-laddie-hardware.md` is now wrong in several places and right in one it used to be\nwrong in. Bring it to truth.\n\n## Verified facts (from the live machine and the merged config, 2026-08-29)\n\n- GPU: AORUS GeForce RTX 3080 Ti Master 12GB (GV-N308TAORUS M-12GD), proprietary NVIDIA driver.\n  The 4090 left for the new desktop build (weller). The doc's old \"RTX 3080 Ti\" claim is TRUE\n  again — but audit its surrounding details (VRAM sizing notes, model-roster implications).\n- Case: Lian Li (white/wood); cooler: Noctua NH-U12A (the H710 case and Kraken AIO retired).\n- Location: under the stairs, wired ethernet, a KVM attached for console access. Headless duty:\n  server roles only — desktop duty removed by PR #763 (\"drop desktop duty, resize LLM roster\n  for the 3080 Ti\"), which is deployed.\n- LLM roster (from `hosts/classic-laddie/default.nix`, llama-swap on :11434):\n  qwen2.5-coder:14b, qwen3:14b, gemma3:12b — Q4_K_M, sized for 12GB VRAM. Big-model serving is\n  planned to move to weller (4090).\n- Everything else about the machine (board, DDR4, drives/pools) is unchanged — verify what the\n  doc claims against `hosts/classic-laddie/` and correct only what's wrong; do not invent specs\n  you cannot source from the repo or this brief.\n\n## Scope\n\n- Update `docs/classic-laddie-hardware.md` only (GPU, case, cooler, location/console-access,\n  driver, roster, and drop or refresh any stale VM-planning conclusion tied to the old\n  hardware). Do NOT write the weller build doc — that machine's build is not confirmed done;\n  it is deliberately out of scope here.\n- If a host table exists in README.md or .klaus/context.md, check it still matches; touch it\n  only if it names hardware facts this surgery changed.\n- Normal PR flow. Match the doc's existing voice and structure; terse, information-dense.\n\n## Acceptance\n\n- `nix flake check` passes (docs shouldn't affect it, but run it and paste the final lines).\n- PR description lists each corrected claim as old → new.\n",
+  "issue": null,
+  "branch": "agent/20260829-1826-2ca52528",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260829-1826-2ca52528",
+  "tmux_pane": "%2",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260829-1826-2ca52528.jsonl",
+  "created_at": "2026-08-29T18:26:54-04:00",
+  "cost_usd": 0.8423316000000001,
+  "duration_ms": 23627,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/765",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260829-1826-2ca52528",
+  "claude_session_id": "690a11c6-002d-495f-ba97-1352c01ff475",
+  "model": "sonnet"
+}

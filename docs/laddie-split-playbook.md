@@ -56,6 +56,23 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
   Intel-only step). Before mounting: unscrew the **four grey NZXT standoffs** the Kraken
   left threaded into the AM4 backplate and bag them with the AIO so it stays sellable.
   Clean the IHS before the NT-H1.
+- Fans — the ITX board has very few headers, so plan for **two**:
+  - `CPU_FAN`: both NH-U12A fans via Noctua's supplied 4-pin Y-cable, on the CPU curve.
+  - `SYS_FAN`: all case fans. Two fans → passive Y-splitter (a header is good for ~1A/12W,
+    two 120mm are well under). Three or more → SATA-powered PWM hub, so fan power comes
+    from the PSU and the header only carries the PWM signal. Do not stack splitters.
+  - Only one fan per group reports RPM; the rest are controlled but invisible. Harmless.
+  - **Check the fan connectors:** 4-pin = PWM and works on a hub; **3-pin = DC** and will
+    run at 100% forever behind a PWM hub — use a splitter and set the header to DC mode.
+  - Lights are not wanted on a headless box under the stairs: leave any proprietary RGB
+    leads coiled and unplugged, and skip the RGB hub entirely. **Never plug a proprietary
+    4-pin RGB connector into a motherboard 12V RGB header** — it fits and the pinout is
+    wrong. One less hub, one less cable run, one less failure mode.
+  - Salvage a fan hub from the H710 (often on the back of the tray) and the Kraken box
+    before buying one; the case is being retired anyway.
+  - Right-size the count: two or three case fans is plenty here. Under the stairs the
+    problem is dust and restricted airflow, so favour filtered intakes and mild positive
+    pressure over fan count.
 - Lian Li build: board in, NH-U12A on (NT-H1 in box; fans clear of DIMMs, can slide up),
   3080 Ti in, SF750 in (check SFX bracket), both pool drives connected, mystery M.2 back
   in the underside slot **before** the board goes in.

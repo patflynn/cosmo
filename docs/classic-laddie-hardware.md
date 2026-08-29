@@ -11,6 +11,14 @@ This document outlines the hardware specifications of the `classic-laddie` host 
 *   **Virtualization:** AMD-V enabled
 *   **Max Frequency:** 5084.0000 MHz
 
+## Motherboard
+*   **Model:** Gigabyte X570SI AORUS (mini-ITX, DDR4, Socket AM4)
+*   **M.2 slots:** two — top (CPU-attached, under the thermal guard) and underside
+    (chipset-attached; see the unidentified NVMe below)
+*   **Cooler mount:** stock AM4 backplate is present and must stay on the board — Noctua
+    SecuFirm2 threads into it. Stock plastic retention brackets were removed for the
+    Kraken AIO and are gone; the Noctua AM4 mount does not need them.
+
 ## Memory (RAM)
 *   **Total:** 31 GiB
 *   **Used:** ~3.0 GiB

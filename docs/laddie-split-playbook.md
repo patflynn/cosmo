@@ -50,6 +50,12 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
     any pad that is hardened, torn, or has taken a set. Inspect both drives for heat
     evidence (browned PCB near the controller, deformed parts) while they are in hand.
     This is a two-minute check that cannot be repeated once the board is mounted.
+- NH-U12A gotchas: the box has **two** manuals — use the one headed **AM5, AM4**, not the
+  LGA leaflet. Intel parts are `NM-I*`, AMD parts are `NM-A*`; if a part number in hand has
+  an I after the NM-, it is the wrong kit. AM4 has no hole-position choice (that is an
+  Intel-only step). Before mounting: unscrew the **four grey NZXT standoffs** the Kraken
+  left threaded into the AM4 backplate and bag them with the AIO so it stays sellable.
+  Clean the IHS before the NT-H1.
 - Lian Li build: board in, NH-U12A on (NT-H1 in box; fans clear of DIMMs, can slide up),
   3080 Ti in, SF750 in (check SFX bracket), both pool drives connected, mystery M.2 back
   in the underside slot **before** the board goes in.

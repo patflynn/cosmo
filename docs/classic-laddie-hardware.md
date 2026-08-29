@@ -52,6 +52,13 @@ This document outlines the hardware specifications of the `classic-laddie` host 
 *   **Open:** model, capacity and contents. Read with `lsblk -o NAME,MODEL,SERIAL,SIZE`,
     `nvme id-ctrl`, and `blkid` once the box is up in the Lian Li; `rpool`'s drive reports
     `WDS100T1X0E-00AFY0` and its ESP is `EC47-D6C0`. Do not wipe before reading.
+*   **Thermal:** discovered during the 2026-08 teardown that an M.2 thermal pad still had
+    its protective film on, so at least one of these drives has run its whole life with no
+    heatsink contact. Film removed during the move. Check `warning_temp_time` and
+    `critical_comp_time` in `nvme smart-log` on **both** drives — those are lifetime
+    minutes above threshold, and large values mean the drive has been cooking. A drive that
+    overheats and drops off PCIe is also the leading suspect for the host's silent-lockup
+    history, since the resulting AER storm hangs the box without leaving log evidence.
 
 ## Network Interfaces
 *   **Wired Ethernet:** Intel Corporation Ethernet Controller I225-V [8086:15f3]

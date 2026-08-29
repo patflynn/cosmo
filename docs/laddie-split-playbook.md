@@ -44,6 +44,12 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
     in the same slot: the underside is unreachable once the board is in the Lian Li, and
     reseating it restores the known-good configuration. Identify it in software after
     first boot (below), not on the bench.
+  - **Thermal pads — check every M.2 pad before the board goes in.** At least one shipped
+    with its protective film never peeled, so that drive has run with no heatsink contact
+    for the life of the box. Peel the film on both M.2 slots and the chipset pad; replace
+    any pad that is hardened, torn, or has taken a set. Inspect both drives for heat
+    evidence (browned PCB near the controller, deformed parts) while they are in hand.
+    This is a two-minute check that cannot be repeated once the board is mounted.
 - Lian Li build: board in, NH-U12A on (NT-H1 in box; fans clear of DIMMs, can slide up),
   3080 Ti in, SF750 in (check SFX bracket), both pool drives connected, mystery M.2 back
   in the underside slot **before** the board goes in.
@@ -65,6 +71,8 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
 
 ```
 lsblk -o NAME,MODEL,SERIAL,SIZE       # is the mystery M.2 there? rpool = WDS100T1X0E-00AFY0
+for d in /dev/nvme?n1; do nvme smart-log "${d%n1}" | \
+  grep -iE 'temperature|critical_comp|warning_temp|media_errors|unsafe|percentage'; done
 zpool status -x                       # pools healthy
 systemctl --failed                    # expect none
 ls /mnt/media /mnt/personal           # tank mounts
@@ -114,7 +122,16 @@ llama-swap serves the new 14B roster (first pull per model is slow, ~9GB each).
   `classic-laddie-hardware.md` — which currently lists only the two pool drives. If it
   never appears, the chipset slot is disabled in BIOS or the drive is dead; either way it
   is inert and can wait for the next time the board is out.
+- Read the thermal damage question off SMART on **both** drives: `warning_temp_time` and
+  `critical_comp_time` are lifetime minutes above the thresholds, so large non-zero values
+  mean a drive has been cooking with its film-covered pad. Pair with `media_errors` and
+  `percentage_used`. A cooked mystery drive justifies a future teardown to pull it; a
+  cooked SN850 is a replacement plan for `rpool` while the pool is still healthy.
 - Watch crash-capture on laddie: does the silent-lockup history follow the ITX board?
-  The underside M.2 is a suspect worth ruling in or out.
+  The underside M.2 is the leading physical suspect — an NVMe that overheats and drops off
+  PCIe can throw an AER storm that wedges the box with nothing in the logs, and it does
+  that even for a drive no pool mounts. Peeling the pad film may have fixed it outright.
+  Note that the move confounds this (new case, PSU, GPU, cooler), so lean on SMART and
+  `journalctl -k | grep -i 'aer\|pcieport\|nvme'` rather than on lockups recurring or not.
 - Valley attest from weller: registry `signs:` grant + env vars (tracked in runbook).
 - Week-later: temps/dust under the stairs, UPS decision.

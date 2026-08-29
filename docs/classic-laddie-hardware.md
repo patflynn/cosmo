@@ -13,8 +13,21 @@ This document outlines the hardware specifications of the `classic-laddie` host 
 
 ## Motherboard
 *   **Model:** Gigabyte X570SI AORUS (mini-ITX, DDR4, Socket AM4)
-*   **M.2 slots:** two — top (CPU-attached, under the thermal guard) and underside
-    (chipset-attached; see the unidentified NVMe below)
+*   **Manual:** <https://download.gigabyte.com/FileList/Manual/mb_manual_x570si-aorus-pro-ax_e_0720.pdf>
+*   **M.2 slots:** three sockets total —
+    *   `M2A_SOCKET` — CPU-attached, Socket 3 M key 2280, PCIe 4.0 x4 with the 5950X. Top
+        of the board, under the thermal guard. This is `rpool`'s SN850.
+    *   `M2B_SOCKET` — chipset-attached, Socket 3 M key 2280, PCIe 4.0/3.0 x4/x2. The
+        manual's note reads "The connector is on the back of the motherboard" — this is the
+        underside slot holding the unidentified NVMe below.
+    *   `M2_WIFI` — Socket 1, CPU-attached, for the wireless module. Separate socket, so
+        the underside card cannot be the Wi-Fi card.
+*   **SATA:** 4 x SATA 6Gb/s, chipset. The manual documents **no** shared-bandwidth or
+    disable relationship between the M.2 sockets and the SATA ports — populating
+    `M2B_SOCKET` does not cost a SATA port on this board.
+*   **Fan headers:** three — `CPU_FAN`, `SYS_FAN1`, `SYS_FAN2`. All 4-pin, each rated 2A /
+    24W, so one header comfortably drives three 120mm fans on a passive splitter.
+*   **RGB headers:** `D_LED` (addressable) and `LED_C` (12V RGB strip, 2A max). Unused.
 *   **Cooler mount:** stock AM4 backplate is present and must stay on the board — Noctua
     SecuFirm2 threads into it. Stock plastic retention brackets were removed for the
     Kraken AIO and are gone; the Noctua AM4 mount does not need them.

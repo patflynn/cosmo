@@ -56,27 +56,27 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
   Intel-only step). Before mounting: unscrew the **four grey NZXT standoffs** the Kraken
   left threaded into the AM4 backplate and bag them with the AIO so it stays sellable.
   Clean the IHS before the NT-H1.
-- Fans — the ITX board has very few headers, so plan for **two**:
+- Fans — the board has **three** headers (`CPU_FAN`, `SYS_FAN1`, `SYS_FAN2`), all 4-pin,
+  each rated **2A / 24W** (manual p.16). That is generous: a 120mm fan draws ~0.1-0.25A, so
+  one header carries three of them on a passive splitter with room to spare. **No powered
+  hub needed.**
   - `CPU_FAN`: both NH-U12A fans via Noctua's supplied 4-pin Y-cable, on the CPU curve.
-  - `SYS_FAN`: all case fans. Two fans → passive Y-splitter (a header is good for ~1A/12W,
-    two 120mm are well under). Three or more → SATA-powered PWM hub, so fan power comes
-    from the PSU and the header only carries the PWM signal. Do not stack splitters.
-  - Only one fan per group reports RPM; the rest are controlled but invisible. Harmless.
-  - **Check the fan connectors:** 4-pin = PWM and works on a hub; **3-pin = DC** and will
-    run at 100% forever behind a PWM hub — use a splitter and set the header to DC mode.
+  - `SYS_FAN1`: the three bottom intakes, on a 3-way splitter.
+  - `SYS_FAN2`: rear exhaust.
+  - Only one fan per splitter reports RPM; the rest are controlled but invisible. Harmless.
+  - **Check the fan connectors:** 4-pin = PWM. **3-pin = DC** — still fine here, but set
+    that header to DC mode in BIOS or the fan runs at 100% forever.
   - Lights are not wanted on a headless box under the stairs: leave any proprietary RGB
     leads coiled and unplugged, and skip the RGB hub entirely. **Never plug a proprietary
     4-pin RGB connector into a motherboard 12V RGB header** — it fits and the pinout is
     wrong. One less hub, one less cable run, one less failure mode.
-  - Salvage a fan hub from the H710 (often on the back of the tray) and the Kraken box
-    before buying one; the case is being retired anyway.
   - Right-size the count: two or three case fans is plenty here. Under the stairs the
     problem is dust and restricted airflow, so favour filtered intakes and mild positive
     pressure over fan count.
   - Airflow: **bottom = intake** (open blade face down), top/rear = exhaust. Bottom intake
     feeds the 3080 Ti directly, works with convection, and is the only orientation that
-    uses the bottom dust filter. Target 2x bottom intake + 1x rear exhaust for positive
-    pressure (needs the hub); 1 + 1 on a splitter is acceptable and slightly dustier. The
+    uses the bottom dust filter. Three bottom intakes plus one rear exhaust gives positive
+    pressure, which is what a dusty spot wants; do not populate every mount beyond that. The
     NH-U12A points at the rear vent, so it assists exhaust for free. Fan frames carry two
     moulded arrows (airflow, rotation); air exits the side with the motor struts.
   - The SF750 has its own intake and filter section — do not count its vent as a fan mount
@@ -91,10 +91,9 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
   - If it doesn't boot: the mystery M.2 may carry its own ESP. BIOS NVRAM travels with the
     board so the boot order should be intact, but if CMOS got cleared, F11 → pick the WD
     drive, then fix the boot order. Not a sign anything is broken.
-  - If `tank` is missing: check the board manual's M.2/SATA lane-sharing table before
-    suspecting the drive — some AM4 ITX boards disable a SATA port when the chipset M.2 is
-    populated. Unlikely (it already ran this way), but it is the one failure mode that
-    points back at this card.
+  - If `tank` is missing it is not lane sharing: the manual documents four chipset SATA
+    ports and two M.2 sockets with no shared-bandwidth or disable note anywhere. Treat a
+    missing `tank` as a cable or drive problem.
 - Relocate under stairs: 2.5GbE into the switch/UDM (same MAC → same IP 192.168.1.28,
   PXE config unchanged), power, boot unattended.
   - **Not on carpet.** Bottom intake draws the dirtiest air in the room; on carpet the feet

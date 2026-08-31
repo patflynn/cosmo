@@ -19,7 +19,10 @@
   # ath12k_pci); it and the RTL8126 (5GbE) are both in-tree on this kernel;
   # their firmware comes from enableRedistributableFirmware (not-detected.nix
   # above).
-  boot.kernelModules = [ "kvm-amd" ];
+  boot.kernelModules = [
+    "kvm-amd"
+    "nct6687" # Super I/O fan monitoring; see the fan control section below
+  ];
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
@@ -72,6 +75,23 @@
   # mkOverride 60 beats gaming.nix's default-priority assignment while still
   # losing to the mkForce in its stable-kernel specialisation.
   boot.kernelPackages = lib.mkOverride 60 pkgs.linuxPackages;
+
+  # ---------------------------------------------------------------------------
+  # Fan monitoring and control - Nuvoton NCT6687D
+  # ---------------------------------------------------------------------------
+  # Without a Super I/O driver this board exposes no fan or PWM hwmon nodes at
+  # all (just nvme, amdgpu, k10temp and the DIMM sensors), so nothing on the OS
+  # side can see RPMs or touch the fan headers — they run loud regardless of how
+  # cold the machine is. The in-tree nct6683 driver only half-fits: it needs
+  # force=1, maps 4 of the ~8 headers, and ships no pwm*_enable files, so PWM is
+  # read-only. The out-of-tree nct6687d module drives the chip properly.
+  #
+  # Built via config.boot.kernelPackages so it tracks the kernel pinned above
+  # rather than whatever pkgs.linuxPackages happens to be.
+  boot.extraModulePackages = [ config.boot.kernelPackages.nct6687d ];
+
+  # nct6683 claims the same NCT668x ISA device; keep it out of the way.
+  boot.blacklistedKernelModules = [ "nct6683" ];
 
   # ---------------------------------------------------------------------------
   # Networking

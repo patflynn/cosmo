@@ -111,6 +111,16 @@
       options = "--delete-older-than 7d";
     };
 
+    # Cap how many generations systemd-boot keeps on the ESP (boot entries plus
+    # their kernel/initrd files). Older generations stay in the nix profile and
+    # remain reachable via `nixos-rebuild --rollback`; they just drop off the
+    # boot menu. Needed because an hourly-converging host (modules/converge)
+    # accumulates far more generations inside the 7d gc window than the ESP can
+    # hold -- classic-laddie's converge failed 2026-08-31 with "failed to
+    # install bootloader: no space left on device". mkDefault so a host with a
+    # larger ESP can raise it.
+    boot.loader.systemd-boot.configurationLimit = lib.mkDefault 10;
+
     # Prefer reclaiming page cache over swapping anonymous pages; mitigates the
     # swap-thrash D-state hang seen when a heavy build runs alongside a desktop.
     boot.kernel.sysctl."vm.swappiness" = lib.mkDefault 10;

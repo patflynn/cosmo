@@ -1,11 +1,40 @@
 {
   config,
+  lib,
   pkgs,
   modulesPath,
   inputs,
   ...
 }:
 
+let
+  openrgbCfg = config.services.hardware.openrgb;
+
+  # Two-subcommand wrapper over the OpenRGB CLI. It talks to the local SDK
+  # server rather than the devices directly, so it needs no root. Omitting
+  # --device applies to every detected device. Note the CLI exits 0 even when
+  # it cannot reach the server (it silently falls back to direct access, which
+  # needs root), so read its output rather than trusting the exit status.
+  rgb = pkgs.writeShellScriptBin "rgb" ''
+    set -euo pipefail
+
+    openrgb=${lib.getExe openrgbCfg.package}
+    server=127.0.0.1:${toString openrgbCfg.server.port}
+
+    apply() {
+      "$openrgb" --client "$server" --mode static --color "$1"
+    }
+
+    case "''${1:-}" in
+      off) apply 000000 ;;
+      on) apply FFFFFF ;;
+      *)
+        echo "usage: rgb {on|off}" >&2
+        exit 1
+        ;;
+    esac
+  '';
+in
 {
   imports = [
     ./hardware.nix
@@ -89,6 +118,20 @@
       };
     };
   };
+
+  # ---------------------------------------------------------------------------
+  # RGB Lighting
+  # ---------------------------------------------------------------------------
+  # The X870E TOMAHAWK's Mystic Light USB controller (0db0:0076) also drives the
+  # Liquid Freezer III's A-RGB via JRAINBOW, and the 4090 is reached over i2c.
+  # motherboard = "amd" pulls in i2c-dev + i2c-piix4 for the AM5 SMBus; the
+  # service ships the udev rules and runs the SDK server the "rgb" script uses.
+  services.hardware.openrgb = {
+    enable = true;
+    motherboard = "amd";
+  };
+
+  environment.systemPackages = [ rgb ];
 
   # ---------------------------------------------------------------------------
   # Secrets

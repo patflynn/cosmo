@@ -244,13 +244,38 @@ card is pulled. If the desktop ever comes up on the wrong adapter, pin the compo
 disabling the iGPU in BIOS — the iGPU is a useful fallback if the 4090 needs to
 come out.
 
+### 6.6 RGB Lighting
+
+`services.hardware.openrgb` runs an SDK server on `127.0.0.1:6742` and installs
+the udev rules, so lighting is controllable without root. Two devices are
+expected: the board's MSI Mystic Light USB controller (`0db0:0076`), which also
+drives the Liquid Freezer III's A-RGB through JRAINBOW, and the Gigabyte RTX
+4090 over i2c (`motherboard = "amd"` loads `i2c-dev` + `i2c-piix4`).
+
+Check what was actually detected — the first scan can take a few seconds
+because it probes the GPU's i2c buses:
+
+```bash
+openrgb --list-devices
+```
+
+Then use the `rgb` wrapper:
+
+```bash
+rgb off   # every device to black
+rgb on    # every device to static white
+```
+
+The OpenRGB CLI exits 0 even when it fails, so read its output rather than the
+exit status if a device does not respond.
+
 ## 7. Configuration Map
 
 | File | Contents |
 |------|----------|
 | `hosts/weller/hardware.nix` | Bootloader, initrd, NVIDIA, filesystems, networking |
 | `hosts/weller/disk-config.nix` | disko: ESP + swap partition + `wpool` ZFS datasets |
-| `hosts/weller/default.nix` | Profile: users, desktop, gaming, tailscale, sshd, `stateVersion` |
+| `hosts/weller/default.nix` | Profile: users, desktop, gaming, tailscale, sshd, OpenRGB + `rgb`, `stateVersion` |
 | `flake.nix` | `weller` and `weller-bootstrap` targets |
 | `secrets/keys.nix` | Host key — added by hand after first boot (§5.2) |
 

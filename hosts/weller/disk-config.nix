@@ -2,6 +2,9 @@
 # Seagate FireCuda 510 NVMe (1.86TB) — the same physical drive as the pre-2026
 # weller, carried over from the dead X570 build and wiped for the rebuild.
 #
+# Unencrypted ZFS root. No whole-disk encryption and no ZFS native encryption:
+# this is a desktop that must boot unattended for Sunshine streaming.
+#
 # To apply during installation:
 #   sudo nix --experimental-features "nix-command flakes" run github:nix-community/disko -- --mode disko ./hosts/weller/disk-config.nix
 #
@@ -28,54 +31,63 @@
               ];
             };
           };
-          luks = {
-            size = "100%";
+          # A real partition, not a zvol: swapping onto a zvol deadlocks under
+          # memory pressure (ARC reclaim needs allocations to page out).
+          # Plain, no randomEncryption. Sized against DDR5 capacity; no
+          # hibernation requirement, so this is not a resumeDevice.
+          swap = {
+            size = "32G";
             content = {
-              type = "luks";
-              name = "cryptroot";
-              # Password will be prompted during disko run
-              settings = {
-                allowDiscards = true; # Enable TRIM for SSD
-              };
-              content = {
-                type = "btrfs";
-                extraArgs = [
-                  "-L"
-                  "nixos"
-                  "--nodiscard"
-                ];
-                subvolumes = {
-                  "@root" = {
-                    mountpoint = "/";
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
-                  "@home" = {
-                    mountpoint = "/home";
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
-                  "@nix" = {
-                    mountpoint = "/nix";
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
-                  "@swap" = {
-                    mountpoint = "/swap";
-                    mountOptions = [ "noatime" ];
-                    # Sized against DDR5 capacity; no hibernation requirement
-                    swap.swapfile.size = "32G";
-                  };
-                };
-              };
+              type = "swap";
+              randomEncryption = false;
             };
           };
+          zfs = {
+            size = "100%";
+            content = {
+              type = "zfs";
+              pool = "wpool";
+            };
+          };
+        };
+      };
+    };
+
+    # "wpool", not "rpool"/"tank" — distinct from classic-laddie's pools so a
+    # rescue import of this disk on that host can never collide.
+    zpool.wpool = {
+      type = "zpool";
+      options = {
+        ashift = "12";
+        autotrim = "on";
+      };
+      rootFsOptions = {
+        compression = "zstd";
+        atime = "off";
+        xattr = "sa";
+        acltype = "posixacl";
+        mountpoint = "none";
+        "com.sun:auto-snapshot" = "false";
+      };
+
+      datasets = {
+        root = {
+          type = "zfs_fs";
+          mountpoint = "/";
+          options.mountpoint = "legacy";
+        };
+        # Nix store: reproducible from the flake, never worth snapshotting.
+        nix = {
+          type = "zfs_fs";
+          mountpoint = "/nix";
+          options.mountpoint = "legacy";
+        };
+        # Its own dataset so it can be snapshotted and `zfs send` to
+        # classic-laddie's tank/personal.
+        home = {
+          type = "zfs_fs";
+          mountpoint = "/home";
+          options.mountpoint = "legacy";
         };
       };
     };

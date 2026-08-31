@@ -36,9 +36,10 @@
       "ahci"
       "usbhid"
       "sd_mod"
-      # The 9950X3D has an RDNA2 iGPU. Keep amdgpu in the initrd so the LUKS
-      # prompt renders natively when the console lands on the iGPU instead of
-      # the 4090 (udev binds it only if the device is actually there).
+      # The 9950X3D has an RDNA2 iGPU. Keep amdgpu in the initrd so the early
+      # console renders natively when it lands on the iGPU instead of the 4090
+      # (udev binds it only if the device is actually there) — the fallback
+      # path if the card is pulled.
       "amdgpu"
     ];
     systemd.enable = true;
@@ -50,16 +51,30 @@
   ];
 
   # ---------------------------------------------------------------------------
-  # Filesystem - Btrfs with LUKS encryption (managed by disko)
+  # Filesystem - ZFS root, unencrypted (managed by disko)
   # ---------------------------------------------------------------------------
   boot.supportedFilesystems = [
-    "btrfs"
+    "zfs"
     "ntfs"
   ];
+
+  # Explicitly opt into the safer 26.11+ default. Forced root pool import
+  # masks real problems (split-brain, missed exports) and risks data loss.
+  boot.zfs.forceImportRoot = false;
+
+  # ZFS upstream caps at kernel 6.19, but modules/common/gaming.nix (imported
+  # by this host) selects linux-zen, now 7.0.x — ZFS won't compile against it.
+  # Pin stable until nixpkgs ships a ZFS with a higher cap. sched-ext is
+  # upstream in 6.12+, so services.scx still works here.
+  #
+  # mkOverride 60 beats gaming.nix's default-priority assignment while still
+  # losing to the mkForce in its stable-kernel specialisation.
+  boot.kernelPackages = lib.mkOverride 60 pkgs.linuxPackages;
 
   # ---------------------------------------------------------------------------
   # Networking
   # ---------------------------------------------------------------------------
+  networking.hostId = "74182f4c"; # Required for ZFS
   networking.networkmanager.enable = true;
 
   # ---------------------------------------------------------------------------

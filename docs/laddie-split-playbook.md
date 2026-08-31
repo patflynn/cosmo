@@ -66,6 +66,19 @@ DIMMs before committing — side 420 mount is the fallback). Waiting on: Arctic 
   - Only one fan per splitter reports RPM; the rest are controlled but invisible. Harmless.
   - **Check the fan connectors:** 4-pin = PWM. **3-pin = DC** — still fine here, but set
     that header to DC mode in BIOS or the fan runs at 100% forever.
+  - BIOS fan curves (Smart Fan 6, F6). **These are not managed by Nix and a CMOS clear
+    wipes them**, so they are recorded here:
+    - Case fans: `Fan Control Use Temperature Input` = **System**, the ambient board
+      sensor. Not CPU (Ryzen Tctl spikes 10-20C in milliseconds and the fans surge), not
+      MOS or Chipset (they track CPU and I/O load, not case heat). `System` is also the
+      only option that picks up GPU heat, which under llama-swap load is the biggest
+      source in the box.
+    - `Temperature Interval` = 3-5C for hysteresis, or the fans hunt at a threshold.
+    - `Fan Stop` = **Disabled** (the default). Zero-RPM is a bad trade here: passively
+      cooled X570 chipset, dusty location, nobody listening.
+    - `FAN Control Mode` = PWM for 4-pin, Voltage for 3-pin.
+    - Floor around 30-40% with a gentle ramp; tune from NixOS with `lm_sensors` under real
+      load once it is up.
   - Lights are not wanted on a headless box under the stairs: leave any proprietary RGB
     leads coiled and unplugged, and skip the RGB hub entirely. **Never plug a proprietary
     4-pin RGB connector into a motherboard 12V RGB header** — it fits and the pinout is

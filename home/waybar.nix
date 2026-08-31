@@ -219,7 +219,13 @@ in
           format = "{temperatureC}°C";
           critical-threshold = 80;
           format-critical = "{temperatureC}°C";
-          hwmon-path = "/sys/class/hwmon/hwmon2/temp1_input";
+          # Address k10temp by its PCI device directory, not /sys/class/hwmon/hwmonN:
+          # hwmon indices are assigned in driver registration order and shift
+          # whenever a driver appears or disappears, which silently repoints this
+          # module at an unrelated sensor. 0000:00:18.3 is the AMD family SMN
+          # function and is stable across reboots.
+          hwmon-path-abs = "/sys/devices/pci0000:00/0000:00:18.3/hwmon";
+          input-filename = "temp1_input";
         };
 
         cpu = {

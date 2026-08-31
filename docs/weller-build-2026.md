@@ -96,6 +96,11 @@ Before installing anything:
 Two stages, to avoid the chicken-and-egg between agenix secrets and a host key
 that does not exist until the machine boots.
 
+> This two-stage flow is the **legacy** path, kept as the record of how weller
+> was installed. New installs generate the host key onto the target disk before
+> `nixos-install` and skip the bootstrap stage entirely — see
+> [new-machine-playbook.md](./new-machine-playbook.md).
+
 ### 5.1 Stage 1: Bootstrap Install
 
 `weller-bootstrap` is a minimal system: mutable users, SSH with the keys from

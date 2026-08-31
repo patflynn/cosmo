@@ -15,6 +15,10 @@ let
   # --device applies to every detected device. Note the CLI exits 0 even when
   # it cannot reach the server (it silently falls back to direct access, which
   # needs root), so read its output rather than trusting the exit status.
+  #
+  # Direct is the one mode all four detected controllers share: the RGB Fusion 2
+  # GPU (AORUS RTX 4090 MASTER) and the MSI Mystic Light controller only expose
+  # Direct, while Static exists on the ENE DRAM modules alone.
   rgb = pkgs.writeShellScriptBin "rgb" ''
     set -euo pipefail
 
@@ -22,7 +26,7 @@ let
     server=127.0.0.1:${toString openrgbCfg.server.port}
 
     apply() {
-      "$openrgb" --client "$server" --mode static --color "$1"
+      "$openrgb" --client "$server" --mode direct --color "$1"
     }
 
     case "''${1:-}" in

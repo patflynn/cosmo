@@ -14,6 +14,7 @@
     ../../modules/common/peripherals.nix
     ../../modules/common/desktop.nix
     ../../modules/common/gaming.nix
+    inputs.github-relay.nixosModules.default
   ];
 
   cosmo.user.default = "patrick";
@@ -59,6 +60,46 @@
   # Gaming
   # ---------------------------------------------------------------------------
   modules.gaming.enable = true;
+
+  # ---------------------------------------------------------------------------
+  # GitHub Relay (webhook forwarder → klaus)
+  # ---------------------------------------------------------------------------
+  # klaus runs on this host and needs webhook-driven pipeline events. It listens
+  # on 127.0.0.1:9800; the funnel exposes the relay at
+  # https://weller.coin-inconnu.ts.net for GitHub to deliver to.
+  services.github-relay = {
+    enable = true;
+    port = 8077;
+    webhookSecretFile = config.age.secrets.github-webhook-secret.path;
+    funnel.enable = true;
+
+    consumers = {
+      # Forward PR/CI events to klaus
+      klaus = {
+        repo = "*";
+        events = [
+          "push"
+          "check_run"
+          "check_suite"
+          "pull_request"
+          "pull_request_review"
+        ];
+        action = "http";
+        url = "http://127.0.0.1:9800/webhook/github";
+      };
+    };
+  };
+
+  # ---------------------------------------------------------------------------
+  # Secrets
+  # ---------------------------------------------------------------------------
+  # World-readable because the relay runs under systemd's DynamicUser: its UID
+  # is allocated at start, so the secret can't be chowned to it. Mirrors
+  # classic-laddie. Tighten to 0440 if the relay ever gets a static user.
+  age.secrets."github-webhook-secret" = {
+    file = ../../secrets/github-webhook-secret.age;
+    mode = "0444";
+  };
 
   # ---------------------------------------------------------------------------
   # Security

@@ -15,8 +15,10 @@
   # Hardware (normally in hardware-configuration.nix, but disko handles mounts)
   # ---------------------------------------------------------------------------
   # MSI MAG X870E Tomahawk WiFi (AM5) + Ryzen 9 9950X3D + RTX 4090.
-  # MT7925 (WiFi 7) and RTL8126 (5GbE) are both in-tree on this kernel; their
-  # firmware comes from enableRedistributableFirmware (not-detected.nix above).
+  # The Wi-Fi 7 card is a Qualcomm WCN7850-class module (PCI 17cb:1107, driver
+  # ath12k_pci); it and the RTL8126 (5GbE) are both in-tree on this kernel;
+  # their firmware comes from enableRedistributableFirmware (not-detected.nix
+  # above).
   boot.kernelModules = [ "kvm-amd" ];
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
@@ -76,6 +78,36 @@
   # ---------------------------------------------------------------------------
   networking.hostId = "74182f4c"; # Required for ZFS
   networking.networkmanager.enable = true;
+
+  # ---------------------------------------------------------------------------
+  # Bluetooth - disable the onboard radio
+  # ---------------------------------------------------------------------------
+  # This host has two Bluetooth controllers: the onboard one (USB 0489:e10a),
+  # which is the Bluetooth half of the Qualcomm M.2 Wi-Fi combo card, and a
+  # TP-Link UB500 dongle (Realtek RTL8761BU). The onboard radio is effectively
+  # deaf to BLE — repeated 20-25s scans never saw a Kinesis Advantage360 Pro
+  # keyboard a metre away, while the UB500 saw it at RSSI -62 and is what the
+  # keyboard is bonded to. BlueZ makes the lowest-numbered controller its
+  # default, so pairing attempts went to the deaf radio and looked like the
+  # device simply wasn't advertising.
+  #
+  # Deauthorising the onboard device at the USB layer leaves the UB500 as the
+  # only controller, so it is always hci0 and always BlueZ's default. Match on
+  # vendor/product ID rather than the bus path or an hci index: the UB500
+  # USB-resets itself under scan load and re-enumerates under a new number.
+  #
+  # The whole combo card is also disabled in the MSI BIOS (Wi-Fi is unused here
+  # — wlp8s0 is down and the box routes over wired enp7s0). This rule is the
+  # declarative belt-and-braces so a CMOS reset or BIOS update cannot silently
+  # bring the deaf radio back; while the BIOS setting is active the device never
+  # enumerates and the rule is a harmless no-op.
+  #
+  # ENV{DEVTYPE} rather than a bare DEVTYPE: systemd 261's udevadm verify
+  # rejects the bare form with "Invalid key 'DEVTYPE'".
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", \
+      ATTR{idVendor}=="0489", ATTR{idProduct}=="e10a", ATTR{authorized}="0"
+  '';
 
   # ---------------------------------------------------------------------------
   # Hardware - NVIDIA RTX 4090

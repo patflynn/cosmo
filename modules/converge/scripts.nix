@@ -1,10 +1,13 @@
-# The two halves of the cosmo-rebuild unit, kept out of the host module so the
-# check (cosmo-rebuild-test.nix) can drive the real scripts with stub git and
+# The two halves of the cosmo-rebuild unit, kept out of the module so the
+# check (./test.nix) can drive the real scripts with stub git and
 # nixos-rebuild binaries and assert the transitions they author.
 #
 # Every root and remote is read from the environment with a production default,
-# the same seam auto-reboot-scripts.nix takes; the unit overrides none of them
-# (systemd supplies STATE_DIRECTORY).
+# the same seam auto-reboot-scripts.nix takes; ./default.nix is what turns that
+# seam into options, setting COSMO_REBUILD_{REPO,FLAKE,ATTR} on the unit from
+# `modules.converge.*`. The defaults below stay the documented fallback — what
+# these scripts do when run by hand or by the check (systemd supplies
+# STATE_DIRECTORY).
 #
 # Both scripts author state only through `converge-status set`, which owns the
 # schema. Nothing else ever writes $STATE_DIRECTORY/status.

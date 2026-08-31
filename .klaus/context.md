@@ -24,7 +24,7 @@
 - `flake.nix` — entry point; declares all nixos/home configurations and packages.
 - `hosts/` — per-host NixOS configurations (`classic-laddie/`, `johnny-walker/`, `makers-nix/`, `weller/`).
 - `home/` — Home Manager modules. `common.nix` is the shared base; `server.nix`, `desktop.nix`, `dev.nix`, `wsl.nix`, `crostini.nix`, `linux.nix` are context-specific layers. `identities/` contains `personal.nix` and `work.nix`. `doom/`, `wallpapers/`, `scripts/` hold supporting assets. Other files configure individual tools (`hyprland.nix`, `hyprlock.nix`, `hyprpaper.nix`, `hypridle.nix`, `waybar.nix`, `mako.nix`, `remoting.nix`, `monitor-input.nix`).
-- `modules/` — reusable NixOS modules. `common/` holds shared system pieces (`system.nix`, `desktop.nix`, `bluetooth.nix`, `ddcci.nix`, `gaming.nix`, `guest.nix`, `health.nix`, `peripherals.nix`, `remoting.nix`, `users.nix`). `klaus-worker/` and `media-server/` are feature modules. `bootstrap.nix` sits at the top level.
+- `modules/` — reusable NixOS modules. `common/` holds shared system pieces (`system.nix`, `desktop.nix`, `bluetooth.nix`, `ddcci.nix`, `gaming.nix`, `guest.nix`, `health.nix`, `peripherals.nix`, `remoting.nix`, `users.nix`). `converge/`, `klaus-worker/` and `media-server/` are feature modules. `bootstrap.nix` sits at the top level.
 - `secrets/` — Agenix-encrypted secrets (`*.age`) plus `keys.nix` (recipient public keys) and `secrets.nix` (file-to-recipient mapping).
 - `docs/` — Markdown setup guides (Doom Emacs, secrets management, VM setup, Crostini, media server, weller dual-boot, etc.).
 - `.github/workflows/` — CI: `ci.yml`, `build-host-image.yml`, `update-flake-lock.yml`, `update-klaus.yml`, `zizmor.yml`.

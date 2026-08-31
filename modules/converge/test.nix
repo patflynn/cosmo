@@ -9,7 +9,7 @@
 
 let
   converge-status = pkgs.callPackage ../../pkgs/converge-status { };
-  scripts = import ./cosmo-rebuild-scripts.nix { inherit pkgs converge-status; };
+  scripts = import ./scripts.nix { inherit pkgs converge-status; };
 in
 pkgs.runCommand "cosmo-rebuild-tests"
   {

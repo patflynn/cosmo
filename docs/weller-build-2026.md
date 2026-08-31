@@ -106,7 +106,30 @@ secrets the host cannot yet read).
    [laddie-build-2025.md](./laddie-build-2025.md) for the UDM Pro setup) or a
    USB installer. F11 → the boot entry you want.
 
-2. **Partition and mount with disko** (no passphrase — nothing is
+2. **Set the installer's hostid to weller's, before creating the pool.** This
+   step is not optional — skipping it is what makes the first boot fail (§8).
+
+   ```bash
+   zgenhostid -f 74182f4c
+   ```
+
+   ZFS stamps the pool with the hostid of the machine that last imported it,
+   and refuses an import from a *different* hostid unless the pool was cleanly
+   exported. The installer has its own hostid; weller's committed one is
+   `74182f4c` (`hosts/weller/hardware.nix`). Without this, `disko` creates the
+   pool under the installer's hostid and the installed system — which boots as
+   `74182f4c` with `boot.zfs.forceImportRoot = false` — treats `wpool` as a
+   foreign pool. `zgenhostid` is part of the ZFS userland already on the
+   installer; `-f` overwrites an existing `/etc/hostid`.
+
+   Confirm it took before going any further — after `disko` runs, the pool is
+   already stamped:
+
+   ```bash
+   hostid   # must print 74182f4c
+   ```
+
+3. **Partition and mount with disko** (no passphrase — nothing is
    encrypted):
 
    ```bash
@@ -124,17 +147,24 @@ secrets the host cannot yet read).
    with `ls -la /dev/disk/by-id/ | grep -i seagate` before running — this wipes
    the disk.
 
-   ZFS needs a `networking.hostId`; weller's (`74182f4c`) is committed in
-   `hosts/weller/hardware.nix`, so there is nothing to generate here. It must
-   never change after install or the pool refuses to import without `-f`.
-
-3. **Install the bootstrap system**:
+4. **Install the bootstrap system**:
 
    ```bash
    nixos-install --no-write-lock-file --flake /tmp/cosmo#weller-bootstrap
    ```
 
-4. **Reboot** — it comes straight up, no prompt — then log in over SSH with a
+5. **Export the pool before rebooting.** Belt and braces on top of step 2:
+
+   ```bash
+   umount -R /mnt && zpool export wpool
+   ```
+
+   `disko --mode disko` leaves the pool imported and `nixos-install` does not
+   export it, so on reboot ZFS still sees it as *potentially active on another
+   host* and refuses the import. A cleanly exported pool imports on any hostid,
+   which makes this the step that saves the install even if step 2 was missed.
+
+6. **Reboot** — it comes straight up, no prompt — then log in over SSH with a
    key from `secrets/keys.nix`:
 
    ```bash
@@ -236,9 +266,24 @@ pins `pkgs.linuxPackages` with `lib.mkOverride 60`. Undo it and the system
 stops building. sched-ext has been upstream since 6.12, so `services.scx` is
 unaffected.
 
-**Boot stops at "cannot import 'wpool'".** Usually a changed
-`networking.hostId` — ZFS records the host that last had the pool and refuses
-an import that looks like a split-brain. Import once with `-f` from the
-installer, then fix the hostId to match what is committed. If instead the
-initrd never sees the disk, that is a missing `nvme` module or a wrong `by-id`
-path in `disk-config.nix`.
+**Boot stops at "cannot import 'wpool': pool was previously in use from
+another system".** §5.1 step 2 (`zgenhostid -f 74182f4c`) or step 5
+(`zpool export wpool`) was skipped, so the pool is stamped with the installer's
+hostid and still marked active. `boot.zfs.forceImportRoot = false` means the
+initrd imports without `-f`, so it stops rather than stealing the pool.
+
+To get in once, add `zfs_force=1` to the kernel command line from the
+systemd-boot entry editor (**e**). Then, once booted, export and re-import
+cleanly so the pool is stamped with weller's hostid — from the installer, since
+the root pool cannot be exported while it is mounted:
+
+```bash
+zpool import -f wpool && zpool export wpool
+```
+
+A later `networking.hostId` change produces the same error for the same reason;
+the fix is to put the committed value back, not to force the import.
+
+If instead the initrd never sees the disk at all, that is a missing `nvme`
+module or a wrong `by-id` path in `disk-config.nix` — different symptom, same
+blank console.

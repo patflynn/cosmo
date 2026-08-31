@@ -156,9 +156,6 @@
                     ./home/dev.nix
                     ./home/identities/personal.nix
                   ];
-                  # Native (non-FHS) Antigravity IDE; unfree, allowed on this
-                  # GPU host (hardware.nix sets nixpkgs.config.allowUnfree).
-                  cosmo.antigravity.enable = true;
                 };
               }
             )

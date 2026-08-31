@@ -3,6 +3,9 @@
   pkgs,
   inputs,
   lib,
+  # Present only when home-manager is evaluated as a NixOS module; absent in
+  # the standalone homeConfigurations, hence the default and the guards below.
+  osConfig ? null,
   ...
 }:
 
@@ -29,12 +32,31 @@
     '';
   };
 
+  options.cosmo.klaus.relayUrl = lib.mkOption {
+    type = lib.types.str;
+    # A host that runs its own github-relay talks to itself; everyone else
+    # points at the fleet relay on classic-laddie. `osConfig` only exists when
+    # home-manager runs as a NixOS module, so standalone/darwin evaluations
+    # fall through to the fleet default.
+    default =
+      if (osConfig != null && (osConfig.services.github-relay.enable or false)) then
+        "https://${osConfig.networking.hostName}.coin-inconnu.ts.net"
+      else
+        "https://classic-laddie.coin-inconnu.ts.net";
+    defaultText = lib.literalMD "the host's own relay if it runs one, else `https://classic-laddie.coin-inconnu.ts.net`";
+    description = ''
+      Base URL of the github-relay instance klaus subscribes to for pipeline
+      webhook events.
+    '';
+  };
+
   options.cosmo.klaus.pollFallback = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = ''
       Whether klaus should fall back to GitHub API polling for pipeline events.
-      Default false relies on the Tailscale webhook relay (classic-laddie).
+      Default false relies on the Tailscale webhook relay (see
+      cosmo.klaus.relayUrl).
       Set true on hosts that cannot reach the relay (e.g. corp machines with no
       Tailscale), otherwise the pipeline receives no events.
     '';
@@ -145,7 +167,7 @@
           port = 9800;
           path = "/webhook/github";
           poll_fallback = config.cosmo.klaus.pollFallback;
-          relay_url = "https://classic-laddie.coin-inconnu.ts.net";
+          relay_url = config.cosmo.klaus.relayUrl;
           secret_file = "/run/agenix/github-webhook-secret";
         };
       };

@@ -219,12 +219,23 @@ in
           format = "{temperatureC}°C";
           critical-threshold = 80;
           format-critical = "{temperatureC}°C";
-          # Address k10temp by its PCI device directory, not /sys/class/hwmon/hwmonN:
+          # Address the CPU sensor by device directory, not /sys/class/hwmon/hwmonN:
           # hwmon indices are assigned in driver registration order and shift
           # whenever a driver appears or disappears, which silently repoints this
-          # module at an unrelated sensor. 0000:00:18.3 is the AMD family SMN
-          # function and is stable across reboots.
-          hwmon-path-abs = "/sys/devices/pci0000:00/0000:00:18.3/hwmon";
+          # module at an unrelated sensor. waybar walks this array and uses the
+          # first path that exists, so candidates that don't match the machine are
+          # inert and this file stays shared across hosts.
+          #   0000:00:18.3 - k10temp on single-socket AMD Zen; measured on weller.
+          #   0000:00:19.3 - k10temp for a second node on multi-node AMD, derived
+          #                  from AMD's PCI topology convention (0x18 + node), not
+          #                  measured.
+          #   coretemp.0   - Intel; not measured, no Intel host in this repo yet.
+          # temp1_input is Tctl on k10temp and "Package id 0" on coretemp.
+          hwmon-path-abs = [
+            "/sys/devices/pci0000:00/0000:00:18.3/hwmon"
+            "/sys/devices/pci0000:00/0000:00:19.3/hwmon"
+            "/sys/devices/platform/coretemp.0/hwmon"
+          ];
           input-filename = "temp1_input";
         };
 

@@ -138,6 +138,17 @@ in
   environment.systemPackages = [ rgb ];
 
   # ---------------------------------------------------------------------------
+  # Valley Attestation
+  # ---------------------------------------------------------------------------
+  # valley's [a]sk verb is config-less; NAME must match the registry entry for
+  # this key. weller signs as its own machine attester (unlike classic-laddie's
+  # "patrick"), per qinling's identity/registry.cue makers-mark pattern.
+  environment.sessionVariables = {
+    VALLEY_ATTEST_KEY = "/home/${config.cosmo.user.default}/.ssh/id_ed25519";
+    VALLEY_ATTEST_NAME = "weller/attestations";
+  };
+
+  # ---------------------------------------------------------------------------
   # Secrets
   # ---------------------------------------------------------------------------
   # World-readable because the relay runs under systemd's DynamicUser: its UID

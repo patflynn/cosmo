@@ -25,7 +25,6 @@ let
   '';
 
   converge-status = pkgs.callPackage ../../pkgs/converge-status { };
-  cosmoRebuildScripts = import ./cosmo-rebuild-scripts.nix { inherit pkgs converge-status; };
 in
 {
   imports = [
@@ -37,6 +36,7 @@ in
     ../../modules/common/ddcci.nix
     ../../modules/common/crash-capture.nix
     ../../modules/common/auto-reboot.nix
+    ../../modules/converge/default.nix
     ../../modules/media-server/default.nix
     inputs.reel-life.nixosModules.default
     inputs.github-relay.nixosModules.default
@@ -197,50 +197,11 @@ in
         action = "http";
         url = "http://127.0.0.1:9800/webhook/github";
       };
-
-      # Rebuild NixOS when cosmo main is updated
-      cosmo-rebuild = {
-        repo = "patflynn/cosmo";
-        events = [ "push" ];
-        branches = [ "main" ];
-        action = "systemd";
-        unit = "cosmo-rebuild";
-      };
     };
+    # The cosmo-rebuild consumer, the static relay user it needs, and the
+    # polkit grant that lets it start the unit come from modules/converge
+    # (webhookDispatch).
   };
-
-  # The relay's systemd action execs `systemctl start <unit>` as the service
-  # user, which needs polkit's org.freedesktop.systemd1.manage-units. The
-  # upstream module runs with DynamicUser, whose UID is allocated at service
-  # start — polkit rules can't reliably match it — so pin a static system
-  # user here and grant it exactly one verb on exactly one unit below. The
-  # module's explicit sandboxing (ProtectSystem=strict, NoNewPrivileges, ...)
-  # is unaffected.
-  users.users.github-relay = {
-    isSystemUser = true;
-    group = "github-relay";
-  };
-  users.groups.github-relay = { };
-  systemd.services.github-relay.serviceConfig = {
-    DynamicUser = lib.mkForce false;
-    User = "github-relay";
-    Group = "github-relay";
-  };
-
-  # Least-privilege grant for the rebuild dispatch: github-relay may start
-  # cosmo-rebuild.service and nothing else. Without this, polkit denies
-  # manage-units to unprivileged callers ("interactive authentication
-  # required") and every push dispatch fails.
-  security.polkit.extraConfig = ''
-    polkit.addRule(function(action, subject) {
-      if (action.id == "org.freedesktop.systemd1.manage-units" &&
-          action.lookup("unit") == "cosmo-rebuild.service" &&
-          action.lookup("verb") == "start" &&
-          subject.user == "github-relay") {
-        return polkit.Result.YES;
-      }
-    });
-  '';
 
   # ---------------------------------------------------------------------------
   # Valley host: bare-git hosting (the-valley oc-9949561, Phase 0)
@@ -416,79 +377,13 @@ in
   # ---------------------------------------------------------------------------
   # Auto-rebuild on push to cosmo main
   # ---------------------------------------------------------------------------
-  # Level-triggered convergence, not edge-triggered dispatch: a run converges
-  # the machine to whatever the remote tip is *now*, instead of treating each
-  # webhook as "do one rebuild". Edge-triggering lost events in practice: a
-  # push landing while a rebuild ran made the relay's re-dispatch block on the
-  # active unit (`systemctl start` waits for oneshot units) until the relay's
-  # exec timeout killed it, leaving main ahead of the deployed system with
-  # nothing scheduled to reconcile. With the loop below a lost start signal
-  # costs nothing — the running unit re-checks the tip after each switch, and
-  # the hourly timer bounds any remaining gap.
-  #
-  # The loop is also the only thing that knows what the machine is doing, so it
-  # is what says so: every transition below is written to
-  # /var/lib/cosmo-rebuild/status by `converge-status set`, and the waybar
-  # widget is a projection of that file rather than an outside reconstruction
-  # of it. That is why nothing on the widget's path talks to GitHub — the one
-  # ls-remote per run *is* the machine's knowledge of where main is, and
-  # `phase=failed` carrying a target the host is not on is how "behind" reaches
-  # the bar.
-  systemd.services.cosmo-rebuild = {
-    description = "Converge NixOS to the tip of cosmo main";
-    # The switch this unit runs may change this very unit; without these,
-    # activation would stop/restart it mid-flight, killing the rebuild it's
-    # performing (same reason nixos-upgrade.service sets restartIfChanged).
-    restartIfChanged = false;
-    stopIfChanged = false;
-    # StartLimit* are [Unit] keys; in [Service] systemd ignores them and the
-    # rate limit silently never applies.
-    unitConfig = {
-      StartLimitIntervalSec = 300;
-      StartLimitBurst = 3;
-    };
-    serviceConfig = {
-      Type = "oneshot";
-      # One run may now perform several switches (the converge loop), so the
-      # timeout covers the loop bound, not a single switch as before.
-      TimeoutStartSec = 3600;
-      # /var/lib/cosmo-rebuild/deployed-rev records the last rev that
-      # *successfully switched*; the early exit against it makes a no-change
-      # run cost one git ls-remote. The status file beside it is a projection
-      # of the same loop, never a second ledger: deployed-rev stays the thing
-      # the comparison reads.
-      StateDirectory = "cosmo-rebuild";
-      ExecStart = "${cosmoRebuildScripts.cosmo-rebuild}/bin/cosmo-rebuild";
-      # The ways a run can end that leave the script no chance to say so —
-      # TimeoutStartSec above, a kill, a crashed shell — all land here.
-      ExecStopPost = "${cosmoRebuildScripts.cosmo-rebuild-result}/bin/cosmo-rebuild-result";
-      # Build subprocesses inherit this unit's cgroup, so the caps actually
-      # constrain the rebuild — unlike daemon-targeted limits, which don't
-      # apply when nixos-rebuild runs the build directly in its own process
-      # tree (see PR #515 follow-up).
-      MemoryHigh = "80%";
-      CPUSchedulingPolicy = "idle";
-      IOSchedulingClass = "idle";
-    };
-    path = with pkgs; [
-      git
-      nixos-rebuild
-      nix
-    ];
-  };
-
-  # Reconcile timer, belt-and-braces to the webhook: even if a push event is
-  # lost entirely (relay down, network blip, or the small race between the
-  # loop's final tip check and unit exit), the machine converges within
-  # roughly an hour. The early exit in the script keeps the steady-state cost
-  # at one git ls-remote per tick.
-  systemd.timers.cosmo-rebuild = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "hourly";
-      RandomizedDelaySec = "5m";
-      Persistent = true;
-    };
+  # The converge machinery — the unit and its scripts, the hourly reconcile
+  # timer, and the relay dispatch that shortens the gap to a push — lives in
+  # modules/converge. `attr` defaults to networking.hostName, which is this
+  # host's nixosConfigurations attribute.
+  modules.converge = {
+    enable = true;
+    webhookDispatch.enable = true;
   };
 
   # ---------------------------------------------------------------------------

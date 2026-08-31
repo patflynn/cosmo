@@ -365,7 +365,7 @@
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
 
-        cosmo-rebuild = import ./hosts/classic-laddie/cosmo-rebuild-test.nix {
+        cosmo-rebuild = import ./modules/converge/test.nix {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
 

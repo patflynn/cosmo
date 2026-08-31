@@ -1,0 +1,19 @@
+{
+  "id": "20260830-2146-62fbff32",
+  "prompt": "# secrets: drop the dead weller user key and rekey (separate PR, based on main)\n\nweller was reinstalled today; its old `/home` was wiped by disko. The `patrick` user-key list in\n`secrets/keys.nix` still carries that install's user key:\n\n    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICkzfSlbK9YX3KztdvtgfyJelixdI6QN3c41eme9HOWv  # weller\n\nIts private half no longer exists anywhere; it is dead weight in every secret's recipient list.\n\n## Coordination — read this first\n\nPR #768 (branch `agent/20260830-2140-0f4f7e9a`) replaces weller's HOST key and rekeys all\nsecrets; the owner is merging it as soon as CI passes. Your PR must be independent of it and\nmust not conflict badly: base on `origin/main`, do NOT touch the host-key binding. Because both\nPRs rewrite every `.age` file, yours will need a rebase + fresh `agenix -r` after #768 merges —\nthat is expected; the pipeline dispatches a fix agent on conflict, or you handle it if #768 is\nalready merged by the time you start (check `gh pr view 768 --json state,mergedAt`; if merged,\nrebase onto the new main first).\n\n## Do\n\n1. Delete that one line from the `patrick` list in `secrets/keys.nix`. Nothing else in the file.\n2. From `secrets/`, `nix run github:ryantm/agenix -- -r`. This host's user key\n   (`~/.ssh/id_ed25519`, the `# classic-laddie` entry) is a recipient, so no prompts. PASTE the\n   output; every `*.age` must be rewritten.\n3. Verify and PASTE: `nix flake check` final lines, and\n   `nix run github:ryantm/agenix -- -d user-password.age \u003e /dev/null \u0026\u0026 echo ok` from `secrets/`.\n\n## PR\n\nTitle: `secrets: drop the dead weller user key`. Body: the removed key's fingerprint\n(`ssh-keygen -lf`), why it is dead (drive wiped 2026-08-30), a note that weller's NEW user key\nwill be added once generated, and that this PR depends on being rekeyed after #768.\n\nTouch only `secrets/keys.nix` and the `.age` files agenix rewrites. Never print decrypted secret\ncontent. Commit and push before long verification.\n",
+  "issue": null,
+  "branch": "agent/20260830-2146-62fbff32",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260830-2146-62fbff32",
+  "tmux_pane": "%8",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260809-0329-4cc856ad/logs/20260830-2146-62fbff32.jsonl",
+  "created_at": "2026-08-30T21:46:25-04:00",
+  "cost_usd": 0.6416700000000001,
+  "duration_ms": 475358,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/769",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260830-2146-62fbff32",
+  "claude_session_id": "db669a28-2d38-4652-9718-65dee2126334",
+  "model": "sonnet"
+}

@@ -50,6 +50,12 @@
       # Version Control
       git
 
+      # Terminfo: ssh clients running kitty (TERM=xterm-kitty) need the
+      # remote host to know that entry, or zle has no cursor-movement
+      # capabilities and every keypress redraws by appending instead of
+      # in place.
+      kitty.terminfo
+
       # Interactive rebuild wrapper
       (writeShellScriptBin "cosmo-rebuild" ''
         exec sudo ${pkgs.systemd}/bin/systemd-run --scope --slice=cosmo-rebuild.slice \

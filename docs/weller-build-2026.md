@@ -54,13 +54,23 @@ Disk 0 (Samsung 970 - 932GB):        [NixOS never touches this disk]
 
 Disk 1 (Seagate FireCuda - 1.86TB):  [hosts/weller/disk-config.nix]
 ├── EFI System Partition (1GB)       - systemd-boot
-└── LUKS2 (allowDiscards)
-    └── Btrfs (zstd, noatime):
-        ├── @root     (/)
-        ├── @home     (/home)
-        ├── @nix      (/nix)
-        └── @swap     (/swap, 32G swapfile)
+├── swap (32GB)                      - plain partition, unencrypted
+└── zpool "wpool" (rest)             - ashift=12, autotrim, zstd, atime=off
+    ├── wpool/root  (/)
+    ├── wpool/nix   (/nix)     - reproducible, not snapshotted
+    └── wpool/home  (/home)    - the dataset that gets snapshotted/sent
 ```
+
+**No disk encryption.** Neither LUKS nor ZFS native encryption. The machine
+boots unattended for Sunshine streaming and there is no passphrase prompt
+anywhere in the boot path.
+
+Swap is a real partition rather than a zvol: swapping onto a zvol deadlocks
+under memory pressure, since ARC reclaim needs allocations to page out. There
+is no hibernation requirement, so it is not a resume device.
+
+The pool is `wpool`, deliberately unlike classic-laddie's `rpool`/`tank`, so
+this disk can be imported on that host for rescue without a name collision.
 
 > **Rule: the FireCuda comes OUT before any Windows repair or reinstall.**
 > Windows installs its bootloader onto whichever ESP it finds first and will
@@ -96,8 +106,8 @@ secrets the host cannot yet read).
    [laddie-build-2025.md](./laddie-build-2025.md) for the UDM Pro setup) or a
    USB installer. F11 → the boot entry you want.
 
-2. **Partition, encrypt and mount with disko** (prompts for the LUKS
-   passphrase):
+2. **Partition and mount with disko** (no passphrase — nothing is
+   encrypted):
 
    ```bash
    nix-shell -p git
@@ -114,15 +124,18 @@ secrets the host cannot yet read).
    with `ls -la /dev/disk/by-id/ | grep -i seagate` before running — this wipes
    the disk.
 
+   ZFS needs a `networking.hostId`; weller's (`74182f4c`) is committed in
+   `hosts/weller/hardware.nix`, so there is nothing to generate here. It must
+   never change after install or the pool refuses to import without `-f`.
+
 3. **Install the bootstrap system**:
 
    ```bash
    nixos-install --no-write-lock-file --flake /tmp/cosmo#weller-bootstrap
    ```
 
-4. **Reboot**, enter the LUKS passphrase on a **wired USB keyboard** (the BLE
-   keyboard does not work at the prompt yet — see §6.3), then log in over SSH
-   with a key from `secrets/keys.nix`:
+4. **Reboot** — it comes straight up, no prompt — then log in over SSH with a
+   key from `secrets/keys.nix`:
 
    ```bash
    ssh root@weller
@@ -168,14 +181,19 @@ sudo tailscale up
 
 ### 6.2 Restore Data
 
+Backups are now `zfs snapshot` + `zfs send` of `wpool/home` to
+classic-laddie's `tank/personal`, replacing the old rsync of the same tree.
+
+The pre-rebuild backup still lives there as a plain directory:
+
 ```bash
 rsync -avhP classic-laddie:/tank/personal/weller-backup/ ~/restored-backup/
 ```
 
 ### 6.3 Bluetooth Keyboard
 
-The LUKS passphrase at boot is typed on a USB keyboard; the Kinesis pairs
-normally once booted.
+Nothing is typed before the desktop now, so the Kinesis just pairs normally
+once booted.
 
 ### 6.4 Verify Dual-Boot
 
@@ -186,8 +204,8 @@ normally once booted.
 ### 6.5 Two GPUs
 
 The 9950X3D's iGPU is live alongside the 4090. `amdgpu` is in the initrd so the
-LUKS prompt renders if the console lands on the iGPU. If the desktop ever comes
-up on the wrong adapter, pin the compositor with `WLR_DRM_DEVICES` rather than
+early console still renders if it lands on the iGPU — the fallback path if the
+card is pulled. If the desktop ever comes up on the wrong adapter, pin the compositor with `WLR_DRM_DEVICES` rather than
 disabling the iGPU in BIOS — the iGPU is a useful fallback if the 4090 needs to
 come out.
 
@@ -196,7 +214,7 @@ come out.
 | File | Contents |
 |------|----------|
 | `hosts/weller/hardware.nix` | Bootloader, initrd, NVIDIA, filesystems, networking |
-| `hosts/weller/disk-config.nix` | disko: ESP + LUKS2 + btrfs subvolumes |
+| `hosts/weller/disk-config.nix` | disko: ESP + swap partition + `wpool` ZFS datasets |
 | `hosts/weller/default.nix` | Profile: users, desktop, gaming, tailscale, sshd, `stateVersion` |
 | `flake.nix` | `weller` and `weller-bootstrap` targets |
 | `secrets/keys.nix` | Host key — added by hand after first boot (§5.2) |
@@ -208,9 +226,19 @@ change boot order in BIOS. If the entry is gone entirely, Windows' ESP was
 overwritten — that only happens if the drive-isolation rule in §3 was broken.
 
 **Can't boot NixOS.** F11 → the Seagate drive. If systemd-boot loads but no
-generation boots, pick the `stable` specialisation entry: it swaps the zen
-kernel for the mainline one and disables `scx`.
+generation boots, pick the `stable` specialisation entry: it disables `scx`.
+Note that the zen kernel is *already* overridden away on this host (see below),
+so that entry differs only in `scx`.
 
-**LUKS prompt never appears.** Confirm the initrd found the drive at all — a
-missing `nvme` module or a wrong `by-id` path in `disk-config.nix` both look
-the same from the console.
+**The kernel is not zen even though gaming is on.** Deliberate. ZFS upstream
+caps at kernel 6.19 and linux-zen is past 7.0, so `hosts/weller/hardware.nix`
+pins `pkgs.linuxPackages` with `lib.mkOverride 60`. Undo it and the system
+stops building. sched-ext has been upstream since 6.12, so `services.scx` is
+unaffected.
+
+**Boot stops at "cannot import 'wpool'".** Usually a changed
+`networking.hostId` — ZFS records the host that last had the pool and refuses
+an import that looks like a split-brain. Import once with `-f` from the
+installer, then fix the hostId to match what is committed. If instead the
+initrd never sees the disk, that is a missing `nvme` module or a wrong `by-id`
+path in `disk-config.nix`.

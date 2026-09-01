@@ -18,7 +18,9 @@ let
   #
   # Direct is the one mode all four detected controllers share: the RGB Fusion 2
   # GPU (AORUS RTX 4090 MASTER) and the MSI Mystic Light controller only expose
-  # Direct, while Static exists on the ENE DRAM modules alone.
+  # Direct, while Static exists on the ENE DRAM modules alone. None of them
+  # offer a hardware rainbow, so "on" hands off to the rgb-cycle.service
+  # below, which steps hue in software instead.
   rgb = pkgs.writeShellScriptBin "rgb" ''
     set -euo pipefail
 
@@ -29,14 +31,67 @@ let
       "$openrgb" --client "$server" --mode direct --color "$1"
     }
 
+    # OpenRGB defaults the MSI Mystic Light ARGB header zones (JARGB 1-3,
+    # JRAINBOW) to 0 LEDs; a zone at size 0 silently drops color writes,
+    # which kept the Liquid Freezer III Pro 420's ~48-LED chain on JRAINBOW
+    # dark. Pin the resize here rather than relying on the runtime state in
+    # /var/lib/OpenRGB/sizes.ors, which a wiped state dir would regress. 60
+    # oversizes the chain on purpose -- extra addresses are just ignored,
+    # and it covers any header the cooler might be moved to. Select the
+    # device by name since its index shifts with USB detection order. These
+    # calls print a spurious "neither mode nor color given" error but still
+    # apply the resize, so discard their output and ignore their exit code.
+    resize_zones() {
+      for z in 0 1 2 3; do
+        "$openrgb" --client "$server" --device "MSI MYSTIC LIGHT" --zone "$z" --size 60 \
+          >/dev/null 2>&1 || true
+      done
+    }
+
+    # No sudo here: a polkit rule below grants exactly rgb-cycle.service
+    # start/stop to the wheel group, so the wrapper stays password-free.
     case "''${1:-}" in
-      off) apply 000000 ;;
-      on) apply FFFFFF ;;
+      off)
+        systemctl stop rgb-cycle
+        apply 000000
+        ;;
+      on)
+        resize_zones
+        systemctl start rgb-cycle
+        ;;
       *)
         echo "usage: rgb {on|off}" >&2
         exit 1
         ;;
     esac
+  '';
+
+  # Steps hue 2 degrees every 2s, so one lap of the spectrum takes ~6 minutes.
+  # Runs as the rgb-cycle.service ExecStart below; only talks to the local
+  # SDK server, so it needs no device access.
+  rgbCycle = pkgs.writeShellScript "rgb-cycle" ''
+    set -euo pipefail
+
+    openrgb=${lib.getExe openrgbCfg.package}
+    server=127.0.0.1:${toString openrgbCfg.server.port}
+
+    hue=0
+    while true; do
+      color=$(awk -v h="$hue" 'BEGIN {
+        s=1; v=1
+        c=v*s; x=c*(1-((h/60)%2>1 ? (h/60)%2-1 : 1-(h/60)%2)); m=v-c
+        if (h<60)       {r=c;g=x;b=0}
+        else if (h<120) {r=x;g=c;b=0}
+        else if (h<180) {r=0;g=c;b=x}
+        else if (h<240) {r=0;g=x;b=c}
+        else if (h<300) {r=x;g=0;b=c}
+        else            {r=c;g=0;b=x}
+        printf "%02X%02X%02X", (r+m)*255, (g+m)*255, (b+m)*255
+      }')
+      "$openrgb" --client "$server" --mode direct --color "$color" >/dev/null 2>&1
+      hue=$(( (hue + 2) % 360 ))
+      sleep 2
+    done
   '';
 in
 {
@@ -136,6 +191,33 @@ in
   };
 
   environment.systemPackages = [ rgb ];
+
+  # Started/stopped only by "rgb on"/"rgb off" above -- deliberately not
+  # wantedBy anything, so it never runs unless asked for and doesn't survive
+  # a reboot. It only ever talks to 127.0.0.1:${openrgbCfg.server.port}, so a
+  # DynamicUser with no device access is sufficient.
+  systemd.services.rgb-cycle = {
+    description = "Software rainbow color cycle over the OpenRGB SDK";
+    serviceConfig = {
+      DynamicUser = true;
+      ExecStart = rgbCycle;
+      Restart = "on-failure";
+    };
+  };
+
+  # Lets the "rgb" wrapper start/stop rgb-cycle.service without sudo. Scoped
+  # to exactly this unit and these two verbs, same carve-out pattern as the
+  # github-relay -> cosmo-rebuild grant in modules/converge.
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.systemd1.manage-units" &&
+          action.lookup("unit") == "rgb-cycle.service" &&
+          (action.lookup("verb") == "start" || action.lookup("verb") == "stop") &&
+          subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+      }
+    });
+  '';
 
   # ---------------------------------------------------------------------------
   # Valley Attestation

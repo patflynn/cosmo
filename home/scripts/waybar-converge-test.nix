@@ -8,7 +8,10 @@
 { pkgs }:
 
 let
-  converge = import ./waybar-converge.nix { inherit pkgs; };
+  converge = import ./waybar-converge.nix {
+    inherit pkgs;
+    host = "classic-laddie";
+  };
 in
 pkgs.runCommand "waybar-converge-tests"
   {

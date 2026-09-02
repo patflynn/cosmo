@@ -18,12 +18,13 @@
 # knowledge of where main is, and `phase=failed` carrying a target the host is
 # not on is how "behind" reaches the bar.
 #
-# The unit always runs `nixos-rebuild switch`. A `boot` operation (stage the
-# generation, activate at reboot, the way system.autoUpgrade does it) was
-# considered and deliberately cut: it needs new phases in
-# pkgs/converge-status/render.go for "deployed but not yet running" and has no
-# consumer — every host that converges today switches live. Its absence is a
-# decision, not an oversight.
+# The unit builds the target generation first and checks whether its boot
+# components (initrd, kernel, kernel-modules, systemd) diverge from the booted
+# system. When they match, it runs `nixos-rebuild switch` for zero-downtime live
+# activation. When they diverge (e.g. kernel or NVIDIA driver bumps that would
+# crash the live desktop session), it invokes `nixos-rebuild boot` to stage the
+# generation in the bootloader and system profile, and records reboot-pending
+# state for auto-reboot and the waybar widget to report.
 {
   config,
   lib,
@@ -93,6 +94,8 @@ in
       # closes the booted-vs-deployed split that autoUpgrade's `boot` operation
       # used to cover.
       system.autoUpgrade.enable = lib.mkForce false;
+
+      environment.systemPackages = [ converge-status ];
 
       systemd.services.cosmo-rebuild = {
         description = "Converge NixOS to the tip of cosmo main";

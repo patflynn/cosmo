@@ -28,6 +28,8 @@ in
     repo="''${COSMO_REBUILD_REPO:-https://github.com/patflynn/cosmo.git}"
     flake="''${COSMO_REBUILD_FLAKE:-github:patflynn/cosmo}"
     attr="''${COSMO_REBUILD_ATTR:-classic-laddie}"
+    booted="''${COSMO_REBUILD_BOOTED:-/run/booted-system}"
+    reboot_dir="''${COSMO_REBUILD_REBOOT_DIR:-/var/lib/reboot-pending}"
 
     state_file="$state_dir/deployed-rev"
 
@@ -69,9 +71,57 @@ in
       ${set} phase=building "target=$rev" "deployed=$deployed"
 
       echo "deploying $rev (previously deployed: ''${deployed:-<none>})"
-      nixos-rebuild switch --no-write-lock-file --flake "$flake/$rev#$attr"
 
-      # Reached only when the switch succeeded (errexit aborts above
+      # Build the target first so we can check for incompatible kernel/driver
+      # divergence before activating it. We hold the result symlink in $build_dir
+      # as a GC root until activation completes.
+      build_dir=$(mktemp -d "$state_dir/build.XXXXXX")
+      target=""
+      if (
+        cd "$build_dir"
+        nixos-rebuild build --no-write-lock-file --flake "$flake/$rev#$attr"
+      ); then
+        target=$(readlink -f "$build_dir/result" 2>/dev/null || true)
+      fi
+
+      if [ -z "$target" ]; then
+        rm -rf "$build_dir"
+        echo "could not resolve built target system" >&2
+        exit 1
+      fi
+
+      diverged=""
+      for part in initrd kernel kernel-modules systemd; do
+        a=$(readlink "$booted/$part" 2>/dev/null) || a="<missing>"
+        b=$(readlink "$target/$part" 2>/dev/null) || b="<missing>"
+        [ "$a" = "$b" ] || diverged="''${diverged:+$diverged }$part"
+      done
+
+      if [ -n "$diverged" ]; then
+        echo "target diverged from booted system ($diverged); staging with boot instead of live switch"
+        nixos-rebuild boot --no-write-lock-file --flake "$flake/$rev#$attr"
+
+        mkdir -p "$reboot_dir"
+        state="$reboot_dir/state"
+        since=""
+        [ -f "$state" ] && since=$(sed -n 's/^since=//p' "$state" | head -n 1)
+        case "$since" in
+          "" | *[!0-9]*) since=$(date +%s) ;;
+        esac
+        {
+          printf 'since=%s\n' "$since"
+          printf 'diverged=%s\n' "$diverged"
+        } >"$state.tmp"
+        mv "$state.tmp" "$state"
+      else
+        echo "target matches booted kernel/systemd; applying live switch"
+        nixos-rebuild switch --no-write-lock-file --flake "$flake/$rev#$attr"
+        rm -f "$reboot_dir/state" "$reboot_dir/last-blocked"
+      fi
+
+      rm -rf "$build_dir"
+
+      # Reached only when the switch/boot succeeded (errexit aborts above
       # otherwise): the state file holds successfully deployed revs, never
       # attempts, so a failed deploy is retried from scratch next run.
       echo "$rev" > "$state_file"

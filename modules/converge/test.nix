@@ -32,13 +32,24 @@ pkgs.runCommand "cosmo-rebuild-tests"
     exit "$(cat "$CASE/git-exit" 2>/dev/null || echo 0)"
     STUB
 
-    # Stands in for the switch. It snapshots the status file as it found it,
+    # Stands in for the switch and build. It snapshots the status file as it found it,
     # which is the only way to see the `building` phase from outside: by the
     # time the run ends the loop has replaced it.
     cat >stub/nixos-rebuild <<'STUB'
     #!${pkgs.runtimeShell}
-    cp "$STATE_DIRECTORY/status" "$CASE/status-during-switch" 2>/dev/null
-    printf '%s\n' "$*" >>"$CASE/switch-args"
+    case "$1" in
+      build)
+        mkdir -p "$CASE/target-system"
+        if [ -d "$CASE/target-parts" ]; then
+          cp -r "$CASE/target-parts/." "$CASE/target-system/" 2>/dev/null || true
+        fi
+        ln -sfn "$CASE/target-system" result
+        ;;
+      switch|boot)
+        cp "$STATE_DIRECTORY/status" "$CASE/status-during-switch" 2>/dev/null
+        printf '%s\n' "$*" >>"$CASE/switch-args"
+        ;;
+    esac
     exit "$(cat "$CASE/rebuild-exit" 2>/dev/null || echo 0)"
     STUB
 
@@ -58,10 +69,21 @@ pkgs.runCommand "cosmo-rebuild-tests"
 
     reset() {
       rm -rf case
-      mkdir -p case/state
+      mkdir -p case/state case/booted case/reboot-pending
       export CASE="$PWD/case"
       export STATE_DIRECTORY="$CASE/state"
+      export COSMO_REBUILD_BOOTED="$CASE/booted"
+      export COSMO_REBUILD_REBOOT_DIR="$CASE/reboot-pending"
       unset SERVICE_RESULT EXIT_STATUS
+    }
+
+    booted_part() { # booted_part <part> <store-path>
+      mkdir -p "$CASE/booted"
+      ln -sfn "/nix/store/$2" "$CASE/booted/$1"
+    }
+    target_part() { # target_part <part> <store-path>
+      mkdir -p "$CASE/target-parts"
+      ln -sfn "/nix/store/$2" "$CASE/target-parts/$1"
     }
 
     tip() { printf '%s\trefs/heads/main\n' "$1" >"$CASE/tip"; }
@@ -101,6 +123,50 @@ pkgs.runCommand "cosmo-rebuild-tests"
       ok "a successful switch -> current, and deployed-rev moves with it"
     else fail "a successful switch -> current, and deployed-rev moves with it" \
       "status: $(cat "$CASE/state/status")" "deployed-rev: $(ledger)"; fi
+
+    # A deploy where the target's kernel-modules diverged from the booted system:
+    # must invoke `nixos-rebuild boot` rather than `switch`, and record reboot-pending.
+    reset
+    tip "$B"
+    deployed "$A"
+    booted_part kernel-modules "mod-v1"
+    target_part kernel-modules "mod-v2"
+    cosmo-rebuild >/dev/null
+    case "$(cat "$CASE/switch-args" 2>/dev/null)" in
+      boot*) ok "diverging kernel-modules invokes nixos-rebuild boot" ;;
+      *) fail "diverging kernel-modules invokes nixos-rebuild boot" "args: $(cat "$CASE/switch-args" 2>/dev/null)" ;;
+    esac
+    if [ -f "$CASE/reboot-pending/state" ] && grep -q "diverged=kernel-modules" "$CASE/reboot-pending/state"; then
+      ok "boot staging records diverged=kernel-modules in reboot-pending state"
+    else
+      fail "boot staging records diverged=kernel-modules in reboot-pending state" \
+        "state: $(cat "$CASE/reboot-pending/state" 2>/dev/null)"
+    fi
+    if [ "$(field phase)" = current ] && [ "$(field rev)" = "$B" ] && [ "$(ledger)" = "$B" ]; then
+      ok "boot deploy successfully records current phase and updates deployed-rev"
+    else
+      fail "boot deploy successfully records current phase and updates deployed-rev" \
+        "status: $(cat "$CASE/state/status")" "deployed-rev: $(ledger)"; fi
+
+    # A deploy where target matches booted system:
+    # must invoke `nixos-rebuild switch` and clear reboot-pending state if present.
+    reset
+    tip "$B"
+    deployed "$A"
+    booted_part kernel-modules "mod-v1"
+    target_part kernel-modules "mod-v1"
+    mkdir -p "$CASE/reboot-pending"
+    echo "since=12345" >"$CASE/reboot-pending/state"
+    cosmo-rebuild >/dev/null
+    case "$(cat "$CASE/switch-args" 2>/dev/null)" in
+      switch*) ok "matching kernel-modules invokes nixos-rebuild switch" ;;
+      *) fail "matching kernel-modules invokes nixos-rebuild switch" "args: $(cat "$CASE/switch-args" 2>/dev/null)" ;;
+    esac
+    if [ ! -e "$CASE/reboot-pending/state" ]; then
+      ok "switch deploy clears existing reboot-pending state"
+    else
+      fail "switch deploy clears existing reboot-pending state"
+    fi
 
     # The unresolvable remote: the one failure the script can name better than
     # systemd can, and the one that would otherwise leave the widget with a

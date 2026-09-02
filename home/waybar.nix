@@ -1,7 +1,16 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  osConfig ? null,
+  ...
+}:
 
 let
-  waybar-converge = import ./scripts/waybar-converge.nix { inherit pkgs; };
+  convergeLocal = osConfig.modules.converge.enable or false;
+  convergeHost = if convergeLocal then null else "classic-laddie";
+  waybar-converge = import ./scripts/waybar-converge.nix {
+    inherit pkgs;
+    host = convergeHost;
+  };
 
   waybar-weather = pkgs.writeShellScriptBin "waybar-weather" ''
         set -euo pipefail
@@ -199,7 +208,11 @@ in
         "custom/converge" = {
           exec = "${waybar-converge}/bin/waybar-converge";
           return-type = "json";
-          on-click = "kitty ssh -t classic-laddie journalctl -u cosmo-rebuild -n 100 -f";
+          on-click =
+            if convergeLocal then
+              "kitty journalctl -u cosmo-rebuild -n 100 -f"
+            else
+              "kitty ssh -t ${convergeHost} journalctl -u cosmo-rebuild -n 100 -f";
         };
 
         mpris = {
@@ -508,7 +521,7 @@ in
         color: @subtext0;
       }
 
-      /* --- Converge (classic-laddie tracking cosmo main) --- */
+      /* --- Converge (tracking cosmo main) --- */
       /* Converged is the steady state, so it recedes: no accent, no motion. */
       #custom-converge.current {
         color: @subtext0;

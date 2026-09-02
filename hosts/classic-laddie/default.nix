@@ -565,12 +565,8 @@ in
   };
 
   programs.dconf.enable = true; # Required for virt-manager
-  # converge-status is called by name over ssh from the workstation's waybar
-  # module (home/scripts/waybar-converge.nix), so it has to be on the system
-  # profile's PATH rather than only in the units' closures.
   environment.systemPackages = [
     pkgs.virt-manager
-    converge-status
   ];
 
   security.sudo.wheelNeedsPassword = true;

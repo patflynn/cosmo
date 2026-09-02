@@ -73,7 +73,8 @@ in
       echo "deploying $rev (previously deployed: ''${deployed:-<none>})"
 
       # Build the target first so we can check for incompatible kernel/driver
-      # divergence before activating it.
+      # divergence before activating it. We hold the result symlink in $build_dir
+      # as a GC root until activation completes.
       build_dir=$(mktemp -d "$state_dir/build.XXXXXX")
       target=""
       if (
@@ -82,23 +83,19 @@ in
       ); then
         target=$(readlink -f "$build_dir/result" 2>/dev/null || true)
       fi
-      rm -rf "$build_dir"
 
-      [ -n "$target" ] || {
+      if [ -z "$target" ]; then
+        rm -rf "$build_dir"
         echo "could not resolve built target system" >&2
         exit 1
-      }
+      fi
 
       diverged=""
-      if [ -d "$booted" ] && [ -d "$target" ]; then
-        for part in initrd kernel kernel-modules systemd; do
-          a=$(readlink "$booted/$part" 2>/dev/null) || a=""
-          b=$(readlink "$target/$part" 2>/dev/null) || b=""
-          if [ -n "$a" ] && [ -n "$b" ] && [ "$a" != "$b" ]; then
-            diverged="''${diverged:+$diverged }$part"
-          fi
-        done
-      fi
+      for part in initrd kernel kernel-modules systemd; do
+        a=$(readlink "$booted/$part" 2>/dev/null) || a="<missing>"
+        b=$(readlink "$target/$part" 2>/dev/null) || b="<missing>"
+        [ "$a" = "$b" ] || diverged="''${diverged:+$diverged }$part"
+      done
 
       if [ -n "$diverged" ]; then
         echo "target diverged from booted system ($diverged); staging with boot instead of live switch"
@@ -121,6 +118,8 @@ in
         nixos-rebuild switch --no-write-lock-file --flake "$flake/$rev#$attr"
         rm -f "$reboot_dir/state" "$reboot_dir/last-blocked"
       fi
+
+      rm -rf "$build_dir"
 
       # Reached only when the switch/boot succeeded (errexit aborts above
       # otherwise): the state file holds successfully deployed revs, never

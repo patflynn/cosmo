@@ -25,10 +25,15 @@ pkgs.writeShellScriptBin "waybar-converge" (
     ''
       # Local mode: converge-status watch monitors local /var/lib/cosmo-rebuild
       # and /var/lib/reboot-pending directly with fsnotify.
-      set -euo pipefail
+      #
+      # No `set -e`: a transient exit (e.g. inotify limits) must not kill the script,
+      # which waybar would otherwise stop rendering entirely.
+      set -uo pipefail
+
+      PATH="${pkgs.coreutils}/bin:$PATH"
 
       while :; do
-        ${converge-status}/bin/converge-status watch
+        ${converge-status}/bin/converge-status watch || true
         sleep 2
       done
     ''

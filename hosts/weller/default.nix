@@ -102,6 +102,7 @@ in
     ../../modules/common/peripherals.nix
     ../../modules/common/desktop.nix
     ../../modules/common/gaming.nix
+    ../../modules/common/auto-reboot.nix
     ../../modules/converge
     inputs.github-relay.nixosModules.default
   ];
@@ -156,6 +157,18 @@ in
   modules.converge = {
     enable = true;
     webhookDispatch.enable = true;
+  };
+
+  # ---------------------------------------------------------------------------
+  # Auto-reboot (quiet window reboot when booted != deployed)
+  # ---------------------------------------------------------------------------
+  modules.autoReboot = {
+    enable = true;
+    blockingUnits = [
+      "cosmo-rebuild.service"
+    ];
+    triggerAfter = [ "cosmo-rebuild" ];
+    agentRunGlobs = [ "/home/${config.cosmo.user.default}/.klaus/sessions/*/runs/*.json" ];
   };
 
   # ---------------------------------------------------------------------------

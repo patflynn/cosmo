@@ -15,7 +15,8 @@
 
     state_dir="''${STATE_DIRECTORY:-/var/lib/reboot-pending}"
     booted="''${AUTO_REBOOT_BOOTED:-/run/booted-system}"
-    current="''${AUTO_REBOOT_CURRENT:-/run/current-system}"
+    current="''${AUTO_REBOOT_CURRENT:-/nix/var/nix/profiles/system}"
+    [ -e "$current" ] || current="''${AUTO_REBOOT_CURRENT:-/run/current-system}"
 
     state="$state_dir/state"
     blocked="$state_dir/last-blocked"

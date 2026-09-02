@@ -115,7 +115,9 @@
         inputs.agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
 
         # the valley CLI (S1 integrator verbs: pending/review); ships from the engine repo
-        inputs.the-valley.packages."${pkgs.stdenv.hostPlatform.system}".valley
+        (inputs.the-valley.packages."${pkgs.stdenv.hostPlatform.system}".valley
+          or ((import "${inputs.the-valley}/nix/packages.nix" { inherit lib pkgs; }).valley)
+        )
       ]
       ++ lib.optionals config.cosmo.klaus.enable [
         claude-code # Anthropic's CLI
@@ -131,7 +133,7 @@
       ];
 
     programs.zsh.shellAliases = {
-      rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; else nix run home-manager -- switch --flake .; fi";
+      rebuild = "if [ -e /etc/NIXOS ]; then sudo nixos-rebuild switch --flake .; elif [ \"$(uname)\" = \"Darwin\" ]; then home-manager switch --flake \".#${config.home.username}@\$(hostname -s)\"; else nix run home-manager -- switch --flake .; fi";
     };
 
     # Delta as git's pager for diff/log/show (home-manager's first-class

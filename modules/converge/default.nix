@@ -94,6 +94,8 @@ in
       # used to cover.
       system.autoUpgrade.enable = lib.mkForce false;
 
+      environment.systemPackages = [ converge-status ];
+
       systemd.services.cosmo-rebuild = {
         description = "Converge NixOS to the tip of cosmo main";
         # The switch this unit runs may change this very unit; without these,

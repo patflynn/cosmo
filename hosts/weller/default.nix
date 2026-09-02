@@ -102,6 +102,7 @@ in
     ../../modules/common/peripherals.nix
     ../../modules/common/desktop.nix
     ../../modules/common/gaming.nix
+    ../../modules/converge
     inputs.github-relay.nixosModules.default
   ];
 
@@ -148,6 +149,14 @@ in
   # Gaming
   # ---------------------------------------------------------------------------
   modules.gaming.enable = true;
+
+  # ---------------------------------------------------------------------------
+  # Auto-converge
+  # ---------------------------------------------------------------------------
+  modules.converge = {
+    enable = true;
+    webhookDispatch.enable = true;
+  };
 
   # ---------------------------------------------------------------------------
   # GitHub Relay (webhook forwarder → klaus)

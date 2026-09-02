@@ -199,7 +199,7 @@ in
         "custom/converge" = {
           exec = "${waybar-converge}/bin/waybar-converge";
           return-type = "json";
-          on-click = "kitty ssh -t classic-laddie journalctl -u cosmo-rebuild -n 100 -f";
+          on-click = "kitty journalctl -u cosmo-rebuild -n 100 -f";
         };
 
         mpris = {
@@ -508,7 +508,7 @@ in
         color: @subtext0;
       }
 
-      /* --- Converge (classic-laddie tracking cosmo main) --- */
+      /* --- Converge (tracking cosmo main) --- */
       /* Converged is the steady state, so it recedes: no accent, no motion. */
       #custom-converge.current {
         color: @subtext0;

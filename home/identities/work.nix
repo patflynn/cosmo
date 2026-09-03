@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ config, lib, ... }:
 let
   workUser = {
     name = "Patrick Flynn";
@@ -20,8 +20,21 @@ in
     if [ -f "$HOME/.corp.zsh" ]; then
       source "$HOME/.corp.zsh"
     fi
+
+    # Fix completion for tmx2 if aliased to tmux
+    if type compdef > /dev/null 2>&1; then
+      compdef tmx2=tmux
+    fi
   '';
+
+  programs.zsh.shellAliases = {
+    tmux = "tmx2";
+  };
 
   programs.git.settings.user = workUser;
   programs.jujutsu.settings.user = workUser;
+  programs.jujutsu.settings.signing = {
+    backend = "ssh";
+    key = "${config.home.homeDirectory}/.ssh/auto_init_ed25519.pub";
+  };
 }

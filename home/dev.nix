@@ -24,6 +24,12 @@
     '';
   };
 
+  options.cosmo.codex.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Whether to install the OpenAI Codex CLI (pkgs.codex).";
+  };
+
   options.cosmo.klaus.enable = lib.mkOption {
     type = lib.types.bool;
     default = true;
@@ -128,6 +134,9 @@
       ++ lib.optionals config.cosmo.antigravity.enable [
         pkgs.antigravity-ide
         pkgs.antigravity-cli
+      ]
+      ++ lib.optionals config.cosmo.codex.enable [
+        codex # OpenAI Codex CLI
       ];
 
     programs.zsh.shellAliases = {

@@ -1,0 +1,23 @@
+{
+  "id": "20260904-1644-a8dbe3d2",
+  "prompt": "# Correction for PR #794: codex must be off on EVERY work profile, not just work-mac\n\nThe maintainer's rule: the OpenAI Codex CLI must not be installed on work-mac\nOR ANY OTHER work profile. Your PR only disables it in\n`home/identities/work-mac.nix`, so `paflynn@bushmills` and `paflynn@crostini`\n(which use `home/identities/work.nix` directly, see `flake.nix`\nhomeConfigurations) would still get codex. Fix that on the existing PR branch.\n\n## Exact change\n\n1. `home/identities/work.nix` (the shared work identity; `work-mac.nix`\n   imports it): add\n\n   ```nix\n   # Codex is not permitted on work profiles (corp policy)\n   cosmo.codex.enable = false;\n   ```\n\n   Place it near the existing `cosmo.klaus.pollFallback = true;` block. One\n   terse comment line, no prose.\n\n2. `home/identities/work-mac.nix`: revert your edits there entirely. Restore\n   the original comment text (\"Claude-code and Klaus are blacklisted on work\n   macOS due to corporate policies\") and remove the `cosmo.codex.enable = false;`\n   line; the setting now flows in through the `./work.nix` import. The file\n   must match `origin/main` byte for byte after this.\n\n`home/dev.nix` stays as it is in the PR.\n\n## Verification (ALL IN THE FOREGROUND)\n\n```\nnix fmt \u0026\u0026 git diff --exit-code\ngit diff origin/main -- home/identities/work-mac.nix   # must print nothing\nnix build .#homeConfigurations.\"paflynn@bushmills\".activationPackage --dry-run\nnix build .#homeConfigurations.\"paflynn@crostini\".activationPackage --dry-run\nnix build .#homeConfigurations.\"personal\".activationPackage --dry-run\n```\n\nConfirm the bushmills and work-crostini dry-runs no longer mention a\n`codex-*` store path, while `personal` still does. `nix eval` is also fine\nfor that check, e.g.\n`nix eval --raw '.#homeConfigurations.\"paflynn@bushmills\".config.cosmo.codex.enable'`\nshould print `false` and the same for `paflynn@crostini` and\n`paflynn@paflynn-mac`; `personal` and `patrick@crostini` print `true`.\n\nDO NOT run anything in the background. DO NOT use Monitor or background\ntasks. Run each verification in the FOREGROUND and wait. Do not park, do not\nschedule a wakeup, do not exit before committing and pushing.\n\n## Delivery\n\n- Commit on the PR's existing branch and push. Follow `CLAUDE.md`: no\n  Co-Authored-By lines, no AI/LLM mention.\n- Update the PR description: the second summary bullet should say codex is\n  disabled for all work profiles via `home/identities/work.nix`, and list the\n  eval results above under Verification.\n- Do not end this run until the push is done and the PR body is updated.\n",
+  "issue": null,
+  "pr": "794",
+  "branch": "agent/20260904-1634-0ef44588",
+  "worktree": "/tmp/klaus-sessions/cosmo/20260904-1644-a8dbe3d2",
+  "tmux_pane": "%4",
+  "budget": "5.00",
+  "log_file": "/home/patrick/.klaus/sessions/session-20260904-1632-bba780e5/logs/20260904-1644-a8dbe3d2.jsonl",
+  "created_at": "2026-09-04T16:44:09-04:00",
+  "cost_usd": 0.3541812,
+  "duration_ms": 61096,
+  "pr_url": "https://github.com/patflynn/cosmo/pull/794",
+  "type": "pr-fix",
+  "target_repo": "cosmo",
+  "clone_dir": "/home/patrick/hack/cosmo",
+  "session_name": "20260904-1644-a8dbe3d2",
+  "original_run_id": "20260904-1634-0ef44588",
+  "claude_session_id": "6456cc28-d750-48c1-8079-45f0808e06ad",
+  "model": "sonnet",
+  "effort": "medium"
+}

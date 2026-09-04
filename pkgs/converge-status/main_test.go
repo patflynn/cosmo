@@ -470,3 +470,114 @@ func TestAltMirrorsClass(t *testing.T) {
 		t.Fatalf("alt = %q, class = %q", v.Alt, v.Class)
 	}
 }
+
+// --- what the rev is -------------------------------------------------------
+
+// Metadata describes one rev — the target while building, the deployed rev
+// once current — so it must not follow the other one onto its line.
+func TestDateAndSubjectLandOnTheRevTheyDescribe(t *testing.T) {
+	tr := newTree(t)
+	when := time.Date(2026, 9, 4, 16, 50, 0, 0, time.Local)
+	stamp := "committed=" + strconv.FormatInt(when.Unix(), 10)
+
+	tr.set("phase=building", "target="+revB, "deployed="+revA,
+		"subject=flake.lock: Update (#795)", stamp)
+	v := tr.render("--host", "laddie")
+	if got := tooltipLine(t, v.Tooltip, "target"); got != "target    "+revB+"  2026-09-04 16:50  flake.lock: Update (#795)" {
+		t.Errorf("target line = %q", got)
+	}
+	if got := tooltipLine(t, v.Tooltip, "deployed"); got != "deployed  "+revA {
+		t.Errorf("deployed line = %q, want the sha alone: the metadata is the target's", got)
+	}
+
+	// Once switched, the same rev is the deployed one and the line moves with it.
+	tr.set("phase=current", "rev="+revB, "subject=flake.lock: Update (#795)", stamp)
+	v = tr.render("--host", "laddie")
+	if got := tooltipLine(t, v.Tooltip, "deployed"); got != "deployed  "+revB+"  2026-09-04 16:50  flake.lock: Update (#795)" {
+		t.Errorf("deployed line = %q", got)
+	}
+	contains(t, v.Text, revB[:7]) // the bar text is still icon + short rev, nothing more
+
+	// And on the line that says the host is behind.
+	tr.set("phase=failed", "target="+revB, "deployed="+revA, "detail=exit-code",
+		"subject=flake.lock: Update (#795)", stamp)
+	v = tr.render("--host", "laddie")
+	contains(t, v.Tooltip, "main moved to "+revB[:7]+" and this host is not on it  2026-09-04 16:50  flake.lock: Update (#795)")
+	if got := tooltipLine(t, v.Tooltip, "deployed"); got != "deployed  "+revA {
+		t.Errorf("deployed line = %q, want the sha alone", got)
+	}
+}
+
+// The mirror lookup is best effort, so `set` is called without metadata often:
+// on the hourly re-observation, and from ExecStopPost, which knows nothing but
+// that the unit died. Neither may blank out what the run already recorded.
+func TestMetadataCarriesForwardOverTheSameRev(t *testing.T) {
+	tr := newTree(t)
+	tr.set("phase=current", "rev="+revA, "subject=identities: sign work commits", "committed=1757000000")
+	tr.set("phase=current", "rev="+revA)
+	if got := tr.status(); got.Subject != "identities: sign work commits" || got.Committed != 1757000000 {
+		t.Errorf("a re-observed current dropped what it knew: %+v", got)
+	}
+
+	// ExecStopPost inherits the target first, then that target's metadata.
+	tr.set("phase=building", "target="+revB, "deployed="+revA, "subject=flake.lock: Update", "committed=1757000001")
+	tr.set("--unless-terminal", "phase=failed", "detail=exit-code (status 1)")
+	if got := tr.status(); got.Target != revB || got.Subject != "flake.lock: Update" || got.Committed != 1757000001 {
+		t.Errorf("the failure did not describe the target it inherited: %+v", got)
+	}
+
+	// A different rev is a different commit, and the file is one record rather
+	// than a history: there is nothing to inherit and nothing stale to keep.
+	tr.set("phase=current", "rev="+revA)
+	if got := tr.status(); got.Subject != "" || got.Committed != 0 {
+		t.Errorf("metadata followed a rev change: %+v", got)
+	}
+}
+
+// git subjects are one line by construction, but the tooltip is not the place
+// to find out otherwise — and a long one would drag the bar's window wide.
+func TestSubjectIsFlattenedAndCapped(t *testing.T) {
+	tr := newTree(t)
+	tr.set("phase=current", "rev="+revA, "subject=fix:\tthe\vthing   spaced   out")
+	if got := tr.status().Subject; got != "fix: the thing spaced out" {
+		t.Errorf("subject = %q", got)
+	}
+
+	tr.set("phase=current", "rev="+revB, "subject="+strings.Repeat("x", 300))
+	if got := tr.status().Subject; len([]rune(got)) != 121 || !strings.HasSuffix(got, "…") {
+		t.Errorf("subject was not capped to 120 and an ellipsis: %q", got)
+	}
+
+	// A newline is a second record trying to get in, not a subject.
+	if _, _, err := tr.run("set", "--status-file", tr.statusFile,
+		"phase=current", "rev="+revA, "subject=x\nphase=failed"); err == nil {
+		t.Error("a subject spanning lines was accepted")
+	}
+}
+
+// A host whose script has not learned to look the metadata up writes none, and
+// its tooltip has to keep reading exactly as it did.
+func TestRenderWithoutMetadataIsUnchanged(t *testing.T) {
+	tr := newTree(t)
+	then := strconv.FormatInt(time.Now().Unix()-600, 10)
+	tr.set("phase=current", "rev="+revA, "at="+then, "checked="+then)
+
+	want := "laddie: converged with main\ndeployed  " + revA +
+		"\nverified against the remote 10 minutes ago"
+	if got := tr.render("--host", "laddie").Tooltip; got != want {
+		t.Errorf("tooltip =\n%s\nwant\n%s", got, want)
+	}
+}
+
+// The tooltip line starting with the given word, for asserting what is — and
+// what is not — appended to it.
+func tooltipLine(t *testing.T, tooltip, prefix string) string {
+	t.Helper()
+	for _, line := range strings.Split(tooltip, "\n") {
+		if strings.HasPrefix(line, prefix) {
+			return line
+		}
+	}
+	t.Fatalf("no line starting %q in:\n%s", prefix, tooltip)
+	return ""
+}

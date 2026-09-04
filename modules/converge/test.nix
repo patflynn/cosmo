@@ -23,13 +23,24 @@ pkgs.runCommand "cosmo-rebuild-tests"
     mkdir -p stub
     export PATH="$PWD/stub:$PATH"
 
-    # Stands in for git: only `ls-remote` is reached, and it replays the case's
-    # recorded ref line and exit code.
+    # Stands in for git: the tip resolution and the mirror the run reads a
+    # rev's date and subject out of, each replaying what the case recorded.
     cat >stub/git <<'STUB'
     #!${pkgs.runtimeShell}
-    [ "$1" = ls-remote ] || exit 1
-    cat "$CASE/tip" 2>/dev/null
-    exit "$(cat "$CASE/git-exit" 2>/dev/null || echo 0)"
+    [ "$1" = -C ] && shift 2
+    case "$1" in
+      ls-remote)
+        cat "$CASE/tip" 2>/dev/null
+        exit "$(cat "$CASE/git-exit" 2>/dev/null || echo 0)" ;;
+      init) exit 0 ;;
+      fetch)
+        printf '%s\n' "$*" >>"$CASE/fetch-args"
+        exit "$(cat "$CASE/fetch-exit" 2>/dev/null || echo 0)" ;;
+      log)
+        cat "$CASE/commit-meta" 2>/dev/null
+        exit "$(cat "$CASE/log-exit" 2>/dev/null || echo 0)" ;;
+    esac
+    exit 1
     STUB
 
     # Stands in for the switch and build. It snapshots the status file as it found it,
@@ -87,6 +98,7 @@ pkgs.runCommand "cosmo-rebuild-tests"
     }
 
     tip() { printf '%s\trefs/heads/main\n' "$1" >"$CASE/tip"; }
+    commit_meta() { printf '%s\t%s\n' "$1" "$2" >"$CASE/commit-meta"; }
     deployed() { printf '%s\n' "$1" >"$CASE/state/deployed-rev"; }
     field() { sed -n "s/^$1=//p" "$CASE/state/status" 2>/dev/null; }
     at_switch() { sed -n "s/^$1=//p" "$CASE/status-during-switch" 2>/dev/null; }
@@ -167,6 +179,51 @@ pkgs.runCommand "cosmo-rebuild-tests"
     else
       fail "switch deploy clears existing reboot-pending state"
     fi
+
+    # What the rev is, not just which: the target's date and subject have to be
+    # on the record the bar reads *while* the build runs, and follow the rev
+    # onto the deployed line once it has switched.
+    reset
+    tip "$B"
+    deployed "$A"
+    commit_meta 1757000000 "flake.lock: Update (#795)"
+    cosmo-rebuild >/dev/null
+    if [ "$(at_switch committed)" = 1757000000 ] && [ "$(at_switch subject)" = "flake.lock: Update (#795)" ]; then
+      ok "a deploy records the target's date and subject before switching"
+    else fail "a deploy records the target's date and subject before switching" \
+      "status during switch: $(cat "$CASE/status-during-switch" 2>/dev/null)"; fi
+    if [ "$(field committed)" = 1757000000 ] && [ "$(field subject)" = "flake.lock: Update (#795)" ]; then
+      ok "and they describe the rev once it is the deployed one"
+    else fail "and they describe the rev once it is the deployed one" "status: $(cat "$CASE/state/status")"; fi
+
+    # The lookup is a nicety on top of the converge, so every way it can fail —
+    # no mirror, an unreachable fetch, a rev the fetch did not bring — leaves
+    # the run exactly as it would have been without it.
+    reset
+    tip "$B"
+    deployed "$A"
+    printf '1' >"$CASE/fetch-exit"
+    printf '1' >"$CASE/log-exit"
+    if cosmo-rebuild >/dev/null 2>&1; then
+      ok "a failed metadata lookup does not fail the run"
+    else fail "a failed metadata lookup does not fail the run"; fi
+    if [ "$(field phase)" = current ] && [ "$(field rev)" = "$B" ] && [ "$(ledger)" = "$B" ] &&
+      ! grep -q '^subject=' "$CASE/state/status"; then
+      ok "and leaves the phase, the ledger and the record it writes untouched"
+    else fail "and leaves the phase, the ledger and the record it writes untouched" \
+      "status: $(cat "$CASE/state/status")" "deployed-rev: $(ledger)"; fi
+
+    # The steady-state tick pays for the one ls-remote and nothing else: the
+    # mirror already holds the rev it is re-observing.
+    reset
+    tip "$A"
+    deployed "$A"
+    commit_meta 1757000000 "flake.lock: Update (#795)"
+    cosmo-rebuild >/dev/null
+    if [ "$(field subject)" = "flake.lock: Update (#795)" ] && [ ! -f "$CASE/fetch-args" ]; then
+      ok "a no-change run reads the mirror without fetching"
+    else fail "a no-change run reads the mirror without fetching" \
+      "status: $(cat "$CASE/state/status")" "fetches: $(cat "$CASE/fetch-args" 2>/dev/null)"; fi
 
     # The unresolvable remote: the one failure the script can name better than
     # systemd can, and the one that would otherwise leave the widget with a

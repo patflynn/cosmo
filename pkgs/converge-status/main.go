@@ -3,7 +3,9 @@
 // `set` is called by cosmo-rebuild at each transition, `render` turns the
 // resulting file (plus the reboot detector's) into one waybar JSON line, and
 // `watch` streams that line whenever either changes. Nothing here reaches the
-// network: the widget's whole picture comes from files the machinery wrote.
+// network: the widget's whole picture comes from files the machinery wrote,
+// down to the date and subject of the rev — the run hands those over, having
+// looked them up in the shallow mirror it keeps beside this file.
 package main
 
 import (

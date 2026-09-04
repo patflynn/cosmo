@@ -81,7 +81,7 @@ func derive(v viewFlags, st Status, stErr error, reboot rebootState, now int64) 
 	stale := stErr != nil || st.Phase == "" || st.Checked == 0 ||
 		now-st.Checked > int64(v.staleAfter.Seconds())
 
-	deployedLine := func(rev string) string { return "deployed  " + orNone(rev) }
+	deployedLine := func(rev string) string { return "deployed  " + orNone(rev) + st.meta(rev) }
 
 	switch {
 	case !stale && st.Phase == phaseBuilding:
@@ -90,7 +90,7 @@ func derive(v viewFlags, st Status, stErr error, reboot rebootState, now int64) 
 			Class: "building",
 			Tooltip: lines(
 				host+": converging now",
-				"target    "+orNone(st.Target),
+				"target    "+orNone(st.Target)+st.meta(st.Target),
 				deployedLine(st.Deployed),
 				"started "+ago(now, st.At),
 			),
@@ -99,7 +99,7 @@ func derive(v viewFlags, st Status, stErr error, reboot rebootState, now int64) 
 	case st.Phase == phaseFailed:
 		behind := ""
 		if st.Target != "" && st.Target != st.Deployed {
-			behind = "main moved to " + short(st.Target) + " and this host is not on it"
+			behind = "main moved to " + short(st.Target) + " and this host is not on it" + st.meta(st.Target)
 		}
 		return view{
 			Text:  "󰀦 " + orQuery(short(st.Deployed)),
@@ -107,7 +107,7 @@ func derive(v viewFlags, st Status, stErr error, reboot rebootState, now int64) 
 			Tooltip: lines(
 				host+": cosmo-rebuild FAILED "+ago(now, st.At)+" — no longer tracking main",
 				behind,
-				"target    "+orNone(st.Target),
+				"target    "+orNone(st.Target)+st.meta(st.Target),
 				deployedLine(st.Deployed),
 				orDefault(st.Detail, "(no detail recorded)"),
 			),
@@ -160,6 +160,24 @@ func derive(v viewFlags, st Status, stErr error, reboot rebootState, now int64) 
 		Class:   "stale",
 		Tooltip: lines(host+": no word from the rebuild machinery", last, deployedLine(revOf(st))),
 	}
+}
+
+// The commit date and subject the machinery recorded, as a suffix — for the
+// rev identity() names and no other, since that is the only one they describe.
+// Empty when it has neither, so every other line (and a status file written
+// before this existed) renders exactly as it did.
+func (s Status) meta(rev string) string {
+	if rev == "" || rev != s.identity() {
+		return ""
+	}
+	out := ""
+	if s.Committed != 0 {
+		out += "  " + time.Unix(s.Committed, 0).Format("2006-01-02 15:04")
+	}
+	if s.Subject != "" {
+		out += "  " + s.Subject
+	}
+	return out
 }
 
 // The rev the host is actually running, whichever phase recorded it.

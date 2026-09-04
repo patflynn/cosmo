@@ -29,17 +29,21 @@ const (
 //	phase=failed    target=<rev> deployed=<prev>   the run died; deployed is
 //	                                               what the host is still on
 //
-// at      when the phase (with this target/rev) was first entered
-// checked when the machinery last wrote anything — the liveness clock
-// detail  one line of why, for failures
+// at        when the phase (with this target/rev) was first entered
+// checked   when the machinery last wrote anything — the liveness clock
+// detail    one line of why, for failures
+// subject   the rev identity() names — its one-line commit subject, and
+// committed its commit date. Never the other rev on the line below it.
 type Status struct {
-	Phase    string
-	Target   string
-	Deployed string
-	Rev      string
-	Detail   string
-	At       int64
-	Checked  int64
+	Phase     string
+	Target    string
+	Deployed  string
+	Rev       string
+	Detail    string
+	Subject   string
+	At        int64
+	Checked   int64
+	Committed int64
 }
 
 // What distinguishes one occurrence of a phase from the next. Equal identity
@@ -80,6 +84,10 @@ func assign(s *Status, key, value string) error {
 		s.Rev = value
 	case "detail":
 		s.Detail = value
+	case "subject":
+		s.Subject = value
+	case "committed":
+		s.Committed, _ = strconv.ParseInt(value, 10, 64)
 	case "at":
 		s.At, _ = strconv.ParseInt(value, 10, 64)
 	case "checked":
@@ -114,7 +122,9 @@ func (s Status) write(path string) error {
 		{"deployed", s.Deployed},
 		{"at", intOrEmpty(s.At)},
 		{"checked", intOrEmpty(s.Checked)},
+		{"committed", intOrEmpty(s.Committed)},
 		{"detail", s.Detail},
+		{"subject", s.Subject},
 	} {
 		if kv.v != "" {
 			fmt.Fprintf(&b, "%s=%s\n", kv.k, kv.v)
@@ -173,6 +183,9 @@ func cmdSet(args []string, stderr io.Writer) error {
 		if k == "detail" {
 			v = oneLine(v, 200)
 		}
+		if k == "subject" {
+			v = oneLine(v, 120)
+		}
 		if err := assign(&next, k, v); err != nil {
 			return err
 		}
@@ -216,6 +229,17 @@ func cmdSet(args []string, stderr io.Writer) error {
 		}
 		if next.Deployed == "" {
 			next.Deployed = prev.Deployed
+		}
+	}
+	// After that inheritance, so a failure authored from ExecStopPost describes
+	// the target it just adopted. Same rev named, same commit: a re-observation
+	// or a mirror lookup that came back empty keeps what we already knew.
+	if prevErr == nil && prev.identity() == next.identity() {
+		if next.Subject == "" {
+			next.Subject = prev.Subject
+		}
+		if next.Committed == 0 {
+			next.Committed = prev.Committed
 		}
 	}
 	return next.write(*statusFile)

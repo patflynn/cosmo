@@ -16,7 +16,10 @@
 # rather than an outside reconstruction of it. That is why nothing on the
 # widget's path talks to GitHub — the one ls-remote per run *is* the machine's
 # knowledge of where main is, and `phase=failed` carrying a target the host is
-# not on is how "behind" reaches the bar.
+# not on is how "behind" reaches the bar. The rev's date and subject come from
+# the run too: one shallow fetch into a bare mirror in the state directory, the
+# first time a rev is seen, since the github: tarballs it builds carry no
+# commit message.
 #
 # The unit builds the target generation first and checks whether its boot
 # components (initrd, kernel, kernel-modules, systemd) diverge from the booted

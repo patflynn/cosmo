@@ -32,6 +32,31 @@ in
     reboot_dir="''${COSMO_REBUILD_REBOOT_DIR:-/var/lib/reboot-pending}"
 
     state_file="$state_dir/deployed-rev"
+    mirror="$state_dir/mirror.git"
+
+    # The rev's commit date and subject, as `set` args in $meta_args. The flake
+    # builds from github: tarballs, which carry no commit message, so a bare
+    # shallow mirror in the state dir holds one: `fetch` looks the rev up over
+    # the network the first time it is seen, and nothing does after. Best effort
+    # throughout — a lookup that comes back empty is a tooltip without a
+    # subject (`set` carries the last one forward), never a failed run.
+    meta_args=()
+    load_meta() { # load_meta <rev> [fetch]
+      meta_args=()
+      local m ct subj
+      [ -d "$mirror" ] || git init --bare -q "$mirror" 2>/dev/null || return 0
+      m=$(git -C "$mirror" log -1 --format='%ct%x09%s' "$1" 2>/dev/null) || m=""
+      if [ -z "$m" ] && [ "''${2:-}" = fetch ]; then
+        git -C "$mirror" fetch --depth=1 -q "$repo" refs/heads/main 2>/dev/null || return 0
+        m=$(git -C "$mirror" log -1 --format='%ct%x09%s' "$1" 2>/dev/null) || m=""
+      fi
+      ct=$(printf '%s' "$m" | cut -f1)
+      subj=$(printf '%s' "$m" | cut -s -f2-)
+      case "$ct" in "" | *[!0-9]*) return 0 ;; esac
+      meta_args=("committed=$ct")
+      [ -n "$subj" ] && meta_args+=("subject=$subj")
+      return 0
+    }
 
     for _ in 1 2 3 4 5; do
       # Resolve the tip first, then deploy exactly that rev — what we compare
@@ -61,14 +86,19 @@ in
         echo "already at tip $rev"
         # Re-observing the phase, not re-entering it: `set` carries the
         # existing `at` forward and moves `checked`, so the bar learns the host
-        # was verified against the remote just now without asking GitHub.
-        ${set} phase=current "rev=$rev"
+        # was verified against the remote just now without asking GitHub. The
+        # mirror lookup stays local for the same reason: this tick costs the
+        # one ls-remote and nothing more.
+        load_meta "$rev"
+        ${set} phase=current "rev=$rev" "''${meta_args[@]}"
         exit 0
       fi
 
       # The webhook's "cosmo is ahead" becomes visible here, the instant the
-      # relay-started run has resolved what ahead means.
-      ${set} phase=building "target=$rev" "deployed=$deployed"
+      # relay-started run has resolved what ahead means — with what the target
+      # commit is, not just its sha.
+      load_meta "$rev" fetch
+      ${set} phase=building "target=$rev" "deployed=$deployed" "''${meta_args[@]}"
 
       echo "deploying $rev (previously deployed: ''${deployed:-<none>})"
 
@@ -125,7 +155,8 @@ in
       # otherwise): the state file holds successfully deployed revs, never
       # attempts, so a failed deploy is retried from scratch next run.
       echo "$rev" > "$state_file"
-      ${set} phase=current "rev=$rev"
+      # Same rev the building record named, so its metadata is already loaded.
+      ${set} phase=current "rev=$rev" "''${meta_args[@]}"
 
       # Loop: main may have moved while the build ran — converge again.
     done

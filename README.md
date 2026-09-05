@@ -25,6 +25,7 @@ See [AGENTS.md](./AGENTS.md) for common administrative commands.
 * [New Machine Playbook](./docs/new-machine-playbook.md): Generic runbook for bringing a new physical NixOS host into the fleet.
 * [Doom Emacs Setup](./docs/doom-emacs-setup.md): Manual steps to bootstrap Doom Emacs.
 * [Secrets Management](./docs/secrets-management.md): How to add, edit, and rekey encrypted secrets (Agenix).
+* [LAN DNS Setup](./docs/adguard-dns-setup.md): Network-wide DNS filtering (AdGuard Home) on `classic-laddie`, and how to point the router at it.
 * [Valley Git Hosting](./docs/valley-git-hosting.md): Bare-git hosting on `classic-laddie` with GitHub push mirror and offsite backups.
 * [weller Build & Install](./docs/weller-build-2026.md): Hardware record and install runbook for the 2026 `weller` rebuild.
 * [Generic VM Setup](./docs/vm-setup.md): How to build and deploy NixOS VMs (e.g., `johnny-walker`).

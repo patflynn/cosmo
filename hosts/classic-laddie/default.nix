@@ -38,6 +38,7 @@ in
     ../../modules/common/auto-reboot.nix
     ../../modules/converge/default.nix
     ../../modules/media-server/default.nix
+    ../../modules/adguard/default.nix
     inputs.reel-life.nixosModules.default
     inputs.github-relay.nixosModules.default
     inputs.the-valley.nixosModules.valley-host
@@ -138,6 +139,34 @@ in
   #   cd secrets && agenix -e radarr-api-key.age   # paste the API key from Radarr UI → Settings → General
   #   cd secrets && agenix -e prowlarr-api-key.age  # paste the API key from Prowlarr UI → Settings → General
   modules.media-server.recyclarr.enable = true;
+
+  # ---------------------------------------------------------------------------
+  # LAN DNS (AdGuard Home)
+  # ---------------------------------------------------------------------------
+  # Resolver for the whole house. Nothing points at it until the UDM's DHCP
+  # hands out 192.168.1.28 as the LAN name server -- see
+  # docs/adguard-dns-setup.md, which also covers the checks to run before that
+  # switch and how to back it out.
+  #
+  # The admin UI stays on loopback (ssh -L 3000:127.0.0.1:3000 classic-laddie)
+  # because no login is configured yet; the runbook has the agenix steps to add
+  # one, which is the prerequisite for exposing it on the LAN.
+  modules.adguard = {
+    enable = true;
+    # Same LAN interface Caddy's default_bind pins in modules/media-server.
+    lanAddress = "192.168.1.28";
+    lanInterface = "enp4s0";
+
+    # Answers for the Caddy vhosts, so the router's hand-entered Local DNS
+    # records can be retired. Keep in sync with services.caddy.virtualHosts in
+    # modules/media-server/default.nix.
+    localRecords = {
+      "jellyfin" = "192.168.1.28";
+      "jellyfin.local" = "192.168.1.28";
+      "overseerr" = "192.168.1.28";
+      "overseerr.local" = "192.168.1.28";
+    };
+  };
 
   # ---------------------------------------------------------------------------
   # Reel-life media chatops agent (direct systemd service)

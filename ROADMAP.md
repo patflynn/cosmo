@@ -44,6 +44,7 @@ It defines the hardware, operating system, services, and user environments for t
 ### Phase 3: Services
 - [ ] Deploy Media Stack (Jellyfin/Plex) in a NixOS Container.
 - [ ] Deploy Home Automation (Home Assistant) in a Container/VM.
+- [x] Deploy network-wide DNS filtering (AdGuard Home) on `classic-laddie`.
 
 ### Phase 4: Expansion
 - [ ] Onboard other hardware (MacBooks).
